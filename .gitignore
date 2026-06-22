@@ -6,6 +6,7 @@ venv/
 .DS_Store
 IDLE
 IDLE alias
+WorkShiftHR/
 node_modules/
 dist/
 *.egg-info/
