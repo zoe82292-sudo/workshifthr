@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { analyzeFile, checkBackendHealth } from "./api";
+import { analyzeFile, checkAuthStatus, checkBackendHealth } from "./api";
+import { clearSession, getStoredEmail, getStoredToken } from "./auth";
+import { LoginPage } from "./components/LoginPage";
 import { ResultsDashboard } from "./components/ResultsDashboard";
 import type { AnalysisResult, AnalysisTab } from "./types";
 
@@ -19,11 +21,40 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [backendReady, setBackendReady] = useState<boolean | null>(null);
+  const [authRequired, setAuthRequired] = useState<boolean | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(getStoredEmail());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    void checkBackendHealth().then(setBackendReady);
+    void Promise.all([checkBackendHealth(), checkAuthStatus()]).then(
+      ([healthy, requiresAuth]) => {
+        setBackendReady(healthy);
+        setAuthRequired(requiresAuth);
+        if (!requiresAuth) {
+          setUserEmail("guest");
+        }
+      },
+    );
   }, []);
+
+  const isAuthenticated =
+    authRequired === false || (authRequired === true && Boolean(getStoredToken() && userEmail));
+
+  function handleLogout() {
+    clearSession();
+    setUserEmail(null);
+    setFile(null);
+    setResult(null);
+    setError(null);
+  }
+
+  if (authRequired === null) {
+    return <div className="app-shell loading-shell">Loading WorkShiftHR...</div>;
+  }
+
+  if (authRequired && !isAuthenticated) {
+    return <LoginPage onLogin={setUserEmail} />;
+  }
 
   async function handleFile(selected: File | null) {
     if (!selected) return;
@@ -38,7 +69,11 @@ export default function App() {
       setResult(analysis);
       setActiveTab(pickInitialTab(analysis));
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Unable to analyze file.");
+      const message = caught instanceof Error ? caught.message : "Unable to analyze file.";
+      setError(message);
+      if (message.includes("sign in again")) {
+        setUserEmail(null);
+      }
     } finally {
       setLoading(false);
       if (fileInputRef.current) {
@@ -56,7 +91,17 @@ export default function App() {
   return (
     <div className="app-shell">
       <header className="hero">
-        <span className="hero-badge">Compensation intelligence</span>
+        <div className="hero-top">
+          <span className="hero-badge">Compensation intelligence</span>
+          {authRequired && userEmail ? (
+            <div className="session-bar">
+              <span className="session-email">{userEmail}</span>
+              <button className="button button-secondary button-small" onClick={handleLogout}>
+                Sign out
+              </button>
+            </div>
+          ) : null}
+        </div>
         <p className="hero-positioning">
           Upload your compensation spreadsheet and get an instant comp review in under 30
           seconds.

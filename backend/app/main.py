@@ -4,12 +4,20 @@ import json
 import os
 from pathlib import Path
 
-from fastapi import FastAPI, File, Form, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.analyzer import analyze_file, preview_file
+from app.auth import (
+    LoginRequest,
+    LoginResponse,
+    auth_enabled,
+    authenticate_user,
+    create_access_token,
+    require_auth,
+)
 from app.models import AnalysisResult, ColumnMapping, PreviewResponse
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
@@ -31,14 +39,38 @@ app.add_middleware(
 
 
 @app.get("/api/health")
-def health() -> dict[str, str]:
-    return {"status": "ok"}
+def health() -> dict[str, str | bool]:
+    return {"status": "ok", "auth_enabled": auth_enabled()}
+
+
+@app.get("/api/auth/status")
+def auth_status() -> dict[str, bool]:
+    return {"auth_enabled": auth_enabled()}
+
+
+@app.post("/api/auth/login", response_model=LoginResponse)
+def login(payload: LoginRequest) -> LoginResponse:
+    if not auth_enabled():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authentication is not configured on this server.",
+        )
+
+    user = authenticate_user(payload.email, payload.password)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password.",
+        )
+
+    return LoginResponse(token=create_access_token(user.email), email=user.email)
 
 
 @app.post("/api/preview", response_model=PreviewResponse)
 async def preview(
     file: UploadFile = File(...),
     sheet_name: str | None = Form(default=None),
+    _: str = Depends(require_auth),
 ) -> PreviewResponse:
     content = await file.read()
     return preview_file(content, file.filename or "upload.xlsx", sheet_name)
@@ -49,6 +81,7 @@ async def analyze(
     file: UploadFile = File(...),
     sheet_name: str | None = Form(default=None),
     column_mapping: str | None = Form(default=None),
+    _: str = Depends(require_auth),
 ) -> AnalysisResult:
     content = await file.read()
     mapping_override = None

@@ -1,4 +1,5 @@
 import type { AnalysisInsights, AnalysisResult, AnalysisSummary } from "./types";
+import { authHeaders, clearSession } from "./auth";
 
 const API_BASE = "/api";
 
@@ -85,14 +86,47 @@ export async function checkBackendHealth(): Promise<boolean> {
   }
 }
 
+export async function checkAuthStatus(): Promise<boolean> {
+  try {
+    const response = await fetch(`${API_BASE}/auth/status`);
+    if (!response.ok) {
+      return false;
+    }
+    const payload = (await response.json()) as { auth_enabled?: boolean };
+    return payload.auth_enabled === true;
+  } catch {
+    return false;
+  }
+}
+
+export async function login(email: string, password: string): Promise<{ token: string; email: string }> {
+  const response = await fetch(`${API_BASE}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+
+  return (await response.json()) as { token: string; email: string };
+}
+
 export async function analyzeFile(file: File): Promise<AnalysisResult> {
   const formData = new FormData();
   formData.append("file", file);
 
   const response = await fetch(`${API_BASE}/analyze`, {
     method: "POST",
+    headers: authHeaders(),
     body: formData,
   });
+
+  if (response.status === 401) {
+    clearSession();
+    throw new Error("Your session expired. Please sign in again.");
+  }
 
   if (!response.ok) {
     throw new Error(await readError(response));

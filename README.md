@@ -79,6 +79,33 @@ Use `sample-data/compensation-sample.csv` to verify all analysis categories.
 - Outlier merit detection uses the interquartile range (IQR) and needs at least 4 populated merit values.
 - Analysis results are returned in the browser and are not persisted server-side.
 
+## Authentication
+
+Email + password login protects file upload and analysis when `AUTH_USERS` is configured.
+
+### Local development (auth off)
+
+Leave `AUTH_USERS` unset and the app works without a login screen.
+
+### Production (Render)
+
+In Render → your service → **Environment**, add:
+
+| Variable | Example | Notes |
+| --- | --- | --- |
+| `JWT_SECRET` | `a-long-random-string-here` | Any long random string (32+ characters) |
+| `AUTH_USERS` | `you@company.com:YourPassword123` | Comma-separated `email:password` pairs |
+
+**Multiple users:**
+
+```text
+you@company.com:Password1,client@acme.com:Password2
+```
+
+After saving, Render redeploys automatically. Visitors to shiftworkshr.com will see a sign-in page before they can upload files.
+
+Sessions last 24 hours by default (`JWT_EXPIRE_HOURS` to override).
+
 ## Deploy
 
 WorkShiftHR can run as a single web service: the API and built React UI are served together on one port.
