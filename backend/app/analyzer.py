@@ -35,11 +35,37 @@ from app.models import (
 MERIT_OUTLIER_IQR_MULTIPLIER = 1.5
 
 
+def _read_csv(content: bytes) -> pd.DataFrame:
+    if content.startswith(b"\xff\xfe") or content.startswith(b"\xfe\xff"):
+        encodings = ["utf-16"]
+    else:
+        encodings = ["utf-8-sig", "utf-8", "latin-1", "cp1252"]
+
+    for encoding in encodings:
+        try:
+            text = content.decode(encoding)
+        except UnicodeDecodeError:
+            continue
+
+        for separator in [",", ";", "\t"]:
+            try:
+                df = pd.read_csv(io.StringIO(text), sep=separator)
+            except Exception:
+                continue
+            if len(df.columns) >= 2:
+                df.columns = [str(col).strip() for col in df.columns]
+                return df
+
+    raise ValueError(
+        "Could not read this CSV. In Excel, use File → Save As → CSV UTF-8 (Comma delimited), "
+        "or upload the original .xlsx file instead."
+    )
+
+
 def read_upload(content: bytes, filename: str, sheet_name: str | None = None) -> tuple[pd.DataFrame, list[str]]:
     lower_name = filename.lower()
     if lower_name.endswith(".csv"):
-        df = pd.read_csv(io.BytesIO(content))
-        df.columns = [str(col).strip() for col in df.columns]
+        df = _read_csv(content)
         return df, ["CSV"]
 
     workbook = pd.ExcelFile(io.BytesIO(content))

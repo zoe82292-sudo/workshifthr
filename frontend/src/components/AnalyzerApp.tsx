@@ -38,6 +38,11 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
   async function handleFile(selected: File | null) {
     if (!selected) return;
 
+    if (!/\.(xlsx|xls|csv)$/i.test(selected.name)) {
+      setError("Please upload an .xlsx, .xls, or .csv file.");
+      return;
+    }
+
     setFile(selected);
     setResult(null);
     setError(null);
@@ -132,7 +137,7 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+                accept=".xlsx,.xls,.csv,text/csv,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 disabled={loading}
                 onChange={(event) => void handleFile(event.target.files?.[0] ?? null)}
               />
@@ -162,7 +167,10 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
       </section>
 
       {loading ? (
-        <div className="alert alert-info">Analyzing your file — this usually takes a few seconds.</div>
+        <div className="alert alert-info">
+          Analyzing your file — this usually takes a few seconds. If the site just woke up,
+          it can take up to a minute.
+        </div>
       ) : null}
 
       {error ? <div className="alert alert-error">{error}</div> : null}

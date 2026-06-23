@@ -127,9 +127,19 @@ export async function login(email: string, password: string): Promise<{ token: s
   return (await response.json()) as { token: string; email: string };
 }
 
+const ALLOWED_EXTENSIONS = /\.(xlsx|xls|csv)$/i;
+
+function isAllowedUpload(file: File): boolean {
+  return ALLOWED_EXTENSIONS.test(file.name);
+}
+
 export async function analyzeFile(file: File): Promise<AnalysisResult> {
+  if (!isAllowedUpload(file)) {
+    throw new Error("Please upload an .xlsx, .xls, or .csv file.");
+  }
+
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("file", file, file.name);
 
   const response = await fetch(`${API_BASE}/analyze`, {
     method: "POST",
@@ -156,8 +166,18 @@ async function readError(response: Response): Promise<string> {
     if (typeof payload.detail === "string") {
       return payload.detail;
     }
+    if (Array.isArray(payload.detail)) {
+      return payload.detail.map((item: { msg?: string }) => item.msg).filter(Boolean).join(" ") ||
+        "Something went wrong while processing the file.";
+    }
     return "Something went wrong while processing the file.";
   } catch {
+    if (response.status === 413) {
+      return "This file is too large to upload.";
+    }
+    if (response.status >= 500) {
+      return "The server had trouble processing your file. Wait 30 seconds and try again.";
+    }
     return "Something went wrong while processing the file.";
   }
 }

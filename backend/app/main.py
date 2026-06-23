@@ -84,10 +84,36 @@ async def analyze(
     _: str = Depends(require_auth),
 ) -> AnalysisResult:
     content = await file.read()
+    if not content:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The uploaded file is empty.",
+        )
+
     mapping_override = None
     if column_mapping:
         mapping_override = ColumnMapping(**json.loads(column_mapping))
-    return analyze_file(content, file.filename or "upload.xlsx", sheet_name, mapping_override)
+
+    try:
+        return analyze_file(
+            content,
+            file.filename or "upload.xlsx",
+            sheet_name,
+            mapping_override,
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "Unable to process this file. Try uploading the original Excel workbook "
+                "(.xlsx), or re-save CSV as UTF-8 comma-separated."
+            ),
+        ) from exc
 
 
 if STATIC_DIR.exists():
