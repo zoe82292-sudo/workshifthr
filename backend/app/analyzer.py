@@ -35,9 +35,30 @@ from app.models import (
 MERIT_OUTLIER_IQR_MULTIPLIER = 1.5
 
 
-def _read_csv(content: bytes) -> pd.DataFrame:
+def _looks_like_export_file(content: bytes, filename: str) -> bool:
+    lower_name = filename.lower()
+    if "workshifthhr-analysis" in lower_name or "analysis-export" in lower_name:
+        return True
+    preview = content[:800].decode("utf-8", errors="ignore").upper()
+    return "EXECUTIVE SUMMARY" in preview and "BUDGET IMPACT" in preview
+
+
+def _read_csv(content: bytes, filename: str = "upload.csv") -> pd.DataFrame:
+    if _looks_like_export_file(content, filename):
+        raise ValueError(
+            "This file looks like a WorkShiftHR results export, not an employee compensation "
+            "spreadsheet. Upload your original HR comp file (employee ID, salary, range min/max, "
+            "gender, race, etc.) — not a downloaded analysis report."
+        )
+
+    if content.startswith(b"PK\x03\x04"):
+        raise ValueError(
+            "This file appears to be an Excel workbook saved with a .csv extension. "
+            "Upload the .xlsx file directly instead."
+        )
+
     if content.startswith(b"\xff\xfe") or content.startswith(b"\xfe\xff"):
-        encodings = ["utf-16"]
+        encodings = ["utf-16", "utf-16-le", "utf-16-be"]
     else:
         encodings = ["utf-8-sig", "utf-8", "latin-1", "cp1252"]
 
@@ -49,23 +70,58 @@ def _read_csv(content: bytes) -> pd.DataFrame:
 
         for separator in [",", ";", "\t"]:
             try:
-                df = pd.read_csv(io.StringIO(text), sep=separator)
+                df = pd.read_csv(
+                    io.StringIO(text),
+                    sep=separator,
+                    engine="python",
+                    on_bad_lines="skip",
+                )
             except Exception:
                 continue
             if len(df.columns) >= 2:
                 df.columns = [str(col).strip() for col in df.columns]
                 return df
 
+        header_index = _find_compensation_header_row(text)
+        if header_index is not None:
+            subset = "\n".join(text.splitlines()[header_index:])
+            for separator in [",", ";", "\t"]:
+                try:
+                    df = pd.read_csv(
+                        io.StringIO(subset),
+                        sep=separator,
+                        engine="python",
+                        on_bad_lines="skip",
+                    )
+                except Exception:
+                    continue
+                if len(df.columns) >= 4:
+                    df.columns = [str(col).strip() for col in df.columns]
+                    return df
+
     raise ValueError(
-        "Could not read this CSV. In Excel, use File → Save As → CSV UTF-8 (Comma delimited), "
-        "or upload the original .xlsx file instead."
+        "Could not read this CSV. Upload your original employee compensation spreadsheet "
+        "(not a WorkShiftHR export). In Excel: File → Save As → CSV UTF-8, or upload .xlsx."
     )
+
+
+def _find_compensation_header_row(text: str) -> int | None:
+    for index, line in enumerate(text.splitlines()):
+        normalized = line.strip().lower().replace("_", " ")
+        if not normalized:
+            continue
+        has_id = any(token in normalized for token in ("employee id", "emp id", "ee id", "employee number"))
+        has_salary = any(token in normalized for token in ("salary", "base pay", "base salary", "current salary"))
+        has_range = "range" in normalized or ("min" in normalized and "max" in normalized)
+        if has_id and has_salary and has_range:
+            return index
+    return None
 
 
 def read_upload(content: bytes, filename: str, sheet_name: str | None = None) -> tuple[pd.DataFrame, list[str]]:
     lower_name = filename.lower()
     if lower_name.endswith(".csv"):
-        df = _read_csv(content)
+        df = _read_csv(content, filename)
         return df, ["CSV"]
 
     workbook = pd.ExcelFile(io.BytesIO(content))

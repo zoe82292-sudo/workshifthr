@@ -153,10 +153,10 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
             ) : null}
           </div>
           <p className="file-meta">
-            Column headers are detected automatically. Include employee ID, salary,
-            range minimum, and range maximum for core checks. Add{" "}
-            <strong>Gender</strong> and <strong>Race/Ethnicity</strong> for pay equity
-            analysis. Department and job level are optional but recommended.
+            Upload your <strong>original employee compensation spreadsheet</strong> — not a
+            WorkShiftHR results export. Include employee ID, salary, range minimum, and range
+            maximum. Add <strong>Gender</strong> and <strong>Race/Ethnicity</strong> for pay
+            equity analysis.
           </p>
           <p className="file-meta legal-notice">
             For decision support only — not legal or professional compensation advice.
