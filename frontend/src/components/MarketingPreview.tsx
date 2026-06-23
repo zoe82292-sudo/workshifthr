@@ -176,7 +176,6 @@ export function MarketingPreview({ data }: MarketingPreviewProps) {
               ))}
             </tbody>
           </table>
-          <div className="marketing-preview__table-fade" aria-hidden="true" />
         </div>
       </section>
     </div>
