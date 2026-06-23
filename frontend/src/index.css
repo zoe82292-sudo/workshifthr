@@ -982,22 +982,26 @@ tr:last-child td {
   position: relative;
 }
 
-.landing-preview-image-wrap::after {
-  content: "";
-  position: absolute;
-  inset: 14px 14px 0;
-  border-radius: 14px 14px 0 0;
-  box-shadow: inset 0 0 0 1px rgba(221, 211, 196, 0.5);
-  pointer-events: none;
-}
-
-.landing-preview-frame img {
-  display: block;
-  width: 100%;
-  height: auto;
+.landing-preview-live .marketing-preview {
+  max-width: none;
+  margin: 0;
+  padding: 20px 22px 22px;
   border-radius: 14px 14px 0 0;
   border: 1px solid rgba(221, 211, 196, 0.9);
   box-shadow: 0 10px 30px rgba(31, 41, 51, 0.08);
+}
+
+.landing-preview-live .marketing-preview__header {
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+}
+
+.landing-preview-live .marketing-preview__insights {
+  gap: 12px;
+}
+
+.landing-preview-live .marketing-preview__table-wrap {
+  overflow: visible;
 }
 
 .landing-preview-caption {

@@ -1,5 +1,7 @@
+import { MARKETING_DEMO_DATA } from "../data/marketingDemoData";
 import { LoginForm } from "./LoginForm";
 import { LegalFooter } from "./LegalFooter";
+import { MarketingPreview } from "./MarketingPreview";
 
 const CONTACT_EMAIL = "hello@shiftworkshr.com";
 
@@ -206,7 +208,10 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
             trends, and pay equity signals — in seconds, not weeks.
           </p>
         </div>
-        <figure className="landing-preview-frame">
+        <figure
+          className="landing-preview-frame"
+          aria-label="ShiftWorksHR analysis results showing executive summary, budget impact calculators, and flagged compensation issues"
+        >
           <div className="landing-browser-chrome" aria-hidden="true">
             <div className="landing-browser-dots">
               <span />
@@ -215,14 +220,8 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
             </div>
             <div className="landing-browser-url">shiftworkshr.com</div>
           </div>
-          <div className="landing-preview-image-wrap">
-            <img
-              src="/sample-output.png"
-              alt="ShiftWorksHR analysis results showing executive summary, budget impact calculators, and flagged compensation issues"
-              width={1120}
-              height={932}
-              loading="lazy"
-            />
+          <div className="landing-preview-image-wrap landing-preview-live">
+            <MarketingPreview data={MARKETING_DEMO_DATA} />
           </div>
           <figcaption className="landing-preview-caption">
             Sample analysis from our demo compensation file — executive summary, cost to
