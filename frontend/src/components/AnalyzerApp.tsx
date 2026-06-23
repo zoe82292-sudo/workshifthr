@@ -176,7 +176,7 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
       {error ? <div className="alert alert-error">{error}</div> : null}
 
       {result ? (
-        <section className="panel">
+        <section className="panel" id="sample-output-root">
           {result.warnings.map((warning) => (
             <div className="alert alert-warning" key={warning}>
               {warning}

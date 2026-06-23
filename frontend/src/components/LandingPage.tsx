@@ -206,14 +206,24 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
             trends, and pay equity signals — in seconds, not weeks.
           </p>
         </div>
-        <figure className="landing-preview-frame panel">
-          <img
-            src="/sample-output.png"
-            alt="ShiftWorksHR analysis results showing executive summary, budget impact calculators, and flagged compensation issues"
-            width={1280}
-            height={900}
-            loading="lazy"
-          />
+        <figure className="landing-preview-frame">
+          <div className="landing-browser-chrome" aria-hidden="true">
+            <div className="landing-browser-dots">
+              <span />
+              <span />
+              <span />
+            </div>
+            <div className="landing-browser-url">shiftworkshr.com</div>
+          </div>
+          <div className="landing-preview-image-wrap">
+            <img
+              src="/sample-output.png"
+              alt="ShiftWorksHR analysis results showing executive summary, budget impact calculators, and flagged compensation issues"
+              width={1120}
+              height={980}
+              loading="lazy"
+            />
+          </div>
           <figcaption className="landing-preview-caption">
             Sample analysis from our demo compensation file — executive summary, cost to
             minimum, merit pool, and compa-ratio at a glance.

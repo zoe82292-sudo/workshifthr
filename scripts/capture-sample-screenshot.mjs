@@ -12,7 +12,7 @@ await mkdir(path.dirname(outputFile), { recursive: true });
 
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({
-  viewport: { width: 1280, height: 900 },
+  viewport: { width: 1180, height: 1400 },
   deviceScaleFactor: 2,
 });
 
@@ -20,28 +20,56 @@ await page.goto("http://127.0.0.1:8080/", { waitUntil: "networkidle" });
 
 const fileInput = page.locator('input[type="file"]');
 await fileInput.setInputFiles(sampleFile);
-await page.waitForSelector('h2:text("Analysis results")', { timeout: 60000 });
-await page.waitForSelector(".summary-grid .summary-card", { timeout: 60000 });
-await page.waitForTimeout(400);
+await page.waitForSelector("#sample-output-root h2:text('Analysis results')", {
+  timeout: 60000,
+});
+await page.waitForSelector("#sample-output-root .summary-grid .summary-card", {
+  timeout: 60000,
+});
 
-const resultsPanel = page.locator("section.panel").last();
-await resultsPanel.scrollIntoViewIfNeeded();
-await page.waitForTimeout(200);
+await page.addStyleTag({
+  content: `
+    .app-shell > .hero,
+    .app-shell > .panel:not(#sample-output-root),
+    .app-shell > .alert,
+    .legal-footer,
+    .session-bar {
+      display: none !important;
+    }
+    body {
+      background: #f4f1ea !important;
+    }
+    .app-shell {
+      max-width: 1120px !important;
+      padding: 16px 20px 20px !important;
+    }
+    #sample-output-root {
+      margin: 0 !important;
+      box-shadow: none !important;
+    }
+    #sample-output-root .alert {
+      display: none !important;
+    }
+    #sample-output-root .tabs {
+      flex-wrap: nowrap;
+      overflow: hidden;
+    }
+    #sample-output-root .table-wrap {
+      max-height: 220px;
+      overflow: hidden;
+    }
+  `,
+});
 
-const panelBox = await resultsPanel.boundingBox();
-if (panelBox) {
-  await page.screenshot({
-    path: outputFile,
-    clip: {
-      x: Math.max(panelBox.x - 8, 0),
-      y: Math.max(panelBox.y - 8, 0),
-      width: Math.min(panelBox.width + 16, 1280),
-      height: Math.min(panelBox.height + 16, 900),
-    },
-  });
-} else {
-  await resultsPanel.screenshot({ path: outputFile });
-}
+await page.click('#sample-output-root button.tab:has-text("Below Minimum")');
+await page.waitForSelector("#sample-output-root table tbody tr", { timeout: 10000 });
+await page.waitForTimeout(500);
+
+const target = page.locator("#sample-output-root");
+await target.screenshot({
+  path: outputFile,
+  animations: "disabled",
+});
 
 await browser.close();
 console.log(`Saved screenshot to ${outputFile}`);
