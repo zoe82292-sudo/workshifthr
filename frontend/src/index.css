@@ -551,6 +551,11 @@ tr:last-child td {
   gap: 16px;
 }
 
+.landing-brand {
+  display: grid;
+  gap: 2px;
+}
+
 .landing-logo {
   font-family: "Instrument Serif", serif;
   font-size: 1.5rem;
@@ -559,6 +564,12 @@ tr:last-child td {
   cursor: pointer;
   padding: 0;
   color: inherit;
+}
+
+.landing-domain {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
 }
 
 .landing-links {
@@ -860,6 +871,11 @@ tr:last-child td {
   font-family: "Instrument Serif", serif;
   font-size: 1.25rem;
   color: var(--text);
+}
+
+.landing-footer-domain {
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }
 
 .landing-footer-contact a {

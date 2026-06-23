@@ -33,7 +33,7 @@ function MainApp() {
   }
 
   if (authRequired === null) {
-    return <div className="app-shell loading-shell">Loading WorkShiftHR...</div>;
+    return <div className="app-shell loading-shell">Loading ShiftWorkHR...</div>;
   }
 
   if (!isAuthenticated) {

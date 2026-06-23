@@ -7,7 +7,7 @@ echo "Building frontend..."
 cd "$ROOT/frontend"
 npm run build
 
-echo "Starting WorkShiftHR on http://127.0.0.1:${PORT:-8080}"
+echo "Starting ShiftWorkHR on http://127.0.0.1:${PORT:-8080}"
 cd "$ROOT/backend"
 source .venv/bin/activate
 export PYTHONPATH="$ROOT/backend"

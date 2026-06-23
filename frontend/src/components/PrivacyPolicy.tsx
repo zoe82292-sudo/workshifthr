@@ -4,7 +4,7 @@ export function PrivacyPolicy() {
   return (
     <LegalLayout title="Privacy Policy">
       <p>
-        This Privacy Policy describes how WorkShiftHR (“we,” “us”) handles information
+        This Privacy Policy describes how ShiftWorkHR (“we,” “us”) handles information
         when you use shiftworkshr.com (the “Service”). We designed the Service for HR
         and compensation teams who work with sensitive pay data.
       </p>

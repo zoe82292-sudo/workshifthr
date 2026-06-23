@@ -69,7 +69,7 @@ const PRICING_PLANS = [
       "Email support",
     ],
     cta: "Get comp cycle pass",
-    mailSubject: "WorkShiftHR Comp Cycle Pass",
+    mailSubject: "ShiftWorkHR Comp Cycle Pass",
     featured: false,
   },
   {
@@ -85,7 +85,7 @@ const PRICING_PLANS = [
       "Great for ongoing comp work",
     ],
     cta: "Get annual access",
-    mailSubject: "WorkShiftHR Annual Plan",
+    mailSubject: "ShiftWorkHR Annual Plan",
     featured: true,
   },
   {
@@ -101,7 +101,7 @@ const PRICING_PLANS = [
       "No long-term contract",
     ],
     cta: "Get monthly access",
-    mailSubject: "WorkShiftHR Monthly Plan",
+    mailSubject: "ShiftWorkHR Monthly Plan",
     featured: false,
   },
 ];
@@ -122,9 +122,16 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
     <div className="landing-page">
       <header className="landing-nav">
         <div className="landing-nav-inner">
-          <button className="landing-logo" type="button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-            WorkShiftHR
-          </button>
+          <div className="landing-brand">
+            <button
+              className="landing-logo"
+              type="button"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            >
+              ShiftWorkHR
+            </button>
+            <span className="landing-domain">shiftworkshr.com</span>
+          </div>
           <nav className="landing-links">
             <button type="button" onClick={() => scrollTo("features")}>
               Features
@@ -150,7 +157,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
           </p>
           <h1>Find pay equity issues before review season.</h1>
           <p>
-            WorkShiftHR helps HR teams spot out-of-range pay, compression, manager
+            ShiftWorkHR helps HR teams spot out-of-range pay, compression, manager
             inversions, and budget gaps — without weeks of manual spreadsheet review.
           </p>
           <div className="landing-hero-actions">
@@ -210,7 +217,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
           <span className="hero-badge">Built by an HR practitioner</span>
           <h2>Designed by someone who has done the comp work</h2>
           <p>
-            WorkShiftHR was built by an HR professional with hands-on experience in
+            ShiftWorkHR was built by an HR professional with hands-on experience in
             compensation — range reviews, pay equity analysis, merit planning, and
             the spreadsheet-heavy work that comes with every comp cycle.
           </p>
@@ -243,7 +250,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
           <span className="hero-badge">Introductory pricing</span>
           <h2>Enterprise comp analysis without the enterprise price tag</h2>
           <p>
-            WorkShiftHR is new — you may not have heard of us yet. Big comp platforms
+            ShiftWorkHR is new — you may not have heard of us yet. Big comp platforms
             often cost $10,000+ per year or require consultants at $5,000–$15,000 per
             cycle. We built a focused tool for HR teams who need fast, practical answers
             at a fraction of that cost.
@@ -306,7 +313,8 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
 
       <footer className="landing-footer">
         <div className="landing-footer-copy">
-          <p className="landing-footer-brand">WorkShiftHR</p>
+          <p className="landing-footer-brand">ShiftWorkHR</p>
+          <p className="landing-footer-domain">shiftworkshr.com</p>
           <p>Compensation analysis for HR teams — built by an HR professional.</p>
           <p className="landing-footer-contact">
             <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>

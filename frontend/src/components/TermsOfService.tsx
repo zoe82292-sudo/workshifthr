@@ -4,14 +4,14 @@ export function TermsOfService() {
   return (
     <LegalLayout title="Terms of Service">
       <p>
-        These Terms of Service (“Terms”) govern your access to and use of WorkShiftHR
+        These Terms of Service (“Terms”) govern your access to and use of ShiftWorkHR
         (“Service”), operated at shiftworkshr.com. By using the Service, you agree to
         these Terms. If you do not agree, do not use the Service.
       </p>
 
-      <h2>1. What WorkShiftHR is</h2>
+      <h2>1. What ShiftWorkHR is</h2>
       <p>
-        WorkShiftHR is a software tool that analyzes compensation spreadsheets you
+        ShiftWorkHR is a software tool that analyzes compensation spreadsheets you
         upload and surfaces potential issues such as out-of-range pay, range
         penetration, compression signals, and related metrics.
       </p>
@@ -30,7 +30,7 @@ export function TermsOfService() {
 
       <h2>2. Eligibility and accounts</h2>
       <p>
-        Access is provided to authorized users at the discretion of WorkShiftHR
+        Access is provided to authorized users at the discretion of ShiftWorkHR
         (typically after purchase or invitation). You are responsible for keeping
         your login credentials confidential and for all activity under your account.
         Notify us immediately at{" "}
@@ -79,7 +79,7 @@ export function TermsOfService() {
 
       <h2>6. Limitation of liability</h2>
       <p>
-        To the maximum extent permitted by law, WorkShiftHR and its operator will not
+        To the maximum extent permitted by law, ShiftWorkHR and its operator will not
         be liable for any indirect, incidental, special, consequential, or punitive
         damages, or for lost profits, data, or business opportunities, arising from or
         related to your use of the Service — including reliance on analysis results

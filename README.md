@@ -1,4 +1,4 @@
-# WorkShiftHR
+# ShiftWorkHR
 
 Compensation analysis web app for HR teams. Upload an Excel or CSV file and automatically surface pay range issues, duplicate IDs, range penetration, salary compression, and data quality problems.
 
@@ -112,7 +112,7 @@ Sessions last 24 hours by default (`JWT_EXPIRE_HOURS` to override).
 
 ## Deploy
 
-WorkShiftHR can run as a single web service: the API and built React UI are served together on one port.
+ShiftWorkHR can run as a single web service: the API and built React UI are served together on one port.
 
 ### Run locally (production mode)
 

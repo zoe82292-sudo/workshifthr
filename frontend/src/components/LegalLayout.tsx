@@ -13,7 +13,7 @@ export function LegalLayout({
     <div className="legal-page">
       <div className="legal-page-inner">
         <Link className="legal-back-link" to="/">
-          ← Back to WorkShiftHR
+          ← Back to ShiftWorkHR
         </Link>
         <h1>{title}</h1>
         <p className="legal-updated">Last updated: June 2026</p>

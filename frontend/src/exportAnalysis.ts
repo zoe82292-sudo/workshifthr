@@ -3,7 +3,7 @@ import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import type { AnalysisResult } from "./types";
 
-const BASE_FILENAME = "workshifthhr-analysis";
+const BASE_FILENAME = "shiftworkshr-analysis";
 
 function triggerDownload(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -26,7 +26,7 @@ function formatMoney(value: number | null | undefined): string {
 function summaryRows(result: AnalysisResult): Array<Array<string | number>> {
   const { insights, summary } = result;
   return [
-    ["WorkShiftHR Compensation Analysis"],
+    ["ShiftWorkHR Compensation Analysis"],
     [],
     ["Executive Summary"],
     ["Headline", insights.executive_summary.headline],
@@ -228,7 +228,7 @@ export function downloadAnalysisPdf(result: AnalysisResult, filename = `${BASE_F
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
-  doc.text("WorkShiftHR Compensation Analysis", margin, y);
+  doc.text("ShiftWorkHR Compensation Analysis", margin, y);
   y += 24;
 
   doc.setFont("helvetica", "normal");

@@ -37,7 +37,7 @@ MERIT_OUTLIER_IQR_MULTIPLIER = 1.5
 
 def _looks_like_export_file(content: bytes, filename: str) -> bool:
     lower_name = filename.lower()
-    if "workshifthhr-analysis" in lower_name or "analysis-export" in lower_name:
+    if "shiftworkshr-analysis" in lower_name or "workshifthhr-analysis" in lower_name or "analysis-export" in lower_name:
         return True
     preview = content[:800].decode("utf-8", errors="ignore").upper()
     return "EXECUTIVE SUMMARY" in preview and "BUDGET IMPACT" in preview
@@ -46,7 +46,7 @@ def _looks_like_export_file(content: bytes, filename: str) -> bool:
 def _read_csv(content: bytes, filename: str = "upload.csv") -> pd.DataFrame:
     if _looks_like_export_file(content, filename):
         raise ValueError(
-            "This file looks like a WorkShiftHR results export, not an employee compensation "
+            "This file looks like a ShiftWorkHR results export, not an employee compensation "
             "spreadsheet. Upload your original HR comp file (employee ID, salary, range min/max, "
             "gender, race, etc.) — not a downloaded analysis report."
         )
@@ -101,7 +101,7 @@ def _read_csv(content: bytes, filename: str = "upload.csv") -> pd.DataFrame:
 
     raise ValueError(
         "Could not read this CSV. Upload your original employee compensation spreadsheet "
-        "(not a WorkShiftHR export). In Excel: File → Save As → CSV UTF-8, or upload .xlsx."
+        "(not a ShiftWorkHR export). In Excel: File → Save As → CSV UTF-8, or upload .xlsx."
     )
 
 
