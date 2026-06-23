@@ -46,7 +46,7 @@ def _looks_like_export_file(content: bytes, filename: str) -> bool:
 def _read_csv(content: bytes, filename: str = "upload.csv") -> pd.DataFrame:
     if _looks_like_export_file(content, filename):
         raise ValueError(
-            "This file looks like a ShiftWorkHR results export, not an employee compensation "
+            "This file looks like a ShiftWorksHR results export, not an employee compensation "
             "spreadsheet. Upload your original HR comp file (employee ID, salary, range min/max, "
             "gender, race, etc.) — not a downloaded analysis report."
         )
@@ -101,7 +101,7 @@ def _read_csv(content: bytes, filename: str = "upload.csv") -> pd.DataFrame:
 
     raise ValueError(
         "Could not read this CSV. Upload your original employee compensation spreadsheet "
-        "(not a ShiftWorkHR export). In Excel: File → Save As → CSV UTF-8, or upload .xlsx."
+        "(not a ShiftWorksHR export). In Excel: File → Save As → CSV UTF-8, or upload .xlsx."
     )
 
 

@@ -8,7 +8,7 @@ echo "Building frontend..."
 cd "$ROOT/frontend"
 npm run build
 
-echo "Starting ShiftWorkHR at http://localhost:${PORT}"
+echo "Starting ShiftWorksHR at http://localhost:${PORT}"
 cd "$ROOT/backend"
 source .venv/bin/activate
 export PYTHONPATH="$ROOT/backend"

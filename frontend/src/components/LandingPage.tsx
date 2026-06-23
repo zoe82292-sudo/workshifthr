@@ -69,7 +69,7 @@ const PRICING_PLANS = [
       "Email support",
     ],
     cta: "Get comp cycle pass",
-    mailSubject: "ShiftWorkHR Comp Cycle Pass",
+    mailSubject: "ShiftWorksHR Comp Cycle Pass",
     featured: false,
   },
   {
@@ -85,7 +85,7 @@ const PRICING_PLANS = [
       "Great for ongoing comp work",
     ],
     cta: "Get annual access",
-    mailSubject: "ShiftWorkHR Annual Plan",
+    mailSubject: "ShiftWorksHR Annual Plan",
     featured: true,
   },
   {
@@ -101,7 +101,7 @@ const PRICING_PLANS = [
       "No long-term contract",
     ],
     cta: "Get monthly access",
-    mailSubject: "ShiftWorkHR Monthly Plan",
+    mailSubject: "ShiftWorksHR Monthly Plan",
     featured: false,
   },
 ];
@@ -128,7 +128,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
               type="button"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >
-              ShiftWorkHR
+              ShiftWorksHR
             </button>
             <span className="landing-domain">shiftworkshr.com</span>
           </div>
@@ -157,7 +157,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
           </p>
           <h1>Find pay equity issues before review season.</h1>
           <p>
-            ShiftWorkHR helps HR teams spot out-of-range pay, compression, manager
+            ShiftWorksHR helps HR teams spot out-of-range pay, compression, manager
             inversions, and budget gaps — without weeks of manual spreadsheet review.
           </p>
           <div className="landing-hero-actions">
@@ -197,6 +197,30 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
         </div>
       </section>
 
+      <section className="landing-section landing-preview" id="see-it-in-action">
+        <div className="landing-section-header landing-preview-header">
+          <span className="hero-badge">See it in action</span>
+          <h2>Real output from a 20-employee comp file</h2>
+          <p>
+            Upload your spreadsheet and get an executive summary, budget impact, compa-ratio
+            trends, and pay equity signals — in seconds, not weeks.
+          </p>
+        </div>
+        <figure className="landing-preview-frame panel">
+          <img
+            src="/sample-output.png"
+            alt="ShiftWorksHR analysis results showing executive summary, budget impact calculators, and flagged compensation issues"
+            width={1280}
+            height={900}
+            loading="lazy"
+          />
+          <figcaption className="landing-preview-caption">
+            Sample analysis from our demo compensation file — executive summary, cost to
+            minimum, merit pool, and compa-ratio at a glance.
+          </figcaption>
+        </figure>
+      </section>
+
       <section className="landing-section" id="features">
         <div className="landing-section-header">
           <h2>Built for comp review, not generic HR reporting</h2>
@@ -217,7 +241,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
           <span className="hero-badge">Built by an HR practitioner</span>
           <h2>Designed by someone who has done the comp work</h2>
           <p>
-            ShiftWorkHR was built by an HR professional with hands-on experience in
+            ShiftWorksHR was built by an HR professional with hands-on experience in
             compensation — range reviews, pay equity analysis, merit planning, and
             the spreadsheet-heavy work that comes with every comp cycle.
           </p>
@@ -250,7 +274,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
           <span className="hero-badge">Introductory pricing</span>
           <h2>Enterprise comp analysis without the enterprise price tag</h2>
           <p>
-            ShiftWorkHR is new — you may not have heard of us yet. Big comp platforms
+            ShiftWorksHR is new — you may not have heard of us yet. Big comp platforms
             often cost $10,000+ per year or require consultants at $5,000–$15,000 per
             cycle. We built a focused tool for HR teams who need fast, practical answers
             at a fraction of that cost.
@@ -313,7 +337,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
 
       <footer className="landing-footer">
         <div className="landing-footer-copy">
-          <p className="landing-footer-brand">ShiftWorkHR</p>
+          <p className="landing-footer-brand">ShiftWorksHR</p>
           <p className="landing-footer-domain">shiftworkshr.com</p>
           <p>Compensation analysis for HR teams — built by an HR professional.</p>
           <p className="landing-footer-contact">

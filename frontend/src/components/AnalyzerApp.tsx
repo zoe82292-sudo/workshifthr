@@ -92,14 +92,14 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
         </p>
         <h1>Find pay equity issues before review season.</h1>
         <p>
-          ShiftWorkHR automatically flags out-of-range pay, duplicate IDs, range penetration,
+          ShiftWorksHR automatically flags out-of-range pay, duplicate IDs, range penetration,
           salary compression, manager pay inversions, missing data, and budget impact.
         </p>
       </header>
 
       {backendReady === false ? (
         <div className="alert alert-error">
-          The ShiftWorkHR server is not running. In Terminal, run{" "}
+          The ShiftWorksHR server is not running. In Terminal, run{" "}
           <code>cd ~/Desktop/WorkShiftHR && ./start.sh</code>, then open{" "}
           <a href="http://localhost:8080">http://localhost:8080</a>.
         </div>
@@ -154,7 +154,7 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
           </div>
           <p className="file-meta">
             Upload your <strong>original employee compensation spreadsheet</strong> — not a
-            ShiftWorkHR results export. Include employee ID, salary, range minimum, and range
+            ShiftWorksHR results export. Include employee ID, salary, range minimum, and range
             maximum. Add <strong>Gender</strong> and <strong>Race/Ethnicity</strong> for pay
             equity analysis.
           </p>

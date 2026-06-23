@@ -1,5 +1,5 @@
-const TOKEN_KEY = "workshifthr_token";
-const EMAIL_KEY = "workshifthr_email";
+const TOKEN_KEY = "shiftworkshr_token";
+const EMAIL_KEY = "shiftworkshr_email";
 
 export function getStoredToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);

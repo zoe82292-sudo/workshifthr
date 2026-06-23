@@ -637,6 +637,39 @@ tr:last-child td {
   scroll-margin-top: 88px;
 }
 
+.landing-preview {
+  padding-top: 8px;
+  padding-bottom: 48px;
+}
+
+.landing-preview-header {
+  max-width: 60ch;
+  margin-bottom: 28px;
+}
+
+.landing-preview-frame {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 20px;
+  box-shadow: 0 28px 70px rgba(15, 23, 42, 0.1);
+}
+
+.landing-preview-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+.landing-preview-caption {
+  padding: 14px 20px 18px;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  border-top: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.6);
+}
+
 .landing-pricing-section {
   padding-top: 32px;
 }

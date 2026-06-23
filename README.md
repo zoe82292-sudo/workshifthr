@@ -1,4 +1,4 @@
-# ShiftWorkHR
+# ShiftWorksHR
 
 Compensation analysis web app for HR teams. Upload an Excel or CSV file and automatically surface pay range issues, duplicate IDs, range penetration, salary compression, and data quality problems.
 
@@ -21,7 +21,7 @@ Compensation analysis web app for HR teams. Upload an Excel or CSV file and auto
 ## Project structure
 
 ```
-WorkShiftHR/
+ShiftWorksHR/
   backend/          FastAPI + pandas analysis engine
   frontend/         React upload and results dashboard
   sample-data/      Example compensation file
@@ -112,7 +112,7 @@ Sessions last 24 hours by default (`JWT_EXPIRE_HOURS` to override).
 
 ## Deploy
 
-ShiftWorkHR can run as a single web service: the API and built React UI are served together on one port.
+ShiftWorksHR can run as a single web service: the API and built React UI are served together on one port.
 
 ### Run locally (production mode)
 
@@ -127,7 +127,7 @@ Open [http://localhost:8080](http://localhost:8080).
 1. Push this project to a GitHub repository.
 2. In [Render](https://render.com), create a **New Web Service** from the repo.
 3. Render will detect `render.yaml` and build the Docker image automatically.
-4. After deploy, share the Render URL (for example `https://workshifthhr.onrender.com`).
+4. After deploy, share the Render URL (for example `https://shiftworkshr.onrender.com`).
 
 ### Temporary public link (local machine must stay on)
 
