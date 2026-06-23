@@ -42,8 +42,8 @@ const FEATURES = [
 
 const STEPS = [
   {
-    title: "Request access",
-    copy: "We set up a secure login for your team after purchase.",
+    title: "Choose a plan",
+    copy: "Pick monthly, annual, or a one-time comp cycle pass — we send your login within one business day.",
   },
   {
     title: "Upload your file",
@@ -51,20 +51,80 @@ const STEPS = [
   },
   {
     title: "Act on findings",
-    copy: "Review flagged issues, budget impact, and export reports.",
+    copy: "Review flagged issues, budget impact, pay equity, and export reports.",
+  },
+];
+
+const PRICING_PLANS = [
+  {
+    id: "cycle",
+    name: "Comp Cycle Pass",
+    price: "$249",
+    period: "one-time · 90 days",
+    description: "Best for a single merit or annual review season.",
+    features: [
+      "Unlimited uploads for 90 days",
+      "Full analysis + pay equity views",
+      "Excel & PDF exports",
+      "Email support",
+    ],
+    cta: "Get comp cycle pass",
+    mailSubject: "WorkShiftHR Comp Cycle Pass",
+    featured: false,
+  },
+  {
+    id: "annual",
+    name: "Annual",
+    price: "$899",
+    period: "per year",
+    description: "Best value — about $75/month, billed annually.",
+    features: [
+      "Unlimited uploads all year",
+      "All features included",
+      "Priority email support",
+      "Great for ongoing comp work",
+    ],
+    cta: "Get annual access",
+    mailSubject: "WorkShiftHR Annual Plan",
+    featured: true,
+  },
+  {
+    id: "monthly",
+    name: "Monthly",
+    price: "$99",
+    period: "per month",
+    description: "Flexible month-to-month access. Cancel anytime.",
+    features: [
+      "Unlimited uploads",
+      "All features included",
+      "Email support",
+      "No long-term contract",
+    ],
+    cta: "Get monthly access",
+    mailSubject: "WorkShiftHR Monthly Plan",
+    featured: false,
   },
 ];
 
 export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps) {
   function scrollTo(id: string) {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    const target = document.getElementById(id);
+    if (!target) return;
+
+    const nav = document.querySelector(".landing-nav");
+    const navHeight = nav instanceof HTMLElement ? nav.offsetHeight : 72;
+    const top = target.getBoundingClientRect().top + window.scrollY - navHeight - 16;
+
+    window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
   }
 
   return (
     <div className="landing-page">
       <header className="landing-nav">
         <div className="landing-nav-inner">
-          <span className="landing-logo">WorkShiftHR</span>
+          <button className="landing-logo" type="button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+            WorkShiftHR
+          </button>
           <nav className="landing-links">
             <button type="button" onClick={() => scrollTo("features")}>
               Features
@@ -178,36 +238,51 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
         </div>
       </section>
 
-      <section className="landing-section" id="pricing">
-        <div className="landing-pricing panel">
-          <div className="landing-pricing-copy">
-            <span className="hero-badge">Simple access</span>
-            <h2>One company. One secure login. Instant comp review.</h2>
-            <p>
-              WorkShiftHR is sold as company access — we create your login after
-              purchase. No self-serve signup required. Your compensation data stays
-              private and is not stored on our servers after analysis.
-            </p>
-            <ul className="landing-checklist">
-              <li>Unlimited uploads for your organization</li>
-              <li>Excel and PDF report downloads</li>
-              <li>Secure, password-protected access</li>
-              <li>Onboarding support included</li>
-            </ul>
-          </div>
-          <div className="landing-pricing-cta">
-            <p className="landing-price-label">Company access</p>
-            <p className="landing-price-note">
-              Contact us for current pricing and to set up your account.
-            </p>
-            <a className="button button-primary" href={`mailto:${CONTACT_EMAIL}`}>
-              Request access
-            </a>
-            <p className="landing-contact">
-              Email{" "}
-              <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
-            </p>
-          </div>
+      <section className="landing-section landing-pricing-section" id="pricing">
+        <div className="landing-section-header">
+          <span className="hero-badge">Introductory pricing</span>
+          <h2>Enterprise comp analysis without the enterprise price tag</h2>
+          <p>
+            WorkShiftHR is new — you may not have heard of us yet. Big comp platforms
+            often cost $10,000+ per year or require consultants at $5,000–$15,000 per
+            cycle. We built a focused tool for HR teams who need fast, practical answers
+            at a fraction of that cost.
+          </p>
+        </div>
+
+        <div className="landing-pricing-grid">
+          {PRICING_PLANS.map((plan) => (
+            <article
+              className={`landing-price-card panel ${plan.featured ? "featured" : ""}`}
+              key={plan.id}
+            >
+              {plan.featured ? <span className="landing-price-badge">Best value</span> : null}
+              <h3>{plan.name}</h3>
+              <p className="landing-price-amount">{plan.price}</p>
+              <p className="landing-price-period">{plan.period}</p>
+              <p className="landing-price-description">{plan.description}</p>
+              <ul className="landing-checklist">
+                {plan.features.map((feature) => (
+                  <li key={feature}>{feature}</li>
+                ))}
+              </ul>
+              <a
+                className={`button ${plan.featured ? "button-primary" : "button-secondary"} landing-price-button`}
+                href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(plan.mailSubject)}`}
+              >
+                {plan.cta}
+              </a>
+            </article>
+          ))}
+        </div>
+
+        <div className="landing-pricing-footnote panel">
+          <p>
+            <strong>One company, one secure login.</strong> Pricing is per organization
+            (not per employee row). Your compensation data is processed in memory and
+            not stored on our servers after analysis. Questions? Email{" "}
+            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+          </p>
         </div>
       </section>
 
