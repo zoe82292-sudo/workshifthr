@@ -1,4 +1,5 @@
 import { LoginForm } from "./LoginForm";
+import { LegalFooter } from "./LegalFooter";
 
 const CONTACT_EMAIL = "hello@shiftworkshr.com";
 
@@ -216,6 +217,9 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
               </p>
             </div>
             <LoginForm onLogin={onLogin} compact />
+            <p className="legal-agreement">
+              By signing in, you agree to our Terms of Service and Privacy Policy.
+            </p>
           </div>
         </section>
       ) : null}
@@ -227,6 +231,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
           <p className="landing-footer-contact">
             <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
           </p>
+          <LegalFooter />
         </div>
         {showLogin ? (
           <button className="landing-footer-link" type="button" onClick={() => scrollTo("sign-in")}>

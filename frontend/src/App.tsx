@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
+import { Route, Routes } from "react-router-dom";
 import { checkAuthStatus, checkBackendHealth } from "./api";
 import { clearSession, getStoredEmail, getStoredToken } from "./auth";
 import { AnalyzerApp } from "./components/AnalyzerApp";
 import { LandingPage } from "./components/LandingPage";
+import { PrivacyPolicy } from "./components/PrivacyPolicy";
+import { TermsOfService } from "./components/TermsOfService";
 
-export default function App() {
+function MainApp() {
   const [authRequired, setAuthRequired] = useState<boolean | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(getStoredEmail());
   const [devPreview, setDevPreview] = useState(false);
@@ -49,5 +52,15 @@ export default function App() {
       userEmail={userEmail}
       onLogout={handleLogout}
     />
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/terms" element={<TermsOfService />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="*" element={<MainApp />} />
+    </Routes>
   );
 }

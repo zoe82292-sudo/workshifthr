@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { analyzeFile, checkBackendHealth } from "../api";
 import { ResultsDashboard } from "./ResultsDashboard";
+import { LegalFooter } from "./LegalFooter";
 import type { AnalysisResult, AnalysisTab } from "../types";
 
 function pickInitialTab(analysis: AnalysisResult): AnalysisTab {
@@ -148,6 +149,11 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
             range minimum, and range maximum for core checks. Department, job level,
             and other fields are optional.
           </p>
+          <p className="file-meta legal-notice">
+            For decision support only — not legal or professional compensation advice.
+            Uploaded files are processed in memory and not stored on our servers after
+            analysis.
+          </p>
         </div>
       </section>
 
@@ -172,6 +178,8 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
           />
         </section>
       ) : null}
+
+      <LegalFooter />
     </div>
   );
 }
