@@ -160,6 +160,15 @@ export async function analyzeFile(file: File): Promise<AnalysisResult> {
   return normalizeResult(payload);
 }
 
+export async function fetchDemoAnalysis(): Promise<AnalysisResult> {
+  const response = await fetch(`${API_BASE}/demo-analysis`);
+  if (!response.ok) {
+    throw new Error("Unable to load sample analysis.");
+  }
+  const payload = (await response.json()) as AnalysisResult;
+  return normalizeResult(payload);
+}
+
 async function readError(response: Response): Promise<string> {
   try {
     const payload = await response.json();

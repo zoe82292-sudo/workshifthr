@@ -166,7 +166,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
               type="button"
               onClick={() => scrollTo("pricing")}
             >
-              Get access
+              Start analysis
             </button>
             {showLogin ? (
               <button
@@ -220,7 +220,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
               src="/sample-output.png"
               alt="ShiftWorksHR analysis results showing executive summary, budget impact calculators, and flagged compensation issues"
               width={1120}
-              height={980}
+              height={932}
               loading="lazy"
             />
           </div>

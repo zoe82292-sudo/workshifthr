@@ -22,6 +22,7 @@ from app.models import AnalysisResult, ColumnMapping, PreviewResponse
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 STATIC_DIR = ROOT_DIR / "frontend" / "dist"
+SAMPLE_DATA_FILE = ROOT_DIR / "sample-data" / "compensation-sample.csv"
 ALLOWED_ORIGINS = os.getenv(
     "ALLOWED_ORIGINS",
     "http://localhost:5173,http://127.0.0.1:5173",
@@ -114,6 +115,18 @@ async def analyze(
                 "(.xlsx), or re-save CSV as UTF-8 comma-separated."
             ),
         ) from exc
+
+
+@app.get("/api/demo-analysis", response_model=AnalysisResult)
+def demo_analysis() -> AnalysisResult:
+    if not SAMPLE_DATA_FILE.is_file():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Sample compensation file is not available.",
+        )
+
+    content = SAMPLE_DATA_FILE.read_bytes()
+    return analyze_file(content, SAMPLE_DATA_FILE.name)
 
 
 if STATIC_DIR.exists():

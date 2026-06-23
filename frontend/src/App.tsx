@@ -5,6 +5,8 @@ import { clearSession, getStoredEmail, getStoredToken } from "./auth";
 import { AnalyzerApp } from "./components/AnalyzerApp";
 import { LandingPage } from "./components/LandingPage";
 import { PrivacyPolicy } from "./components/PrivacyPolicy";
+import { MarketingPreviewPage } from "./components/MarketingPreviewPage";
+import { SamplePreviewPage } from "./components/SamplePreviewPage";
 import { TermsOfService } from "./components/TermsOfService";
 
 function MainApp() {
@@ -60,6 +62,8 @@ export default function App() {
     <Routes>
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/sample-preview" element={<SamplePreviewPage />} />
+      <Route path="/marketing-preview" element={<MarketingPreviewPage />} />
       <Route path="*" element={<MainApp />} />
     </Routes>
   );
