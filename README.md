@@ -70,8 +70,12 @@ Use `sample-data/compensation-sample.csv` to verify all analysis categories.
 - Bonus target (missing bonus target checks)
 - Effective date (date validation)
 - Merit increase % (outlier detection)
+- Gender (pay equity by gender)
+- Race/ethnicity (pay equity by demographic group)
 
 ## Analysis notes
+
+- Pay equity analysis compares median pay by gender and race/ethnicity. Groups with fewer than five employees are hidden. Same job level breakdowns are included when a job level column is present. This is decision support only — not a legal pay equity audit.
 
 - Range penetration requires a valid range spread (`max > min`).
 - Salary compression is strongest when a job level or grade column is present.
