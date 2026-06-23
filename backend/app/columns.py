@@ -116,6 +116,24 @@ COLUMN_ALIASES: dict[str, list[str]] = {
         "merit increase percent",
         "merit amount",
     ],
+    "gender": [
+        "gender",
+        "sex",
+        "ee gender",
+        "employee gender",
+        "gender identity",
+    ],
+    "race_ethnicity": [
+        "race",
+        "ethnicity",
+        "race ethnicity",
+        "race/ethnicity",
+        "race and ethnicity",
+        "eeo race",
+        "eeo ethnicity",
+        "ethnic group",
+        "racial group",
+    ],
 }
 
 REQUIRED_FIELDS = ["employee_id", "salary", "range_min", "range_max"]

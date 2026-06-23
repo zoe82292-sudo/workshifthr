@@ -5,6 +5,9 @@ import { LegalFooter } from "./LegalFooter";
 import type { AnalysisResult, AnalysisTab } from "../types";
 
 function pickInitialTab(analysis: AnalysisResult): AnalysisTab {
+  if (analysis.pay_equity.available && analysis.summary.pay_equity_gaps > 0) {
+    return "pay_equity";
+  }
   if (analysis.summary.below_minimum > 0) return "below_minimum";
   if (analysis.summary.above_maximum > 0) return "above_maximum";
   if (analysis.summary.duplicate_ids > 0) return "duplicate_ids";

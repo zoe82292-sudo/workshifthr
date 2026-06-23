@@ -2,6 +2,7 @@ import type { AnalysisResult, AnalysisTab } from "../types";
 import { PENETRATION_BAND_LABELS } from "../types";
 import { downloadAnalysisExcel, downloadAnalysisPdf } from "../exportAnalysis";
 import { InsightsPanel } from "./InsightsPanel";
+import { PayEquityPanel, payEquityTabCount } from "./PayEquityPanel";
 
 interface ResultsDashboardProps {
   result: AnalysisResult;
@@ -42,6 +43,11 @@ const TABS: Array<{ id: AnalysisTab; label: string; count: (result: AnalysisResu
       count: (r) => r.summary.outlier_merit_increases,
     },
     { id: "compa_ratio", label: "Compa-Ratio", count: (r) => r.compa_ratios.length },
+    {
+      id: "pay_equity",
+      label: "Pay Equity",
+      count: (r) => payEquityTabCount(r),
+    },
     { id: "missing_data", label: "Missing Data", count: (r) => r.summary.missing_data },
   ];
 
@@ -159,6 +165,10 @@ export function ResultsDashboard({
         <div className="summary-card">
           <span>Missing salary ranges</span>
           <strong>{result.summary.missing_salary_ranges}</strong>
+        </div>
+        <div className="summary-card info">
+          <span>Pay equity gaps</span>
+          <strong>{result.summary.pay_equity_gaps}</strong>
         </div>
         <div className="summary-card">
           <span>Outlier merit increases</span>
@@ -443,6 +453,8 @@ export function ResultsDashboard({
           </div>
         )
       ) : null}
+
+      {activeTab === "pay_equity" ? <PayEquityPanel payEquity={result.pay_equity} /> : null}
 
       {activeTab === "missing_data" ? (
         result.missing_data.length === 0 ? (

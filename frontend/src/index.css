@@ -798,6 +798,24 @@ tr:last-child td {
   border-top: 1px solid var(--border);
 }
 
+.equity-section {
+  margin-top: 28px;
+}
+
+.equity-section h3,
+.equity-section h4 {
+  margin-bottom: 12px;
+}
+
+.equity-level-card {
+  margin-top: 16px;
+  padding: 20px;
+}
+
+.pay-equity-panel .equity-level-card + .equity-level-card {
+  margin-top: 16px;
+}
+
 @media (max-width: 900px) {
   .landing-hero,
   .landing-pricing,

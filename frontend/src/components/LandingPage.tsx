@@ -31,6 +31,10 @@ const FEATURES = [
     copy: "Shareable insights for HR and leadership review.",
   },
   {
+    title: "Pay equity by gender & race",
+    copy: "Median pay comparisons by demographic group, with same-level breakdowns.",
+  },
+  {
     title: "Excel & PDF export",
     copy: "Download results for comp cycles and stakeholder meetings.",
   },
@@ -121,6 +125,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
             <li>Salary compression analysis</li>
             <li>Manager vs. report pay checks</li>
             <li>Executive summary + exports</li>
+            <li>Gender & race pay equity views</li>
           </ul>
         </div>
       </section>

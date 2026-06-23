@@ -164,6 +164,36 @@ def _build_executive_summary(
             f"${budget_impact.projected_merit_pool:,.0f}."
         )
 
+    if result.pay_equity.available:
+        if result.pay_equity.gender_gaps:
+            top_gender_gap = result.pay_equity.gender_gaps[0]
+            gap_pct = (
+                f"{top_gender_gap.gap_percent:.1f}%"
+                if top_gender_gap.gap_percent is not None
+                else "N/A"
+            )
+            bullets.append(
+                f"Gender median pay gap: {top_gender_gap.higher_paid_group} median is "
+                f"{gap_pct} above {top_gender_gap.lower_paid_group} "
+                f"(${top_gender_gap.gap_amount:,.0f} difference)."
+            )
+        if result.pay_equity.race_gaps:
+            top_race_gap = result.pay_equity.race_gaps[0]
+            gap_pct = (
+                f"{top_race_gap.gap_percent:.1f}%"
+                if top_race_gap.gap_percent is not None
+                else "N/A"
+            )
+            bullets.append(
+                f"Race/ethnicity median pay gap: {top_race_gap.higher_paid_group} median is "
+                f"{gap_pct} above {top_race_gap.lower_paid_group}."
+            )
+        if not result.pay_equity.gender_gaps and not result.pay_equity.race_gaps:
+            bullets.append(
+                "Pay equity groups were detected, but no reportable median gaps met the "
+                "minimum group size threshold."
+            )
+
     issue_count = (
         summary.below_minimum
         + summary.above_maximum

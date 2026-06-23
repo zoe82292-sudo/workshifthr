@@ -51,8 +51,21 @@ function normalizeSummary(raw: Partial<AnalysisSummary> | undefined): AnalysisSu
     missing_salary_ranges: raw?.missing_salary_ranges ?? 0,
     invalid_effective_dates: raw?.invalid_effective_dates ?? 0,
     outlier_merit_increases: raw?.outlier_merit_increases ?? 0,
+    pay_equity_gaps: raw?.pay_equity_gaps ?? 0,
   };
 }
+
+const EMPTY_PAY_EQUITY = {
+  available: false,
+  gender_groups: [],
+  race_groups: [],
+  gender_gaps: [],
+  race_gaps: [],
+  level_breakdowns: [],
+  employees_missing_gender: 0,
+  employees_missing_race: 0,
+  disclaimer: "",
+};
 
 function normalizeResult(raw: AnalysisResult): AnalysisResult {
   return {
@@ -65,6 +78,7 @@ function normalizeResult(raw: AnalysisResult): AnalysisResult {
     compression: raw.compression ?? [],
     missing_data: raw.missing_data ?? [],
     compa_ratios: raw.compa_ratios ?? [],
+    pay_equity: raw.pay_equity ?? EMPTY_PAY_EQUITY,
     insights: raw.insights ?? EMPTY_INSIGHTS,
     warnings: raw.warnings ?? [],
     managers_below_reports: raw.managers_below_reports ?? [],

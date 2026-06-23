@@ -13,6 +13,7 @@ from app.columns import (
     coerce_numeric,
     detect_column_mapping,
 )
+from app.equity import build_pay_equity_report
 from app.insights import build_insights, empty_insights
 from app.models import (
     AnalysisResult,
@@ -27,6 +28,7 @@ from app.models import (
     MissingBonusTargetRecord,
     MissingSalaryRangeRecord,
     OutlierMeritIncreaseRecord,
+    PayEquityReport,
     PreviewResponse,
 )
 
@@ -185,6 +187,7 @@ def _empty_result(
         invalid_effective_dates=[],
         outlier_merit_increases=[],
         compa_ratios=[],
+        pay_equity=PayEquityReport(available=False),
         insights=empty_insights(),
         warnings=warnings,
     )
@@ -310,6 +313,7 @@ def analyze_file(
     invalid_effective_dates = _find_invalid_effective_dates(prepared, mapping, warnings)
     outlier_merit_increases = _find_outlier_merit_increases(prepared, mapping, warnings)
     managers_below_reports = _find_managers_below_reports(prepared, mapping, warnings)
+    pay_equity = build_pay_equity_report(prepared, mapping, warnings)
 
     valid_rows = len(prepared) - len(missing_data)
     average_penetration = (
@@ -354,6 +358,7 @@ def analyze_file(
             missing_salary_ranges=len(missing_salary_ranges),
             invalid_effective_dates=len(invalid_effective_dates),
             outlier_merit_increases=len(outlier_merit_increases),
+            pay_equity_gaps=len(pay_equity.gender_gaps) + len(pay_equity.race_gaps),
         ),
         column_mapping=ColumnMapping(**mapping),
         detected_columns=list(df.columns),
@@ -374,6 +379,7 @@ def analyze_file(
         invalid_effective_dates=invalid_effective_dates,
         outlier_merit_increases=outlier_merit_increases,
         compa_ratios=compa_ratios,
+        pay_equity=pay_equity,
         insights=empty_insights(),
         warnings=warnings,
     )

@@ -49,6 +49,7 @@ function summaryRows(result: AnalysisResult): Array<Array<string | number>> {
     ["Missing Salary Ranges", summary.missing_salary_ranges],
     ["Invalid Effective Dates", summary.invalid_effective_dates],
     ["Outlier Merit Increases", summary.outlier_merit_increases],
+    ["Pay Equity Gaps", summary.pay_equity_gaps],
     [],
     ["Compa-Ratio Summary"],
     ["Average Compa-Ratio", insights.compa_ratio.average_compa_ratio ?? ""],
@@ -155,6 +156,64 @@ export function downloadAnalysisExcel(result: AnalysisResult, filename = `${BASE
         ]),
       ]),
       "Compression",
+    );
+  }
+
+  if (result.pay_equity.available) {
+    const equity = result.pay_equity;
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.aoa_to_sheet([
+        ["Pay Equity Disclaimer"],
+        [equity.disclaimer],
+        [],
+        ["Gender Groups"],
+        ["Group", "Headcount", "% Workforce", "Median Salary", "Mean Salary", "Median Compa %"],
+        ...equity.gender_groups.map((group) => [
+          group.group_name,
+          group.headcount,
+          group.workforce_percent,
+          group.suppressed ? "Hidden" : group.median_salary ?? "",
+          group.suppressed ? "" : group.mean_salary ?? "",
+          group.suppressed ? "" : group.median_compa_ratio ?? "",
+        ]),
+        [],
+        ["Gender Gaps"],
+        ["Scope", "Higher Group", "Lower Group", "Higher Median", "Lower Median", "Gap", "Gap %"],
+        ...equity.gender_gaps.map((gap) => [
+          gap.scope,
+          gap.higher_paid_group,
+          gap.lower_paid_group,
+          gap.higher_median,
+          gap.lower_median,
+          gap.gap_amount,
+          gap.gap_percent ?? "",
+        ]),
+        [],
+        ["Race Groups"],
+        ["Group", "Headcount", "% Workforce", "Median Salary", "Mean Salary", "Median Compa %"],
+        ...equity.race_groups.map((group) => [
+          group.group_name,
+          group.headcount,
+          group.workforce_percent,
+          group.suppressed ? "Hidden" : group.median_salary ?? "",
+          group.suppressed ? "" : group.mean_salary ?? "",
+          group.suppressed ? "" : group.median_compa_ratio ?? "",
+        ]),
+        [],
+        ["Race Gaps"],
+        ["Scope", "Higher Group", "Lower Group", "Higher Median", "Lower Median", "Gap", "Gap %"],
+        ...equity.race_gaps.map((gap) => [
+          gap.scope,
+          gap.higher_paid_group,
+          gap.lower_paid_group,
+          gap.higher_median,
+          gap.lower_median,
+          gap.gap_amount,
+          gap.gap_percent ?? "",
+        ]),
+      ]),
+      "Pay Equity",
     );
   }
 

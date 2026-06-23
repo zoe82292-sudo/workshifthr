@@ -17,6 +17,8 @@ class ColumnMapping(BaseModel):
     bonus_target: str | None = None
     effective_date: str | None = None
     merit_increase: str | None = None
+    gender: str | None = None
+    race_ethnicity: str | None = None
 
 
 class EmployeeRecord(BaseModel):
@@ -146,6 +148,49 @@ class OutlierMeritIncreaseRecord(BaseModel):
     reason: str
 
 
+class DemographicGroupStats(BaseModel):
+    dimension: str
+    group_name: str
+    headcount: int
+    median_salary: float | None = None
+    mean_salary: float | None = None
+    median_compa_ratio: float | None = None
+    workforce_percent: float = 0
+    suppressed: bool = False
+
+
+class PayEquityGap(BaseModel):
+    dimension: str
+    higher_paid_group: str
+    lower_paid_group: str
+    higher_median: float
+    lower_median: float
+    gap_amount: float
+    gap_percent: float | None = None
+    scope: str
+
+
+class LevelPayEquityBreakdown(BaseModel):
+    job_level: str
+    headcount: int
+    gender_groups: list[DemographicGroupStats] = Field(default_factory=list)
+    race_groups: list[DemographicGroupStats] = Field(default_factory=list)
+    gender_gaps: list[PayEquityGap] = Field(default_factory=list)
+    race_gaps: list[PayEquityGap] = Field(default_factory=list)
+
+
+class PayEquityReport(BaseModel):
+    available: bool = False
+    gender_groups: list[DemographicGroupStats] = Field(default_factory=list)
+    race_groups: list[DemographicGroupStats] = Field(default_factory=list)
+    gender_gaps: list[PayEquityGap] = Field(default_factory=list)
+    race_gaps: list[PayEquityGap] = Field(default_factory=list)
+    level_breakdowns: list[LevelPayEquityBreakdown] = Field(default_factory=list)
+    employees_missing_gender: int = 0
+    employees_missing_race: int = 0
+    disclaimer: str = ""
+
+
 class AnalysisSummary(BaseModel):
     total_rows: int
     valid_rows: int
@@ -160,6 +205,7 @@ class AnalysisSummary(BaseModel):
     missing_salary_ranges: int = 0
     invalid_effective_dates: int = 0
     outlier_merit_increases: int = 0
+    pay_equity_gaps: int = 0
 
 
 class AnalysisResult(BaseModel):
@@ -179,6 +225,7 @@ class AnalysisResult(BaseModel):
     invalid_effective_dates: list[InvalidEffectiveDateRecord]
     outlier_merit_increases: list[OutlierMeritIncreaseRecord]
     compa_ratios: list[CompaRatioRecord]
+    pay_equity: PayEquityReport
     insights: AnalysisInsights
     warnings: list[str] = Field(default_factory=list)
 

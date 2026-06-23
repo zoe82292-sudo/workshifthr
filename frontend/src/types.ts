@@ -10,6 +10,8 @@ export interface ColumnMapping {
   bonus_target: string | null;
   effective_date: string | null;
   merit_increase: string | null;
+  gender: string | null;
+  race_ethnicity: string | null;
 }
 
 export interface EmployeeRecord {
@@ -153,6 +155,50 @@ export interface AnalysisSummary {
   missing_salary_ranges: number;
   invalid_effective_dates: number;
   outlier_merit_increases: number;
+  pay_equity_gaps: number;
+}
+
+export interface PayEquityGap {
+  dimension: string;
+  higher_paid_group: string;
+  lower_paid_group: string;
+  higher_median: number;
+  lower_median: number;
+  gap_amount: number;
+  gap_percent: number | null;
+  scope: string;
+}
+
+export interface DemographicGroupStats {
+  dimension: string;
+  group_name: string;
+  headcount: number;
+  median_salary: number | null;
+  mean_salary: number | null;
+  median_compa_ratio: number | null;
+  workforce_percent: number;
+  suppressed: boolean;
+}
+
+export interface LevelPayEquityBreakdown {
+  job_level: string;
+  headcount: number;
+  gender_groups: DemographicGroupStats[];
+  race_groups: DemographicGroupStats[];
+  gender_gaps: PayEquityGap[];
+  race_gaps: PayEquityGap[];
+}
+
+export interface PayEquityReport {
+  available: boolean;
+  gender_groups: DemographicGroupStats[];
+  race_groups: DemographicGroupStats[];
+  gender_gaps: PayEquityGap[];
+  race_gaps: PayEquityGap[];
+  level_breakdowns: LevelPayEquityBreakdown[];
+  employees_missing_gender: number;
+  employees_missing_race: number;
+  disclaimer: string;
 }
 
 export interface AnalysisResult {
@@ -172,6 +218,7 @@ export interface AnalysisResult {
   invalid_effective_dates: InvalidEffectiveDateRecord[];
   outlier_merit_increases: OutlierMeritIncreaseRecord[];
   compa_ratios: CompaRatioRecord[];
+  pay_equity: PayEquityReport;
   insights: AnalysisInsights;
   warnings: string[];
 }
@@ -195,6 +242,7 @@ export type AnalysisTab =
   | "invalid_effective_dates"
   | "outlier_merit_increases"
   | "compa_ratio"
+  | "pay_equity"
   | "missing_data";
 
 export const PENETRATION_BAND_LABELS: Record<string, string> = {
