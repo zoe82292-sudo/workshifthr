@@ -18,6 +18,11 @@ const TABS: Array<{ id: AnalysisTab; label: string; count: (result: AnalysisResu
     { id: "range_penetration", label: "Range Penetration", count: (r) => r.range_penetration.length },
     { id: "compression", label: "Salary Compression", count: (r) => r.summary.compression_issues },
     {
+      id: "pay_equity",
+      label: "Pay Equity",
+      count: (r) => payEquityTabCount(r),
+    },
+    {
       id: "managers_below_reports",
       label: "Managers Below Reports",
       count: (r) => r.summary.managers_below_reports,
@@ -43,11 +48,6 @@ const TABS: Array<{ id: AnalysisTab; label: string; count: (result: AnalysisResu
       count: (r) => r.summary.outlier_merit_increases,
     },
     { id: "compa_ratio", label: "Compa-Ratio", count: (r) => r.compa_ratios.length },
-    {
-      id: "pay_equity",
-      label: "Pay Equity",
-      count: (r) => payEquityTabCount(r),
-    },
     { id: "missing_data", label: "Missing Data", count: (r) => r.summary.missing_data },
   ];
 

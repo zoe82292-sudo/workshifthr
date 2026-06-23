@@ -149,8 +149,9 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
           </div>
           <p className="file-meta">
             Column headers are detected automatically. Include employee ID, salary,
-            range minimum, and range maximum for core checks. Department, job level,
-            and other fields are optional.
+            range minimum, and range maximum for core checks. Add{" "}
+            <strong>Gender</strong> and <strong>Race/Ethnicity</strong> for pay equity
+            analysis. Department and job level are optional but recommended.
           </p>
           <p className="file-meta legal-notice">
             For decision support only — not legal or professional compensation advice.
@@ -173,6 +174,14 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
               {warning}
             </div>
           ))}
+
+          {!result.pay_equity.available ? (
+            <div className="alert alert-info">
+              <strong>Pay equity:</strong> Add <strong>Gender</strong> and/or{" "}
+              <strong>Race/Ethnicity</strong> columns to your spreadsheet to see median pay
+              comparisons. Then click the <strong>Pay Equity</strong> tab above.
+            </div>
+          ) : null}
 
           <ResultsDashboard
             result={result}
