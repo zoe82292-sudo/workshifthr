@@ -330,18 +330,20 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
       {showLogin ? (
         <section className="landing-section landing-sign-in" id="sign-in">
           <div className="landing-sign-in-card panel">
-            <BrandLogo size="nav" />
             <div className="landing-sign-in-copy">
+              <span className="hero-badge">Customer sign in</span>
               <h2>Already a customer?</h2>
               <p>
-                Sign in with the email and password we sent you after purchase to
-                open the compensation analyzer.
+                Sign in with the email and password we sent you after purchase to open
+                the compensation analyzer.
               </p>
             </div>
-            <LoginForm onLogin={onLogin} compact />
-            <p className="legal-agreement">
-              By signing in, you agree to our <LegalConsentLinks />.
-            </p>
+            <div className="landing-sign-in-form">
+              <LoginForm onLogin={onLogin} compact />
+              <p className="legal-agreement">
+                By signing in, you agree to our <LegalConsentLinks />.
+              </p>
+            </div>
           </div>
         </section>
       ) : null}
