@@ -1171,6 +1171,7 @@ tr:last-child td {
 .landing-pricing-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: 500px;
   gap: 20px;
   margin-bottom: 20px;
   align-items: stretch;
@@ -1179,6 +1180,7 @@ tr:last-child td {
 @media (max-width: 900px) {
   .landing-pricing-grid {
     grid-template-columns: 1fr;
+    grid-template-rows: repeat(3, 500px);
     max-width: 420px;
     margin-left: auto;
     margin-right: auto;
@@ -1188,16 +1190,12 @@ tr:last-child td {
 .landing-price-card {
   display: flex;
   flex-direction: column;
-  height: 508px;
+  height: 100%;
+  min-height: 0;
+  max-height: 500px;
   box-sizing: border-box;
   position: relative;
-}
-
-@media (max-width: 900px) {
-  .landing-price-card {
-    height: auto;
-    min-height: 480px;
-  }
+  overflow: hidden;
 }
 
 .landing-price-card.featured {
@@ -1222,7 +1220,11 @@ tr:last-child td {
   flex-shrink: 0;
   font-size: 1.1rem;
   margin: 0;
-  min-height: 1.35em;
+  height: 1.35em;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .landing-price-card.featured h3 {
@@ -1242,31 +1244,37 @@ tr:last-child td {
   flex-shrink: 0;
   color: var(--text-muted);
   margin: 4px 0 0;
-  min-height: 1.25em;
+  height: 1.25em;
+  line-height: 1.25;
 }
 
 .landing-price-description {
   flex-shrink: 0;
   color: var(--text-muted);
   margin: 12px 0 0;
-  min-height: 2.75em;
+  height: 2.75em;
   line-height: 1.45;
+  overflow: hidden;
 }
 
 .landing-price-card .landing-checklist {
   flex: 1;
   margin: 16px 0 0;
   min-height: 0;
+  overflow: hidden;
 }
 
 .landing-price-button {
   flex-shrink: 0;
   margin-top: auto;
   width: 100%;
+  min-height: 44px;
+  white-space: nowrap;
   justify-content: center;
   text-align: center;
   text-decoration: none;
   display: inline-flex;
+  align-items: center;
 }
 
 .landing-pricing-footnote {
@@ -1297,6 +1305,7 @@ tr:last-child td {
 .landing-feature-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, 220px);
   gap: 16px;
   align-items: stretch;
 }
@@ -1304,12 +1313,14 @@ tr:last-child td {
 @media (max-width: 900px) {
   .landing-feature-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(3, 220px);
   }
 }
 
 @media (max-width: 560px) {
   .landing-feature-grid {
     grid-template-columns: 1fr;
+    grid-template-rows: none;
   }
 }
 
@@ -1317,87 +1328,68 @@ tr:last-child td {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  height: 212px;
+  height: 100%;
+  min-height: 220px;
+  max-height: 220px;
   box-sizing: border-box;
   border-left-width: 4px;
   border-left-style: solid;
+  background: linear-gradient(160deg, #fffdf9 0%, #f0f7f2 100%);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.landing-feature:nth-child(6n + 1) {
-  background: linear-gradient(160deg, #ffffff, #edf8f1);
-  border-left-color: var(--accent-vivid);
-}
-
-.landing-feature:nth-child(6n + 2) {
-  background: linear-gradient(160deg, #ffffff, #f8efd8);
-  border-left-color: var(--gold);
-}
-
-.landing-feature:nth-child(6n + 3) {
-  background: linear-gradient(160deg, #ffffff, #e8f4fa);
-  border-left-color: var(--info);
-}
-
-.landing-feature:nth-child(6n + 4) {
-  background: linear-gradient(160deg, #ffffff, #fdeeee);
-  border-left-color: var(--danger);
-}
-
-.landing-feature:nth-child(6n + 5) {
-  background: linear-gradient(160deg, #ffffff, #fff5e8);
-  border-left-color: var(--warning);
-}
-
-.landing-feature:nth-child(6n + 6) {
-  background: linear-gradient(160deg, #ffffff, #eef6ff);
-  border-left-color: #5b7fd6;
 }
 
 @media (max-width: 560px) {
   .landing-feature {
     height: auto;
-    min-height: 180px;
+    min-height: 176px;
+    max-height: none;
   }
+}
+
+/* Accent borders only — same soft green base on every card */
+.landing-feature:nth-child(6n + 1) {
+  border-left-color: var(--accent-vivid);
+}
+
+.landing-feature:nth-child(6n + 2) {
+  border-left-color: var(--gold);
+}
+
+.landing-feature:nth-child(6n + 3) {
+  border-left-color: var(--accent-secondary);
+}
+
+.landing-feature:nth-child(6n + 4) {
+  border-left-color: var(--accent);
+}
+
+.landing-feature:nth-child(6n + 5) {
+  border-left-color: var(--accent-glow);
+}
+
+.landing-feature:nth-child(6n + 6) {
+  border-left-color: #4a8f6e;
 }
 
 .landing-feature:hover {
   transform: translateY(-2px);
-  box-shadow: 0 16px 32px rgba(26, 77, 58, 0.12);
-}
-
-.landing-feature:nth-child(6n + 2):hover {
-  box-shadow: 0 16px 32px rgba(201, 162, 77, 0.18);
-}
-
-.landing-feature:nth-child(6n + 3):hover {
-  box-shadow: 0 16px 32px rgba(29, 107, 138, 0.14);
-}
-
-.landing-feature:nth-child(6n + 4):hover {
-  box-shadow: 0 16px 32px rgba(192, 57, 43, 0.12);
-}
-
-.landing-feature:nth-child(6n + 5):hover {
-  box-shadow: 0 16px 32px rgba(217, 119, 6, 0.14);
-}
-
-.landing-feature:nth-child(6n + 6):hover {
-  box-shadow: 0 16px 32px rgba(91, 127, 214, 0.14);
+  box-shadow: 0 14px 28px rgba(26, 77, 58, 0.1);
 }
 
 .landing-feature h3 {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   font-size: 1.05rem;
   line-height: 1.3;
-  min-height: 2.6em;
+  height: 2.6em;
+  overflow: hidden;
 }
 
 .landing-feature p {
   margin: 0;
   color: var(--text-muted);
-  line-height: 1.5;
+  line-height: 1.45;
   flex: 1;
+  overflow: hidden;
 }
 
 .landing-step-grid {

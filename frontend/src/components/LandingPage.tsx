@@ -31,11 +31,11 @@ const FEATURES = [
     copy: "Estimate cost to minimum, merit pool, and compa-ratio trends.",
   },
   {
-    title: "Pay equity by gender & race",
-    copy: "Median pay by demographic group, with same-level breakdowns.",
+    title: "Demographic pay equity",
+    copy: "Median pay by gender and race, with same-level breakdowns.",
   },
   {
-    title: "Executive summary & export",
+    title: "Summary & export",
     copy: "Shareable insights plus Excel and PDF exports for comp cycles.",
   },
 ];
@@ -58,17 +58,17 @@ const STEPS = [
 const PRICING_PLANS = [
   {
     id: "cycle",
-    name: "Comp Cycle Pass",
+    name: "Cycle Pass",
     price: "$249",
     period: "one-time · 90 days",
-    description: "Best for a single merit or annual review season.",
+    description: "One merit or annual review season.",
     features: [
       "90 days of unlimited uploads",
       "Full analysis + pay equity",
       "Excel & PDF exports",
       "Email support",
     ],
-    cta: "Get comp cycle pass",
+    cta: "Get cycle pass",
     mailSubject: "ShiftWorksHR Comp Cycle Pass",
     featured: false,
   },
