@@ -16,7 +16,7 @@ export function LegalLayout({
         <div className="legal-page-brand">
           <BrandLogo size="nav" />
           <Link className="legal-back-link" to="/">
-            ← Back to WorkShift HR
+            ← Back to ShiftWorksHR
           </Link>
         </div>
         <h1>{title}</h1>

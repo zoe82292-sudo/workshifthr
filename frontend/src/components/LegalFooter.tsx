@@ -6,6 +6,8 @@ export function LegalFooter() {
       <Link to="/terms">Terms of Service</Link>
       <span aria-hidden="true"> · </span>
       <Link to="/privacy">Privacy Policy</Link>
+      <span aria-hidden="true"> · </span>
+      <Link to="/security">Security</Link>
     </footer>
   );
 }

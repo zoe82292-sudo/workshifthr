@@ -4,9 +4,9 @@ export function PrivacyPolicy() {
   return (
     <LegalLayout title="Privacy Policy">
       <p>
-        This Privacy Policy describes how WorkShift HR (“we,” “us,” “our”) handles
+        This Privacy Policy describes how ShiftWorksHR (“we,” “us,” “our”) handles
         information when you use shiftworkshr.com (the “Service”). The Service is
-        operated by the owner of WorkShift HR. We have not yet formed a separate legal
+        operated by the owner of ShiftWorksHR. We have not yet formed a separate legal
         entity; when we do, we will update this policy to identify that entity.
       </p>
 
@@ -34,7 +34,7 @@ export function PrivacyPolicy() {
         process it, including providing any required notices to employees.
       </p>
       <p>
-        WorkShift HR acts as a <strong>service provider / data processor</strong> on your
+        ShiftWorksHR acts as a <strong>service provider / data processor</strong> on your
         behalf: we process uploads only to perform the analysis you request and operate
         the Service. We do not use employee compensation data for our own marketing or
         unrelated purposes.
@@ -145,8 +145,9 @@ export function PrivacyPolicy() {
       </ul>
       <p>
         These providers process technical and operational data under their own security
-        and privacy practices. We do not authorize them to use your compensation uploads
-        for their own marketing.
+        and privacy practices. See our <a href="/security">Security &amp; Data Handling</a>{" "}
+        page for how we process uploads. We do not authorize them to use your compensation
+        uploads for their own marketing.
       </p>
 
       <h2>7. Your responsibilities</h2>

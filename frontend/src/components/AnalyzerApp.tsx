@@ -88,6 +88,9 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
         <div className="hero-top">
           <div className="hero-brand">
             <BrandLogo size="nav" />
+            <span className="landing-logo-text">
+              ShiftWorks<span className="landing-logo-text-hr">HR</span>
+            </span>
             <span className="hero-badge">Compensation intelligence</span>
           </div>
           {authRequired && userEmail ? (
@@ -105,14 +108,14 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
         </p>
         <h1>Find pay equity issues before review season.</h1>
         <p>
-          WorkShift HR automatically flags out-of-range pay, duplicate IDs, range penetration,
+          ShiftWorksHR automatically flags out-of-range pay, duplicate IDs, range penetration,
           salary compression, manager pay inversions, missing data, and budget impact.
         </p>
       </header>
 
       {backendReady === false ? (
         <div className="alert alert-error">
-          The WorkShift HR server is not running. In Terminal, run{" "}
+          The ShiftWorksHR server is not running. In Terminal, run{" "}
           <code>cd ~/Desktop/WorkShiftHR && ./start.sh</code>, then open{" "}
           <a href="http://localhost:8080">http://localhost:8080</a>.
         </div>
@@ -192,14 +195,15 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
           </div>
           <p className="file-meta">
             Upload your <strong>original employee compensation spreadsheet</strong> — not a
-            WorkShift HR results export. Include employee ID, salary, range minimum, and range
+            ShiftWorksHR results export. Include employee ID, salary, range minimum, and range
             maximum. Add <strong>Gender</strong> and <strong>Race/Ethnicity</strong> for pay
             equity analysis.
           </p>
           <p className="file-meta legal-notice">
             For decision support only — not legal or professional compensation advice.
             Uploaded files are processed in memory and not stored on our servers after
-            analysis.
+            analysis. See our <a href="/security">Security &amp; Data Handling</a> page
+            for details.
           </p>
         </div>
       </section>

@@ -4,17 +4,17 @@ export function TermsOfService() {
   return (
     <LegalLayout title="Terms of Service">
       <p>
-        These Terms of Service (“Terms”) govern your access to and use of WorkShift HR
+        These Terms of Service (“Terms”) govern your access to and use of ShiftWorksHR
         (“Service”), available at shiftworkshr.com. The Service is operated by the owner
-        of WorkShift HR (“we,” “us,” “our”). We have not yet formed a separate legal
+        of ShiftWorksHR (“we,” “us,” “our”). We have not yet formed a separate legal
         entity; when we do, we will update these Terms to identify that entity. By using
         the Service, you agree to these Terms and our Privacy Policy. If you do not agree,
         do not use the Service.
       </p>
 
-      <h2>1. What WorkShift HR is</h2>
+      <h2>1. What ShiftWorksHR is</h2>
       <p>
-        WorkShift HR is a software tool that analyzes compensation spreadsheets you upload
+        ShiftWorksHR is a software tool that analyzes compensation spreadsheets you upload
         and surfaces potential issues such as out-of-range pay, range penetration,
         compression signals, manager pay comparisons, and related metrics.
       </p>
@@ -52,7 +52,7 @@ export function TermsOfService() {
           does not mean no issue exists
         </li>
         <li>
-          You will not represent WorkShift HR outputs as official compliance conclusions
+          You will not represent ShiftWorksHR outputs as official compliance conclusions
           to employees, regulators, or courts without independent professional review
         </li>
       </ul>
@@ -134,7 +134,7 @@ export function TermsOfService() {
       <h2>8. Indemnification</h2>
       <p>
         To the maximum extent permitted by law, you will defend, indemnify, and hold harmless
-        WorkShift HR and its operator from claims, damages, losses, and expenses (including
+        ShiftWorksHR and its operator from claims, damages, losses, and expenses (including
         reasonable attorneys’ fees) arising from: (a) your uploads or use of the Service;
         (b) your violation of these Terms or applicable law; (c) your lack of authority to
         process employee data you submit; or (d) employment, pay, or compliance decisions
@@ -143,7 +143,7 @@ export function TermsOfService() {
 
       <h2>9. Limitation of liability</h2>
       <p>
-        To the maximum extent permitted by law, WorkShift HR and its operator will not be
+        To the maximum extent permitted by law, ShiftWorksHR and its operator will not be
         liable for any indirect, incidental, special, consequential, or punitive damages, or
         for lost profits, data, or business opportunities, arising from or related to your
         use of the Service — including reliance on analysis results for pay, merit, equity,
