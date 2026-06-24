@@ -4,157 +4,239 @@ export function PrivacyPolicy() {
   return (
     <LegalLayout title="Privacy Policy">
       <p>
-        This Privacy Policy describes how ShiftWorksHR (“we,” “us”) handles information
-        when you use shiftworkshr.com (the “Service”). We designed the Service for HR
-        and compensation teams who work with sensitive pay data.
+        This Privacy Policy describes how WorkShift HR (“we,” “us,” “our”) handles
+        information when you use shiftworkshr.com (the “Service”). The Service is
+        operated by the owner of WorkShift HR. We have not yet formed a separate legal
+        entity; when we do, we will update this policy to identify that entity.
       </p>
 
       <h2>1. Summary</h2>
       <ul>
         <li>
-          <strong>We do not keep your uploaded spreadsheets</strong> on our servers
-          after analysis completes.
+          <strong>We do not keep your uploaded spreadsheets</strong> in a database or
+          file store after analysis completes.
         </li>
         <li>
-          <strong>We do not sell</strong> your compensation data.
+          <strong>We do not sell</strong> your compensation data or use it to train
+          machine-learning models.
         </li>
         <li>
-          <strong>We use your data only</strong> to run the analysis you request and
-          return results to your browser.
+          <strong>Your organization controls employee data.</strong> You upload it; we
+          process it only to return analysis to your browser.
         </li>
       </ul>
 
-      <h2>2. Information we process</h2>
+      <h2>2. Roles: you and us</h2>
+      <p>
+        When you upload files containing employee compensation information,{" "}
+        <strong>your organization is the data controller</strong> (or equivalent under
+        applicable law). You decide what data to upload and must have a lawful basis to
+        process it, including providing any required notices to employees.
+      </p>
+      <p>
+        WorkShift HR acts as a <strong>service provider / data processor</strong> on your
+        behalf: we process uploads only to perform the analysis you request and operate
+        the Service. We do not use employee compensation data for our own marketing or
+        unrelated purposes.
+      </p>
+
+      <h2>3. Information we process</h2>
 
       <h3>Compensation files you upload</h3>
       <p>
         When you upload an Excel or CSV file, our servers read the file in memory to
-        perform analysis (for example: salary ranges, employee IDs, job levels, and
-        other columns present in your file). After the analysis request finishes, the
-        uploaded file is <strong>not intentionally stored</strong> in a database or
-        long-term file storage on our systems.
+        perform analysis. Depending on your file, this may include:
+      </p>
+      <ul>
+        <li>Employee identifiers and names</li>
+        <li>Salary, bonus, and range data</li>
+        <li>Job level, department, manager relationships</li>
+        <li>
+          <strong>Gender and race/ethnicity</strong>, if you include those columns for
+          descriptive pay comparisons
+        </li>
+        <li>Other columns you choose to include</li>
+      </ul>
+      <p>
+        After the analysis request finishes, the uploaded file is{" "}
+        <strong>not intentionally stored</strong> in a database or long-term file storage
+        on our systems. Processing occurs in server memory during the active request and
+        is discarded when the request completes.
+      </p>
+      <p>
+        <strong>Limitations.</strong> We cannot guarantee that memory is instantly
+        overwritten. Our hosting provider may retain standard technical logs (see below)
+        that do not include the contents of your spreadsheet.
       </p>
       <p>
         Analysis results are sent back to your browser. They may remain visible in your
-        current session until you clear them, refresh, or sign out. If you export Excel
-        or PDF reports, those files are saved on your device.
+        current session until you refresh, navigate away, or sign out. Excel or PDF
+        exports are saved on your device, not on our servers.
+      </p>
+
+      <h3>Demographic and pay equity data</h3>
+      <p>
+        If you upload gender or race/ethnicity fields, we use them only to produce{" "}
+        <strong>descriptive statistical comparisons</strong> (for example, median pay by
+        group). These outputs are decision-support only — not legal pay equity audits,
+        EEO determinations, or compliance conclusions. Groups with fewer than five
+        employees are hidden to reduce re-identification risk.
       </p>
 
       <h3>Account and authentication data</h3>
       <p>If you sign in, we process:</p>
       <ul>
-        <li>Email address and password (password is verified securely; we do not store plaintext passwords in application code)</li>
+        <li>Email address and password (verified securely; passwords are not stored in plaintext in our application)</li>
         <li>
-          A session token stored in your browser’s local storage so you stay signed in
+          A session token stored in your browser’s <strong>local storage</strong> so you
+          stay signed in (typically up to 24 hours)
         </li>
       </ul>
 
       <h3>Technical data</h3>
       <p>
-        Our hosting provider (Render) and infrastructure may automatically log standard
-        technical information such as IP address, browser type, request timestamps, and
-        error logs for security and reliability. These logs are not used to build a
-        profile of your compensation data.
+        Our service providers may automatically log technical information such as IP
+        address, browser type, request timestamps, and error diagnostics for security
+        and reliability. These logs are not used to reconstruct the contents of your
+        compensation uploads.
       </p>
 
-      <h2>3. How we use information</h2>
+      <h3>Public demo data</h3>
+      <p>
+        The Service may expose a public demo analysis endpoint and marketing preview
+        using <strong>fictional sample data only</strong>. No customer upload data is used
+        for those features.
+      </p>
+
+      <h2>4. How we use information</h2>
       <p>We use information only to:</p>
       <ul>
         <li>Authenticate authorized users</li>
         <li>Process uploads and deliver analysis results</li>
-        <li>Operate, secure, and improve the Service</li>
+        <li>Operate, secure, and maintain the Service (including debugging and reliability)</li>
         <li>Respond to support requests you send us</li>
       </ul>
       <p>
-        We do <strong>not</strong> use your uploaded compensation files to train
-        machine-learning models, and we do <strong>not</strong> sell personal
-        information to third parties.
+        We do <strong>not</strong> sell personal information, including under the
+        California Consumer Privacy Act (CCPA/CPRA) definition of “sale.”
       </p>
 
-      <h2>4. What we do not store long-term</h2>
-      <p>To be explicit:</p>
+      <h2>5. What we do not store long-term</h2>
       <ul>
         <li>Uploaded spreadsheet files — not retained after processing</li>
-        <li>Employee salary rows from your file — not retained in a customer database</li>
+        <li>Employee rows from your file — not retained in a customer database</li>
         <li>Historical analysis results — not retained on our servers between sessions</li>
       </ul>
+
+      <h2>6. Service providers (subprocessors)</h2>
+      <p>We use trusted providers to run the Service, including:</p>
+      <ul>
+        <li>
+          <strong>Render</strong> — application hosting and infrastructure
+        </li>
+        <li>
+          <strong>Cloudflare</strong> — domain, DNS, and traffic protection (if enabled
+          for shiftworkshr.com)
+        </li>
+        <li>
+          <strong>Email provider</strong> — for support correspondence you initiate (for
+          example, messages to hello@shiftworkshr.com)
+        </li>
+      </ul>
       <p>
-        Temporary in-memory processing during an active upload request is required for
-        the Service to function. That data is discarded when the request completes.
+        These providers process technical and operational data under their own security
+        and privacy practices. We do not authorize them to use your compensation uploads
+        for their own marketing.
       </p>
 
-      <h2>5. Service providers</h2>
+      <h2>7. Your responsibilities</h2>
       <p>
-        The Service is hosted on third-party infrastructure (including Render for
-        application hosting). Those providers process technical data on our behalf under
-        their own security and privacy practices. We do not authorize them to use your
-        compensation uploads for their own marketing purposes.
+        You are responsible for ensuring you have a lawful basis to upload employee data,
+        including compliance with your internal policies and applicable employment and
+        privacy laws. Do not upload data you are not authorized to process. The Service
+        is decision-support software — not legal or compliance advice.
       </p>
 
-      <h2>6. Your responsibilities</h2>
+      <h2>8. Security and incidents</h2>
       <p>
-        You are responsible for ensuring you have a lawful basis to upload employee
-        compensation data to the Service, including compliance with your internal
-        policies and applicable privacy and employment laws. The Service is decision
-        support software — not legal or compliance advice.
+        We use HTTPS for data in transit and password-protected access to the application.
+        No method of transmission or storage is completely secure.
+      </p>
+      <p>
+        If we become aware of a security incident that compromises account credentials or
+        is reasonably likely to affect uploaded compensation data in our systems, we will
+        take reasonable steps to investigate, mitigate, and notify affected customers as
+        required by applicable law.
       </p>
 
-      <h2>7. Security</h2>
-      <p>
-        We use HTTPS encryption for data in transit and password-protected access for
-        the application. No method of transmission or storage is 100% secure; you use
-        the Service at your own risk and should avoid uploading data you are not
-        authorized to process.
-      </p>
-
-      <h2>8. Retention</h2>
+      <h2>9. Retention</h2>
       <ul>
         <li>
           <strong>Uploads:</strong> not retained after analysis (see above)
         </li>
         <li>
-          <strong>Login sessions:</strong> until token expiry or sign-out (typically up
-          to 24 hours)
+          <strong>Login sessions:</strong> until token expiry or sign-out (typically up to
+          24 hours)
         </li>
         <li>
-          <strong>Support emails:</strong> retained as long as needed to respond and
-          for ordinary business records
+          <strong>Support emails:</strong> retained as long as needed to respond and for
+          ordinary business records
+        </li>
+        <li>
+          <strong>Technical logs:</strong> retained by our hosting providers according to
+          their default schedules (typically days to weeks unless extended for security
+          investigations)
         </li>
       </ul>
 
-      <h2>9. Your rights</h2>
+      <h2>10. Your privacy rights</h2>
       <p>
-        Depending on where you live, you may have rights to access, correct, or delete
-        personal information we hold about you (such as your account email). Contact us
-        at{" "}
-        <a href="mailto:hello@shiftworkshr.com">hello@shiftworkshr.com</a>. Because
-        we do not store uploaded compensation files, we cannot retrieve a past upload
-        after your session ends.
+        Depending on where you live, you may have rights to access, correct, delete, or
+        restrict certain personal information we hold about you (such as your account
+        email). California residents may have additional rights under the CCPA/CPRA,
+        including the right to know what categories of personal information we collect and
+        the right to request deletion of account information we maintain.
+      </p>
+      <p>
+        To exercise rights, contact{" "}
+        <a href="mailto:hello@shiftworkshr.com">hello@shiftworkshr.com</a>. Because we do
+        not store uploaded compensation files, we cannot retrieve a past upload after your
+        session ends. Employee data in uploads should be directed to your employer (the
+        data controller).
       </p>
 
-      <h2>10. Children</h2>
+      <h2>11. Children</h2>
       <p>
         The Service is for business use by HR and compensation professionals. It is not
-        directed to children under 16.
+        directed to children under 13, and we do not knowingly collect information from
+        children.
       </p>
 
-      <h2>11. Changes</h2>
+      <h2>12. International users</h2>
       <p>
-        We may update this Privacy Policy. The “Last updated” date at the top will
-        change when we do. Continued use of the Service after updates means you accept
-        the revised policy.
+        The Service is operated from the United States. If you upload data about
+        individuals in other countries, you are responsible for any cross-border transfer
+        requirements. Contact us if you need information about our processing for vendor
+        diligence.
       </p>
 
-      <h2>12. Contact</h2>
+      <h2>13. Changes</h2>
+      <p>
+        We may update this Privacy Policy. The “Last updated” date will change when we do.
+        Continued use after updates means you accept the revised policy. Material changes
+        may also be communicated by email to registered users when practicable.
+      </p>
+
+      <h2>14. Contact</h2>
       <p>
         Privacy questions:{" "}
         <a href="mailto:hello@shiftworkshr.com">hello@shiftworkshr.com</a>
       </p>
 
       <p className="legal-disclaimer">
-        This policy is intended to accurately describe our current practices. It is not
-        legal advice. Consider having it reviewed by a qualified attorney, especially
-        if you process data subject to GDPR, CCPA, or other regulations.
+        This policy describes our current practices. It is not legal advice. Have a
+        qualified attorney review it before relying on it for regulated or high-risk
+        processing — especially employee compensation and demographic data.
       </p>
     </LegalLayout>
   );

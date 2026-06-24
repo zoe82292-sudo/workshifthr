@@ -16,7 +16,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("ShiftWorksHR render error:", error, info);
+    console.error("WorkShift HR render error:", error, info);
   }
 
   render() {
@@ -24,13 +24,13 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="app-shell">
           <section className="panel">
-            <h2>Something went wrong loading ShiftWorksHR</h2>
+            <h2>Something went wrong loading WorkShift HR</h2>
             <p className="file-meta" style={{ marginTop: 12 }}>
               {this.state.error.message}
             </p>
             <p className="file-meta" style={{ marginTop: 12 }}>
               Try a hard refresh (Cmd+Shift+R). If the page is still blank, restart the
-              app with <code>./start.sh</code> from the ShiftWorksHR folder and open{" "}
+              app with <code>./start.sh</code> from the WorkShift HR folder and open{" "}
               <a href="http://localhost:8080">http://localhost:8080</a>.
             </p>
             <button

@@ -475,6 +475,7 @@ tr:last-child td {
 .brand-logo {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
 }
 
 .brand-logo--button {
@@ -489,25 +490,30 @@ tr:last-child td {
   width: auto;
   height: auto;
   object-fit: contain;
+  background: transparent;
 }
 
 .brand-logo--nav .brand-logo__image {
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
+  opacity: 0.96;
 }
 
 .brand-logo--hero .brand-logo__image {
-  width: min(168px, 42vw);
-  height: min(168px, 42vw);
+  width: min(152px, 38vw);
+  height: min(152px, 38vw);
+  opacity: 0.98;
 }
 
 .brand-logo--loading .brand-logo__image {
-  width: 128px;
-  height: 128px;
+  width: 120px;
+  height: 120px;
+  opacity: 0.98;
 }
 
 .landing-hero-logo {
-  margin-bottom: 4px;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 10px 24px rgba(26, 77, 58, 0.08));
 }
 
 .hero-top {
@@ -622,7 +628,7 @@ tr:last-child td {
 .landing-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .landing-brand-copy {
@@ -1563,6 +1569,43 @@ tr:last-child td {
   margin-top: 12px;
   font-size: 0.88rem;
   color: var(--text-muted);
+}
+
+.legal-agreement a,
+.legal-consent-checkbox a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.legal-consent-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.legal-consent-checkbox input {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.upload-consent-block {
+  margin-bottom: 16px;
+}
+
+.upload-zone--locked {
+  opacity: 0.72;
+}
+
+.button-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.button-disabled input {
+  pointer-events: none;
 }
 
 .legal-notice {

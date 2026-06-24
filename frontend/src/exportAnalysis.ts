@@ -26,7 +26,7 @@ function formatMoney(value: number | null | undefined): string {
 function summaryRows(result: AnalysisResult): Array<Array<string | number>> {
   const { insights, summary } = result;
   return [
-    ["ShiftWorksHR Compensation Analysis"],
+    ["WorkShift HR Compensation Analysis"],
     [],
     ["Executive Summary"],
     ["Headline", insights.executive_summary.headline],
@@ -228,7 +228,7 @@ export function downloadAnalysisPdf(result: AnalysisResult, filename = `${BASE_F
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
-  doc.text("ShiftWorksHR Compensation Analysis", margin, y);
+  doc.text("WorkShift HR Compensation Analysis", margin, y);
   y += 24;
 
   doc.setFont("helvetica", "normal");

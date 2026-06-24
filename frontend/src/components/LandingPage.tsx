@@ -1,7 +1,8 @@
 import { MARKETING_DEMO_DATA } from "../data/marketingDemoData";
 import { BrandLogo } from "./BrandLogo";
-import { LoginForm } from "./LoginForm";
+import { LegalConsentLinks } from "./LegalConsentLinks";
 import { LegalFooter } from "./LegalFooter";
+import { LoginForm } from "./LoginForm";
 import { MarketingPreview } from "./MarketingPreview";
 
 const CONTACT_EMAIL = "hello@shiftworkshr.com";
@@ -72,7 +73,7 @@ const PRICING_PLANS = [
       "Email support",
     ],
     cta: "Get comp cycle pass",
-    mailSubject: "ShiftWorksHR Comp Cycle Pass",
+    mailSubject: "WorkShift HR Comp Cycle Pass",
     featured: false,
   },
   {
@@ -88,7 +89,7 @@ const PRICING_PLANS = [
       "Great for ongoing comp work",
     ],
     cta: "Get annual access",
-    mailSubject: "ShiftWorksHR Annual Plan",
+    mailSubject: "WorkShift HR Annual Plan",
     featured: true,
   },
   {
@@ -104,7 +105,7 @@ const PRICING_PLANS = [
       "No long-term contract",
     ],
     cta: "Get monthly access",
-    mailSubject: "ShiftWorksHR Monthly Plan",
+    mailSubject: "WorkShift HR Monthly Plan",
     featured: false,
   },
 ];
@@ -131,7 +132,6 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             />
             <div className="landing-brand-copy">
-              <span className="landing-logo-text">WorkShift HR</span>
               <span className="landing-domain">shiftworkshr.com</span>
             </div>
           </div>
@@ -212,7 +212,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
         </div>
         <figure
           className="landing-preview-frame"
-          aria-label="ShiftWorksHR analysis results showing executive summary, budget impact calculators, and flagged compensation issues"
+          aria-label="WorkShift HR analysis results showing executive summary, budget impact calculators, and flagged compensation issues"
         >
           <div className="landing-browser-chrome" aria-hidden="true">
             <div className="landing-browser-dots">
@@ -252,7 +252,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
           <span className="hero-badge">Built by an HR practitioner</span>
           <h2>Designed by someone who has done the comp work</h2>
           <p>
-            ShiftWorksHR was built by an HR professional with hands-on experience in
+            WorkShift HR was built by an HR professional with hands-on experience in
             compensation — range reviews, pay equity analysis, merit planning, and
             the spreadsheet-heavy work that comes with every comp cycle.
           </p>
@@ -285,7 +285,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
           <span className="hero-badge">Introductory pricing</span>
           <h2>Enterprise comp analysis without the enterprise price tag</h2>
           <p>
-            ShiftWorksHR is new — you may not have heard of us yet. Big comp platforms
+            WorkShift HR is new — you may not have heard of us yet. Big comp platforms
             often cost $10,000+ per year or require consultants at $5,000–$15,000 per
             cycle. We built a focused tool for HR teams who need fast, practical answers
             at a fraction of that cost.
@@ -341,7 +341,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
             </div>
             <LoginForm onLogin={onLogin} compact />
             <p className="legal-agreement">
-              By signing in, you agree to our Terms of Service and Privacy Policy.
+              By signing in, you agree to our <LegalConsentLinks />.
             </p>
           </div>
         </section>

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { analyzeFile, checkBackendHealth } from "../api";
 import { ResultsDashboard } from "./ResultsDashboard";
 import { BrandLogo } from "./BrandLogo";
+import { LegalConsentLinks } from "./LegalConsentLinks";
 import { LegalFooter } from "./LegalFooter";
 import type { AnalysisResult, AnalysisTab } from "../types";
 
@@ -30,6 +31,7 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [backendReady, setBackendReady] = useState<boolean | null>(null);
+  const [uploadAuthorized, setUploadAuthorized] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -38,6 +40,13 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
 
   async function handleFile(selected: File | null) {
     if (!selected) return;
+
+    if (!uploadAuthorized) {
+      setError(
+        "Please confirm you are authorized to upload this compensation data before continuing.",
+      );
+      return;
+    }
 
     if (!/\.(xlsx|xls|csv)$/i.test(selected.name)) {
       setError("Please upload an .xlsx, .xls, or .csv file.");
@@ -103,7 +112,7 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
 
       {backendReady === false ? (
         <div className="alert alert-error">
-          The ShiftWorksHR server is not running. In Terminal, run{" "}
+          The WorkShift HR server is not running. In Terminal, run{" "}
           <code>cd ~/Desktop/WorkShiftHR && ./start.sh</code>, then open{" "}
           <a href="http://localhost:8080">http://localhost:8080</a>.
         </div>
@@ -115,8 +124,27 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
           {file ? <span className="pill pill-success">{file.name}</span> : null}
         </div>
 
+        <div className="upload-consent-block">
+          <label className="legal-consent-checkbox">
+            <input
+              type="checkbox"
+              checked={uploadAuthorized}
+              onChange={(event) => {
+                setUploadAuthorized(event.target.checked);
+                if (event.target.checked) {
+                  setError(null);
+                }
+              }}
+            />
+            <span>
+              I confirm I am authorized to upload this compensation data on behalf of my
+              organization, and I have read the <LegalConsentLinks />.
+            </span>
+          </label>
+        </div>
+
         <div
-          className={`upload-zone ${dragging ? "dragging" : ""}`}
+          className={`upload-zone ${dragging ? "dragging" : ""} ${uploadAuthorized ? "" : "upload-zone--locked"}`}
           onDragOver={(event) => {
             event.preventDefault();
             setDragging(true);
@@ -125,6 +153,12 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
           onDrop={(event) => {
             event.preventDefault();
             setDragging(false);
+            if (!uploadAuthorized) {
+              setError(
+                "Please confirm you are authorized to upload this compensation data before continuing.",
+              );
+              return;
+            }
             const dropped = event.dataTransfer.files?.[0];
             if (dropped) {
               void handleFile(dropped);
@@ -136,13 +170,13 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
             after upload.
           </p>
           <div className="upload-actions">
-            <label className="button button-primary">
+            <label className={`button button-primary ${uploadAuthorized ? "" : "button-disabled"}`}>
               {loading ? "Analyzing..." : "Choose file"}
               <input
                 ref={fileInputRef}
                 type="file"
                 accept=".xlsx,.xls,.csv,text/csv,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                disabled={loading}
+                disabled={loading || !uploadAuthorized}
                 onChange={(event) => void handleFile(event.target.files?.[0] ?? null)}
               />
             </label>
@@ -158,7 +192,7 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
           </div>
           <p className="file-meta">
             Upload your <strong>original employee compensation spreadsheet</strong> — not a
-            ShiftWorksHR results export. Include employee ID, salary, range minimum, and range
+            WorkShift HR results export. Include employee ID, salary, range minimum, and range
             maximum. Add <strong>Gender</strong> and <strong>Race/Ethnicity</strong> for pay
             equity analysis.
           </p>
