@@ -199,9 +199,34 @@ if STATIC_DIR.exists():
     if assets_dir.exists():
         app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
+    _ICON_FILES: dict[str, str] = {
+        "favicon.ico": "image/x-icon",
+        "favicon.svg": "image/svg+xml",
+        "favicon-32.png": "image/png",
+        "apple-touch-icon.png": "image/png",
+        "logo.png": "image/png",
+    }
+
+    for icon_name, media_type in _ICON_FILES.items():
+
+        def _make_icon_handler(name: str = icon_name, mime: str = media_type):
+            async def _handler() -> FileResponse:
+                icon_path = STATIC_DIR / name
+                if not icon_path.is_file():
+                    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+                return FileResponse(icon_path, media_type=mime, headers={"Cache-Control": "public, max-age=86400"})
+
+            return _handler
+
+        app.get(f"/{icon_name}")(_make_icon_handler())
+
+    _STATIC_EXTENSIONS = {".ico", ".png", ".svg", ".jpg", ".jpeg", ".webp", ".woff", ".woff2"}
+
     @app.get("/{full_path:path}")
     async def serve_frontend(full_path: str) -> FileResponse:
         requested = STATIC_DIR / full_path
         if full_path and requested.is_file():
             return FileResponse(requested)
+        if full_path and Path(full_path).suffix.lower() in _STATIC_EXTENSIONS:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
         return FileResponse(STATIC_DIR / "index.html")
