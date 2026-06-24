@@ -297,7 +297,12 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
               className={`landing-price-card panel ${plan.featured ? "featured" : ""}`}
               key={plan.id}
             >
-              {plan.featured ? <span className="landing-price-badge">Best value</span> : null}
+              <span
+                className={`landing-price-badge ${plan.featured ? "" : "landing-price-badge--spacer"}`}
+                aria-hidden={!plan.featured}
+              >
+                {plan.featured ? "Best value" : "Best value"}
+              </span>
               <h3>{plan.name}</h3>
               <p className="landing-price-amount">{plan.price}</p>
               <p className="landing-price-period">{plan.period}</p>
