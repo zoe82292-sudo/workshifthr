@@ -1412,23 +1412,33 @@ tr:last-child td {
 
 .landing-sign-in-card {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 40px;
+  align-items: center;
+  max-width: 920px;
+  margin: 0 auto;
 }
 
 .landing-sign-in-copy {
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
 .landing-sign-in-copy h2 {
   font-family: "Instrument Serif", serif;
-  font-size: 2rem;
+  font-size: clamp(1.85rem, 3.5vw, 2.25rem);
+  line-height: 1.1;
+  max-width: 16ch;
 }
 
 .landing-sign-in-copy p {
   color: var(--text-muted);
+  max-width: 38ch;
+}
+
+.landing-sign-in-form {
+  display: grid;
+  gap: 16px;
 }
 
 .landing-about-card {
