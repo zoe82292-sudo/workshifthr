@@ -111,6 +111,12 @@ p {
   margin-top: 24px;
 }
 
+.landing-feature-grid > .panel,
+.landing-pricing-grid > .panel,
+.landing-step-grid > .panel {
+  margin-top: 0;
+}
+
 .panel-header {
   display: flex;
   justify-content: space-between;
