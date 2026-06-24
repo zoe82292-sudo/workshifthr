@@ -120,12 +120,10 @@ const PRICING_PLANS: Array<{
 ];
 
 export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps) {
-  const [checkoutEnabled, setCheckoutEnabled] = useState(false);
   const [availablePlans, setAvailablePlans] = useState<PlanId[]>([]);
 
   useEffect(() => {
-    void checkBillingStatus().then(({ enabled, plans }) => {
-      setCheckoutEnabled(enabled);
+    void checkBillingStatus().then(({ plans }) => {
       setAvailablePlans(plans);
     });
   }, []);
@@ -339,7 +337,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
                 planId={plan.id}
                 label={plan.cta}
                 variant={plan.featured ? "primary" : "secondary"}
-                checkoutEnabled={checkoutEnabled && availablePlans.includes(plan.id)}
+                checkoutEnabled={availablePlans.includes(plan.id)}
                 fallbackHref={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(plan.mailSubject)}`}
               />
             </article>

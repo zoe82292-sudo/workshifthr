@@ -132,13 +132,21 @@ export async function login(
 
 export type PlanId = "cycle" | "annual" | "monthly";
 
-export async function checkBillingStatus(): Promise<{ enabled: boolean; plans: PlanId[] }> {
+export async function checkBillingStatus(): Promise<{
+  enabled: boolean;
+  plans: PlanId[];
+  missing?: string[];
+}> {
   try {
     const response = await fetch(`${API_BASE}/billing/status`);
     if (!response.ok) {
       return { enabled: false, plans: [] };
     }
-    return (await response.json()) as { enabled: boolean; plans: PlanId[] };
+    return (await response.json()) as {
+      enabled: boolean;
+      plans: PlanId[];
+      missing?: string[];
+    };
   } catch {
     return { enabled: false, plans: [] };
   }

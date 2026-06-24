@@ -18,6 +18,12 @@ PLAN_LABELS: dict[PlanId, str] = {
     "monthly": "Monthly",
 }
 
+PRICE_ENV_VARS: dict[PlanId, str] = {
+    "cycle": "STRIPE_PRICE_CYCLE",
+    "annual": "STRIPE_PRICE_ANNUAL",
+    "monthly": "STRIPE_PRICE_MONTHLY",
+}
+
 
 class CheckoutRequest(BaseModel):
     plan_id: PlanId
@@ -27,9 +33,20 @@ class CheckoutResponse(BaseModel):
     url: str
 
 
+class BillingConfigStatus(BaseModel):
+    secret_key: bool
+    webhook_secret: bool
+    price_cycle: bool
+    price_annual: bool
+    price_monthly: bool
+    public_app_url: str
+
+
 class BillingStatusResponse(BaseModel):
     enabled: bool
     plans: list[PlanId]
+    config: BillingConfigStatus
+    missing: list[str]
 
 
 class CheckoutSessionResponse(BaseModel):
@@ -39,34 +56,31 @@ class CheckoutSessionResponse(BaseModel):
     status: str
 
 
+def _env(name: str) -> str:
+    """Read env var and strip whitespace / accidental quotes from Render copy-paste."""
+    return os.getenv(name, "").strip().strip('"').strip("'")
+
+
 def _stripe_secret_key() -> str:
-    return os.getenv("STRIPE_SECRET_KEY", "").strip()
+    return _env("STRIPE_SECRET_KEY")
 
 
 def _stripe_webhook_secret() -> str:
-    return os.getenv("STRIPE_WEBHOOK_SECRET", "").strip()
+    return _env("STRIPE_WEBHOOK_SECRET")
 
 
 def _public_app_url() -> str:
-    return os.getenv("PUBLIC_APP_URL", "http://localhost:5173").rstrip("/")
+    return _env("PUBLIC_APP_URL") or "http://localhost:5173"
 
 
 def _plan_price_id(plan_id: PlanId) -> str | None:
-    env_names: dict[PlanId, str] = {
-        "cycle": "STRIPE_PRICE_CYCLE",
-        "annual": "STRIPE_PRICE_ANNUAL",
-        "monthly": "STRIPE_PRICE_MONTHLY",
-    }
-    return os.getenv(env_names[plan_id], "").strip() or None
-
-
-def billing_enabled() -> bool:
-    if not _stripe_secret_key():
-        return False
-    return all(_plan_price_id(plan_id) for plan_id in PLAN_LABELS)
+    value = _env(PRICE_ENV_VARS[plan_id])
+    return value or None
 
 
 def _configured_plans() -> list[PlanId]:
+    if not _stripe_secret_key():
+        return []
     return [plan_id for plan_id in PLAN_LABELS if _plan_price_id(plan_id)]
 
 
@@ -74,12 +88,56 @@ def configured_plans() -> list[PlanId]:
     return _configured_plans()
 
 
+def billing_enabled() -> bool:
+    return bool(_configured_plans())
+
+
+def billing_config_status() -> BillingConfigStatus:
+    return BillingConfigStatus(
+        secret_key=bool(_stripe_secret_key()),
+        webhook_secret=bool(_stripe_webhook_secret()),
+        price_cycle=bool(_plan_price_id("cycle")),
+        price_annual=bool(_plan_price_id("annual")),
+        price_monthly=bool(_plan_price_id("monthly")),
+        public_app_url=_public_app_url().rstrip("/"),
+    )
+
+
+def billing_missing_config() -> list[str]:
+    missing: list[str] = []
+    if not _stripe_secret_key():
+        missing.append("STRIPE_SECRET_KEY")
+    for plan_id, env_name in PRICE_ENV_VARS.items():
+        if not _plan_price_id(plan_id):
+            missing.append(env_name)
+    if not _stripe_webhook_secret():
+        missing.append("STRIPE_WEBHOOK_SECRET")
+    if _public_app_url() in {"http://localhost:5173", "http://127.0.0.1:5173"}:
+        missing.append("PUBLIC_APP_URL")
+    return missing
+
+
+def billing_status_response() -> BillingStatusResponse:
+    plans = configured_plans()
+    return BillingStatusResponse(
+        enabled=bool(plans),
+        plans=plans,
+        config=billing_config_status(),
+        missing=billing_missing_config(),
+    )
+
+
 def _configure_stripe() -> None:
     secret = _stripe_secret_key()
     if not secret:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Online checkout is not configured yet.",
+            detail="Online checkout is not configured yet. Add STRIPE_SECRET_KEY on the server.",
+        )
+    if not secret.startswith(("sk_test_", "sk_live_")):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="STRIPE_SECRET_KEY looks invalid. It should start with sk_test_ or sk_live_.",
         )
     stripe.api_key = secret
 
@@ -88,13 +146,14 @@ def create_checkout_session(plan_id: PlanId) -> CheckoutResponse:
     _configure_stripe()
     price_id = _plan_price_id(plan_id)
     if not price_id:
+        env_name = PRICE_ENV_VARS[plan_id]
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"The {PLAN_LABELS[plan_id]} plan is not available for checkout yet.",
+            detail=f"{env_name} is not set for the {PLAN_LABELS[plan_id]} plan.",
         )
 
     mode: Literal["payment", "subscription"] = "payment" if plan_id == "cycle" else "subscription"
-    base_url = _public_app_url()
+    base_url = _public_app_url().rstrip("/")
 
     try:
         session = stripe.checkout.Session.create(
@@ -108,9 +167,10 @@ def create_checkout_session(plan_id: PlanId) -> CheckoutResponse:
         )
     except stripe.StripeError as exc:
         logger.exception("Stripe checkout session failed for plan %s", plan_id)
+        user_message = getattr(exc, "user_message", None) or str(exc)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Unable to start checkout. Please try again or email hello@shiftworkshr.com.",
+            detail=f"Stripe error: {user_message}",
         ) from exc
 
     if not session.url:

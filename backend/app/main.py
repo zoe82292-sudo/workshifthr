@@ -24,7 +24,7 @@ from app.billing import (
     CheckoutResponse,
     CheckoutSessionResponse,
     billing_enabled,
-    configured_plans,
+    billing_missing_config,
     create_checkout_session,
     get_checkout_session,
     handle_stripe_webhook,
@@ -56,6 +56,7 @@ def health() -> dict[str, str | bool]:
         "status": "ok",
         "auth_enabled": auth_enabled(),
         "billing_enabled": billing_enabled(),
+        "billing_missing": billing_missing_config() if not billing_enabled() else [],
         "git_commit": os.getenv("RENDER_GIT_COMMIT", "local"),
         "frontend_bundle": _frontend_bundle_name(),
     }
@@ -105,7 +106,9 @@ def login(payload: LoginRequest) -> LoginResponse:
 
 @app.get("/api/billing/status", response_model=BillingStatusResponse)
 def billing_status() -> BillingStatusResponse:
-    return BillingStatusResponse(enabled=billing_enabled(), plans=configured_plans())
+    from app.billing import billing_status_response
+
+    return billing_status_response()
 
 
 @app.post("/api/billing/checkout", response_model=CheckoutResponse)
