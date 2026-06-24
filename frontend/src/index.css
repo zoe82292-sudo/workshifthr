@@ -479,7 +479,7 @@ tr:last-child td {
 }
 
 .brand-logo--lockup {
-  gap: 14px;
+  gap: 12px;
 }
 
 .brand-logo--button {
@@ -511,19 +511,20 @@ tr:last-child td {
 
 .brand-logo__wordmark {
   font-family: "Instrument Serif", Georgia, "Times New Roman", serif;
-  font-size: clamp(2rem, 5vw, 2.75rem);
+  font-size: clamp(1.85rem, 4.5vw, 2.5rem);
   line-height: 1;
   color: var(--accent);
-  letter-spacing: 0.01em;
+  letter-spacing: 0.005em;
   white-space: nowrap;
 }
 
 .brand-logo__wordmark-hr {
   font-family: "DM Sans", system-ui, sans-serif;
-  font-size: 0.68em;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  margin-left: 0.05em;
+  font-size: 0.62em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  margin-left: 0.08em;
+  color: var(--accent-vivid);
 }
 
 .brand-logo--hero {
@@ -664,10 +665,11 @@ tr:last-child td {
 
 .landing-logo-text-hr {
   font-family: "DM Sans", system-ui, sans-serif;
-  font-size: 0.72em;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  margin-left: 0.04em;
+  font-size: 0.68em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  margin-left: 0.06em;
+  color: var(--accent-vivid);
 }
 
 .landing-domain {
