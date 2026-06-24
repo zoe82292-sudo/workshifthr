@@ -20,10 +20,16 @@ function pickInitialTab(analysis: AnalysisResult): AnalysisTab {
 type AnalyzerAppProps = {
   authRequired: boolean;
   userEmail: string | null;
+  userOrganization?: string | null;
   onLogout: () => void;
 };
 
-export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppProps) {
+export function AnalyzerApp({
+  authRequired,
+  userEmail,
+  userOrganization,
+  onLogout,
+}: AnalyzerAppProps) {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [activeTab, setActiveTab] = useState<AnalysisTab>("below_minimum");
@@ -95,7 +101,12 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
           </div>
           {authRequired && userEmail ? (
             <div className="session-bar">
-              <span className="session-email">{userEmail}</span>
+              <div className="session-user">
+                {userOrganization ? (
+                  <span className="session-org">{userOrganization}</span>
+                ) : null}
+                <span className="session-email">{userEmail}</span>
+              </div>
               <button className="button button-secondary button-small" onClick={onLogout}>
                 Sign out
               </button>

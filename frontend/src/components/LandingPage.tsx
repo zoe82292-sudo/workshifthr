@@ -1,5 +1,8 @@
+import { useEffect, useState } from "react";
 import { MARKETING_DEMO_DATA } from "../data/marketingDemoData";
+import { checkBillingStatus, type PlanId } from "../api";
 import { BrandLogo } from "./BrandLogo";
+import { CheckoutButton } from "./CheckoutButton";
 import { LegalConsentLinks } from "./LegalConsentLinks";
 import { LegalFooter } from "./LegalFooter";
 import { LoginForm } from "./LoginForm";
@@ -8,7 +11,7 @@ import { MarketingPreview } from "./MarketingPreview";
 const CONTACT_EMAIL = "hello@shiftworkshr.com";
 
 type LandingPageProps = {
-  onLogin: (email: string) => void;
+  onLogin: (email: string, organization?: string) => void;
   showLogin: boolean;
   onTryDemo?: () => void;
 };
@@ -55,7 +58,17 @@ const STEPS = [
   },
 ];
 
-const PRICING_PLANS = [
+const PRICING_PLANS: Array<{
+  id: PlanId;
+  name: string;
+  price: string;
+  period: string;
+  description: string;
+  features: string[];
+  cta: string;
+  mailSubject: string;
+  featured: boolean;
+}> = [
   {
     id: "cycle",
     name: "Cycle Pass",
@@ -107,6 +120,16 @@ const PRICING_PLANS = [
 ];
 
 export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps) {
+  const [checkoutEnabled, setCheckoutEnabled] = useState(false);
+  const [availablePlans, setAvailablePlans] = useState<PlanId[]>([]);
+
+  useEffect(() => {
+    void checkBillingStatus().then(({ enabled, plans }) => {
+      setCheckoutEnabled(enabled);
+      setAvailablePlans(plans);
+    });
+  }, []);
+
   function scrollTo(id: string) {
     const target = document.getElementById(id);
     if (!target) return;
@@ -312,20 +335,22 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
                   <li key={feature}>{feature}</li>
                 ))}
               </ul>
-              <a
-                className={`button ${plan.featured ? "button-primary" : "button-secondary"} landing-price-button`}
-                href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(plan.mailSubject)}`}
-              >
-                {plan.cta}
-              </a>
+              <CheckoutButton
+                planId={plan.id}
+                label={plan.cta}
+                variant={plan.featured ? "primary" : "secondary"}
+                checkoutEnabled={checkoutEnabled && availablePlans.includes(plan.id)}
+                fallbackHref={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(plan.mailSubject)}`}
+              />
             </article>
           ))}
         </div>
 
         <div className="landing-pricing-footnote panel">
           <p>
-            <strong>One company, one secure login.</strong> Pricing is per organization
-            (not per employee row). Your compensation data is processed in memory and
+            <strong>One organization, one shared password.</strong> Pricing is per organization
+            (not per employee row). Teammates can each sign in with their own work email and
+            the same password. Payments are processed securely by Stripe. Your compensation data is processed in memory and
             not stored on our servers after analysis. Questions? Email{" "}
             <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
           </p>
@@ -339,8 +364,9 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
               <span className="hero-badge">Customer sign in</span>
               <h2>Already a customer?</h2>
               <p>
-                Sign in with the email and password we sent you after purchase to open
-                the compensation analyzer.
+                Sign in with your work email and your organization&apos;s shared password. We
+                send login details to your team after purchase — share them with authorized
+                HR and comp teammates.
               </p>
             </div>
             <div className="landing-sign-in-form">

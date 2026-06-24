@@ -139,6 +139,10 @@ export function PrivacyPolicy() {
           for shiftworkshr.com)
         </li>
         <li>
+          <strong>Stripe</strong> — secure payment processing when you purchase a plan on
+          shiftworkshr.com
+        </li>
+        <li>
           <strong>Email provider</strong> — for support correspondence you initiate (for
           example, messages to hello@shiftworkshr.com)
         </li>

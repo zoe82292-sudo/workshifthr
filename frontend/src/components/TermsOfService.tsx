@@ -59,14 +59,15 @@ export function TermsOfService() {
 
       <h2>3. Eligibility and accounts</h2>
       <p>
-        The Service is for business use by adults acting on behalf of an organization. Access
-        is provided to authorized users at our discretion (typically after purchase or
-        invitation). You must be at least 18 years old and authorized to bind your
+        Access is provided to authorized users at your organization (typically after purchase).
+        Your organization receives one shared password that you may share with authorized HR
+        and compensation teammates. Each person signs in with their own work email and that
+        shared password. You must be at least 18 years old and authorized to bind your
         organization to these Terms.
       </p>
       <p>
-        You are responsible for keeping login credentials confidential and for all activity
-        under your account. Notify us immediately at{" "}
+        You are responsible for sharing credentials only with authorized teammates and for
+        all activity under your organization&apos;s access. Notify us immediately at{" "}
         <a href="mailto:hello@shiftworkshr.com">hello@shiftworkshr.com</a> if you suspect
         unauthorized access.
       </p>
@@ -106,6 +107,7 @@ export function TermsOfService() {
         <li>Use the Service for unlawful purposes or in violation of applicable law</li>
         <li>Upload malware or attempt to disrupt, probe, or reverse engineer the Service</li>
         <li>Share login credentials outside your authorized organization</li>
+        <li>Share the organization password with contractors or vendors who are not authorized users</li>
         <li>Misrepresent your authority to process employee data in uploaded files</li>
         <li>
           Use outputs as the sole basis for adverse employment actions without appropriate
@@ -126,8 +128,9 @@ export function TermsOfService() {
       <h2>7. Fees, refunds, and access</h2>
       <p>
         Paid access terms (pricing, duration, number of authorized users, and refund
-        policy) are agreed when you purchase or subscribe. Unless otherwise stated in
-        writing, fees are non-refundable once access credentials are delivered. We may
+        policy) are agreed when you purchase or subscribe. Online purchases are processed
+        by Stripe; we do not store full payment card numbers on our servers. Unless otherwise
+        stated in writing, fees are non-refundable once access credentials are delivered. We may
         suspend or terminate access for violation of these Terms, non-payment, or abuse.
       </p>
 

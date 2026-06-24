@@ -4,7 +4,7 @@ import { storeSession } from "../auth";
 import { LegalConsentLinks } from "./LegalConsentLinks";
 
 type LoginFormProps = {
-  onLogin: (email: string) => void;
+  onLogin: (email: string, organization?: string) => void;
   compact?: boolean;
 };
 
@@ -27,8 +27,8 @@ export function LoginForm({ onLogin, compact = false }: LoginFormProps) {
 
     try {
       const session = await login(email.trim(), password);
-      storeSession(session.token, session.email);
-      onLogin(session.email);
+      storeSession(session.token, session.email, session.organization);
+      onLogin(session.email, session.organization);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to sign in.");
     } finally {
@@ -41,8 +41,13 @@ export function LoginForm({ onLogin, compact = false }: LoginFormProps) {
       className={compact ? "login-form login-form-compact" : "login-form"}
       onSubmit={(event) => void handleSubmit(event)}
     >
+      <p className="login-shared-note">
+        Your organization shares one password. Each teammate can sign in with their own work
+        email and that shared password.
+      </p>
+
       <label className="field">
-        <span>Email</span>
+        <span>Work email</span>
         <input
           type="email"
           autoComplete="email"
@@ -54,14 +59,14 @@ export function LoginForm({ onLogin, compact = false }: LoginFormProps) {
       </label>
 
       <label className="field">
-        <span>Password</span>
+        <span>Organization password</span>
         <input
           type="password"
           autoComplete="current-password"
           required
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          placeholder="Your password"
+          placeholder="Shared team password"
         />
       </label>
 

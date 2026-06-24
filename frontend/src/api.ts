@@ -113,7 +113,10 @@ export async function checkAuthStatus(): Promise<boolean> {
   }
 }
 
-export async function login(email: string, password: string): Promise<{ token: string; email: string }> {
+export async function login(
+  email: string,
+  password: string,
+): Promise<{ token: string; email: string; organization: string }> {
   const response = await fetch(`${API_BASE}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -124,7 +127,54 @@ export async function login(email: string, password: string): Promise<{ token: s
     throw new Error(await readError(response));
   }
 
-  return (await response.json()) as { token: string; email: string };
+  return (await response.json()) as { token: string; email: string; organization: string };
+}
+
+export type PlanId = "cycle" | "annual" | "monthly";
+
+export async function checkBillingStatus(): Promise<{ enabled: boolean; plans: PlanId[] }> {
+  try {
+    const response = await fetch(`${API_BASE}/billing/status`);
+    if (!response.ok) {
+      return { enabled: false, plans: [] };
+    }
+    return (await response.json()) as { enabled: boolean; plans: PlanId[] };
+  } catch {
+    return { enabled: false, plans: [] };
+  }
+}
+
+export async function startCheckout(planId: PlanId): Promise<{ url: string }> {
+  const response = await fetch(`${API_BASE}/billing/checkout`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ plan_id: planId }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+
+  return (await response.json()) as { url: string };
+}
+
+export async function fetchCheckoutSession(sessionId: string): Promise<{
+  email: string | null;
+  plan_id: PlanId | null;
+  plan_name: string | null;
+  status: string;
+}> {
+  const response = await fetch(`${API_BASE}/billing/session/${encodeURIComponent(sessionId)}`);
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+
+  return (await response.json()) as {
+    email: string | null;
+    plan_id: PlanId | null;
+    plan_name: string | null;
+    status: string;
+  };
 }
 
 const ALLOWED_EXTENSIONS = /\.(xlsx|xls|csv)$/i;

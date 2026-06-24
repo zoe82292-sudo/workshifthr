@@ -4,7 +4,7 @@ import json
 import os
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile, status
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -17,6 +17,17 @@ from app.auth import (
     authenticate_user,
     create_access_token,
     require_auth,
+)
+from app.billing import (
+    BillingStatusResponse,
+    CheckoutRequest,
+    CheckoutResponse,
+    CheckoutSessionResponse,
+    billing_enabled,
+    configured_plans,
+    create_checkout_session,
+    get_checkout_session,
+    handle_stripe_webhook,
 )
 from app.models import AnalysisResult, ColumnMapping, PreviewResponse
 
@@ -44,6 +55,7 @@ def health() -> dict[str, str | bool]:
     return {
         "status": "ok",
         "auth_enabled": auth_enabled(),
+        "billing_enabled": billing_enabled(),
         "git_commit": os.getenv("RENDER_GIT_COMMIT", "local"),
         "frontend_bundle": _frontend_bundle_name(),
     }
@@ -84,7 +96,37 @@ def login(payload: LoginRequest) -> LoginResponse:
             detail="Invalid email or password.",
         )
 
-    return LoginResponse(token=create_access_token(user.email), email=user.email)
+    return LoginResponse(
+        token=create_access_token(user.email, user.organization),
+        email=user.email,
+        organization=user.organization,
+    )
+
+
+@app.get("/api/billing/status", response_model=BillingStatusResponse)
+def billing_status() -> BillingStatusResponse:
+    return BillingStatusResponse(enabled=billing_enabled(), plans=configured_plans())
+
+
+@app.post("/api/billing/checkout", response_model=CheckoutResponse)
+def billing_checkout(payload: CheckoutRequest) -> CheckoutResponse:
+    return create_checkout_session(payload.plan_id)
+
+
+@app.get("/api/billing/session/{session_id}", response_model=CheckoutSessionResponse)
+def billing_session(session_id: str) -> CheckoutSessionResponse:
+    session = get_checkout_session(session_id)
+    if session.status not in {"complete", "paid"}:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="This checkout session is not complete yet.",
+        )
+    return session
+
+
+@app.post("/api/billing/webhook")
+async def billing_webhook(request: Request) -> dict[str, bool]:
+    return await handle_stripe_webhook(request)
 
 
 @app.post("/api/preview", response_model=PreviewResponse)

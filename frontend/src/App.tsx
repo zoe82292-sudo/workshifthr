@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import { checkAuthStatus, checkBackendHealth } from "./api";
-import { clearSession, getStoredEmail, getStoredToken } from "./auth";
+import { clearSession, getStoredEmail, getStoredOrganization, getStoredToken } from "./auth";
 import { AnalyzerApp } from "./components/AnalyzerApp";
 import { LoadingScreen } from "./components/LoadingScreen";
+import { CheckoutCancelPage } from "./components/CheckoutCancelPage";
+import { CheckoutSuccessPage } from "./components/CheckoutSuccessPage";
 import { LandingPage } from "./components/LandingPage";
 import { PrivacyPolicy } from "./components/PrivacyPolicy";
 import { MarketingPreviewPage } from "./components/MarketingPreviewPage";
@@ -14,6 +16,7 @@ import { TermsOfService } from "./components/TermsOfService";
 function MainApp() {
   const [authRequired, setAuthRequired] = useState<boolean | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(getStoredEmail());
+  const [userOrganization, setUserOrganization] = useState<string | null>(getStoredOrganization());
   const [devPreview, setDevPreview] = useState(false);
 
   useEffect(() => {
@@ -30,9 +33,15 @@ function MainApp() {
     devPreview ||
     (authRequired === true && Boolean(getStoredToken() && userEmail));
 
+  function handleLogin(email: string, organization?: string) {
+    setUserEmail(email);
+    setUserOrganization(organization ?? null);
+  }
+
   function handleLogout() {
     clearSession();
     setUserEmail(null);
+    setUserOrganization(null);
     setDevPreview(false);
   }
 
@@ -43,7 +52,7 @@ function MainApp() {
   if (!isAuthenticated) {
     return (
       <LandingPage
-        onLogin={setUserEmail}
+        onLogin={handleLogin}
         showLogin={authRequired}
         onTryDemo={authRequired ? undefined : () => setDevPreview(true)}
       />
@@ -54,6 +63,7 @@ function MainApp() {
     <AnalyzerApp
       authRequired={authRequired}
       userEmail={userEmail}
+      userOrganization={userOrganization}
       onLogout={handleLogout}
     />
   );
@@ -62,6 +72,8 @@ function MainApp() {
 export default function App() {
   return (
     <Routes>
+      <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
+      <Route path="/checkout/canceled" element={<CheckoutCancelPage />} />
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/security" element={<SecurityPage />} />
