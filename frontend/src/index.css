@@ -1170,22 +1170,34 @@ tr:last-child td {
 
 .landing-pricing-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
   margin-bottom: 20px;
+  align-items: stretch;
+}
+
+@media (max-width: 900px) {
+  .landing-pricing-grid {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
 .landing-price-card {
   display: grid;
+  grid-template-rows: auto auto auto auto 1fr auto;
   gap: 12px;
-  align-content: start;
+  height: 100%;
+  min-height: 480px;
   position: relative;
 }
 
 .landing-price-card.featured {
   border-color: var(--accent-vivid);
   background: linear-gradient(160deg, #ffffff 0%, #edf8f1 100%);
-  box-shadow: 0 20px 50px rgba(47, 125, 90, 0.18);
+  box-shadow: var(--shadow);
 }
 
 .landing-price-badge {
@@ -1203,6 +1215,7 @@ tr:last-child td {
 .landing-price-card h3 {
   font-size: 1.1rem;
   padding-right: 72px;
+  min-height: 1.4em;
 }
 
 .landing-price-amount {
@@ -1215,20 +1228,27 @@ tr:last-child td {
 .landing-price-period {
   color: var(--text-muted);
   margin-top: -4px;
+  min-height: 1.4em;
 }
 
 .landing-price-description {
   color: var(--text-muted);
-  min-height: 3em;
+  min-height: 3.2em;
+}
+
+.landing-price-card .landing-checklist {
+  align-self: start;
+  min-height: 8.5em;
 }
 
 .landing-price-button {
-  margin-top: 8px;
+  margin-top: 0;
   width: 100%;
   justify-content: center;
   text-align: center;
   text-decoration: none;
   display: inline-flex;
+  align-self: end;
 }
 
 .landing-pricing-footnote {
