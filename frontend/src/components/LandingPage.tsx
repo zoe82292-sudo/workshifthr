@@ -32,11 +32,11 @@ const FEATURES = [
   },
   {
     title: "Pay equity by gender & race",
-    copy: "Median pay comparisons by demographic group, with same-level breakdowns.",
+    copy: "Median pay by demographic group, with same-level breakdowns.",
   },
   {
     title: "Executive summary & export",
-    copy: "Shareable insights for leadership, with Excel and PDF downloads for comp cycles.",
+    copy: "Shareable insights plus Excel and PDF exports for comp cycles.",
   },
 ];
 
@@ -63,8 +63,8 @@ const PRICING_PLANS = [
     period: "one-time · 90 days",
     description: "Best for a single merit or annual review season.",
     features: [
-      "Unlimited uploads for 90 days",
-      "Full analysis + pay equity views",
+      "90 days of unlimited uploads",
+      "Full analysis + pay equity",
       "Excel & PDF exports",
       "Email support",
     ],
@@ -80,9 +80,9 @@ const PRICING_PLANS = [
     description: "Best value — about $75/month, billed annually.",
     features: [
       "Unlimited uploads all year",
-      "All features included",
+      "Full analysis + pay equity",
+      "Excel & PDF exports",
       "Priority email support",
-      "Great for ongoing comp work",
     ],
     cta: "Get annual access",
     mailSubject: "ShiftWorksHR Annual Plan",
@@ -95,10 +95,10 @@ const PRICING_PLANS = [
     period: "per month",
     description: "Flexible month-to-month access. Cancel anytime.",
     features: [
-      "Unlimited uploads",
-      "All features included",
+      "Unlimited uploads each month",
+      "Full analysis + pay equity",
+      "Excel & PDF exports",
       "Email support",
-      "No long-term contract",
     ],
     cta: "Get monthly access",
     mailSubject: "ShiftWorksHR Monthly Plan",
