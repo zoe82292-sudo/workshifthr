@@ -31,16 +31,12 @@ const FEATURES = [
     copy: "Estimate cost to minimum, merit pool, and compa-ratio trends.",
   },
   {
-    title: "Executive summary",
-    copy: "Shareable insights for HR and leadership review.",
-  },
-  {
     title: "Pay equity by gender & race",
     copy: "Median pay comparisons by demographic group, with same-level breakdowns.",
   },
   {
-    title: "Excel & PDF export",
-    copy: "Download results for comp cycles and stakeholder meetings.",
+    title: "Executive summary & export",
+    copy: "Shareable insights for leadership, with Excel and PDF downloads for comp cycles.",
   },
 ];
 
