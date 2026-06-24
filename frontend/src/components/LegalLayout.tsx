@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { BrandLogo } from "./BrandLogo";
 import { LegalFooter } from "./LegalFooter";
 
 export function LegalLayout({
@@ -12,9 +13,12 @@ export function LegalLayout({
   return (
     <div className="legal-page">
       <div className="legal-page-inner">
-        <Link className="legal-back-link" to="/">
-          ← Back to ShiftWorksHR
-        </Link>
+        <div className="legal-page-brand">
+          <BrandLogo size="nav" />
+          <Link className="legal-back-link" to="/">
+            ← Back to WorkShift HR
+          </Link>
+        </div>
         <h1>{title}</h1>
         <p className="legal-updated">Last updated: June 2026</p>
         <div className="legal-content">{children}</div>

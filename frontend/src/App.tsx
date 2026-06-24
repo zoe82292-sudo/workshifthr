@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import { checkAuthStatus, checkBackendHealth } from "./api";
 import { clearSession, getStoredEmail, getStoredToken } from "./auth";
 import { AnalyzerApp } from "./components/AnalyzerApp";
+import { LoadingScreen } from "./components/LoadingScreen";
 import { LandingPage } from "./components/LandingPage";
 import { PrivacyPolicy } from "./components/PrivacyPolicy";
 import { MarketingPreviewPage } from "./components/MarketingPreviewPage";
@@ -35,7 +36,7 @@ function MainApp() {
   }
 
   if (authRequired === null) {
-    return <div className="app-shell loading-shell">Loading ShiftWorksHR...</div>;
+    return <LoadingScreen />;
   }
 
   if (!isAuthenticated) {

@@ -1,25 +1,26 @@
 :root {
   color-scheme: light;
-  --bg: #f4f1ea;
-  --surface: #fffdf8;
-  --surface-muted: #f8f4ec;
-  --border: #ddd3c4;
-  --text: #1f2933;
-  --text-muted: #667085;
-  --accent: #0f766e;
-  --accent-soft: #d1fae5;
-  --danger: #b42318;
-  --danger-soft: #fee4e2;
-  --warning: #b54708;
-  --warning-soft: #fef0c7;
-  --info: #175cd3;
-  --info-soft: #d1e9ff;
-  --shadow: 0 18px 50px rgba(31, 41, 51, 0.08);
+  --bg: #f2f1eb;
+  --surface: #faf9f5;
+  --surface-muted: #f3f0e8;
+  --border: #d8d2c6;
+  --text: #1f2d28;
+  --text-muted: #5f6f68;
+  --accent: #1d3d33;
+  --accent-secondary: #7a8f82;
+  --accent-soft: #e3ebe6;
+  --danger: #9f2d1f;
+  --danger-soft: #f6e4e1;
+  --warning: #9a5b14;
+  --warning-soft: #f8ecd8;
+  --info: #2f5d4f;
+  --info-soft: #dce8e2;
+  --shadow: 0 18px 50px rgba(29, 61, 51, 0.08);
   font-family: "DM Sans", sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color: var(--text);
-  background: radial-gradient(circle at top left, #efe6d7 0%, var(--bg) 45%);
+  background: radial-gradient(circle at top left, #ebe6dc 0%, var(--bg) 48%);
 }
 
 * {
@@ -442,11 +443,58 @@ tr:last-child td {
   color: var(--danger);
 }
 
-.loading-shell {
+.loading-shell,
+.loading-screen {
   display: grid;
   place-items: center;
-  min-height: 60vh;
+  align-content: center;
+  gap: 18px;
+  min-height: 100vh;
   color: var(--text-muted);
+}
+
+.loading-screen p {
+  margin: 0;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+}
+
+.brand-logo--button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.brand-logo__image {
+  display: block;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.brand-logo--nav .brand-logo__image {
+  width: 52px;
+  height: 52px;
+}
+
+.brand-logo--hero .brand-logo__image {
+  width: min(168px, 42vw);
+  height: min(168px, 42vw);
+}
+
+.brand-logo--loading .brand-logo__image {
+  width: 128px;
+  height: 128px;
+}
+
+.landing-hero-logo {
+  margin-bottom: 4px;
 }
 
 .hero-top {
@@ -454,6 +502,13 @@ tr:last-child td {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  flex-wrap: wrap;
+}
+
+.hero-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   flex-wrap: wrap;
 }
 
@@ -552,18 +607,22 @@ tr:last-child td {
 }
 
 .landing-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.landing-brand-copy {
   display: grid;
   gap: 2px;
 }
 
-.landing-logo {
+.landing-logo-text {
   font-family: "Instrument Serif", serif;
-  font-size: 1.5rem;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  padding: 0;
-  color: inherit;
+  font-size: 1.35rem;
+  line-height: 1;
+  color: var(--accent);
+  letter-spacing: 0.04em;
 }
 
 .landing-domain {
@@ -661,7 +720,7 @@ tr:last-child td {
   min-height: 100vh;
   padding: 28px 24px 32px;
   background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(15, 118, 110, 0.08), transparent),
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(29, 61, 51, 0.08), transparent),
     linear-gradient(180deg, #f7f3ec 0%, #efe8dc 100%);
 }
 
@@ -929,7 +988,7 @@ tr:last-child td {
   box-shadow:
     0 40px 90px rgba(15, 23, 42, 0.16),
     0 0 0 1px rgba(255, 255, 255, 0.65) inset,
-    0 0 80px rgba(15, 118, 110, 0.08);
+    0 0 80px rgba(29, 61, 51, 0.08);
 }
 
 .landing-browser-chrome {
@@ -1032,7 +1091,7 @@ tr:last-child td {
 
 .landing-price-card.featured {
   border-color: var(--accent);
-  box-shadow: 0 20px 50px rgba(15, 118, 110, 0.12);
+  box-shadow: 0 20px 50px rgba(29, 61, 51, 0.12);
 }
 
 .landing-price-badge {
@@ -1245,7 +1304,7 @@ tr:last-child td {
 .landing-footer-brand {
   font-family: "Instrument Serif", serif;
   font-size: 1.25rem;
-  color: var(--text);
+  color: var(--accent);
 }
 
 .landing-footer-domain {
@@ -1304,9 +1363,17 @@ tr:last-child td {
   margin: 0 auto;
 }
 
+.legal-page-brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
 .legal-back-link {
   display: inline-block;
-  margin-bottom: 24px;
   color: var(--accent);
   font-weight: 600;
   text-decoration: none;

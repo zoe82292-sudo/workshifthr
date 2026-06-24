@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { analyzeFile, checkBackendHealth } from "../api";
 import { ResultsDashboard } from "./ResultsDashboard";
+import { BrandLogo } from "./BrandLogo";
 import { LegalFooter } from "./LegalFooter";
 import type { AnalysisResult, AnalysisTab } from "../types";
 
@@ -76,7 +77,10 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
     <div className="app-shell">
       <header className="hero">
         <div className="hero-top">
-          <span className="hero-badge">Compensation intelligence</span>
+          <div className="hero-brand">
+            <BrandLogo size="nav" />
+            <span className="hero-badge">Compensation intelligence</span>
+          </div>
           {authRequired && userEmail ? (
             <div className="session-bar">
               <span className="session-email">{userEmail}</span>
@@ -92,7 +96,7 @@ export function AnalyzerApp({ authRequired, userEmail, onLogout }: AnalyzerAppPr
         </p>
         <h1>Find pay equity issues before review season.</h1>
         <p>
-          ShiftWorksHR automatically flags out-of-range pay, duplicate IDs, range penetration,
+          WorkShift HR automatically flags out-of-range pay, duplicate IDs, range penetration,
           salary compression, manager pay inversions, missing data, and budget impact.
         </p>
       </header>

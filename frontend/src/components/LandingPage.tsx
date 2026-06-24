@@ -1,4 +1,5 @@
 import { MARKETING_DEMO_DATA } from "../data/marketingDemoData";
+import { BrandLogo } from "./BrandLogo";
 import { LoginForm } from "./LoginForm";
 import { LegalFooter } from "./LegalFooter";
 import { MarketingPreview } from "./MarketingPreview";
@@ -125,14 +126,14 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
       <header className="landing-nav">
         <div className="landing-nav-inner">
           <div className="landing-brand">
-            <button
-              className="landing-logo"
-              type="button"
+            <BrandLogo
+              size="nav"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            >
-              ShiftWorksHR
-            </button>
-            <span className="landing-domain">shiftworkshr.com</span>
+            />
+            <div className="landing-brand-copy">
+              <span className="landing-logo-text">WorkShift HR</span>
+              <span className="landing-domain">shiftworkshr.com</span>
+            </div>
           </div>
           <nav className="landing-links">
             <button type="button" onClick={() => scrollTo("features")}>
@@ -152,6 +153,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
 
       <section className="landing-hero">
         <div className="landing-hero-copy">
+          <BrandLogo size="hero" className="landing-hero-logo" />
           <span className="hero-badge">Compensation intelligence</span>
           <p className="hero-positioning">
             Upload your compensation spreadsheet and get an instant comp review in under
@@ -159,7 +161,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
           </p>
           <h1>Find pay equity issues before review season.</h1>
           <p>
-            ShiftWorksHR helps HR teams spot out-of-range pay, compression, manager
+            WorkShift HR helps HR teams spot out-of-range pay, compression, manager
             inversions, and budget gaps — without weeks of manual spreadsheet review.
           </p>
           <div className="landing-hero-actions">
@@ -329,6 +331,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
       {showLogin ? (
         <section className="landing-section landing-sign-in" id="sign-in">
           <div className="landing-sign-in-card panel">
+            <BrandLogo size="nav" />
             <div className="landing-sign-in-copy">
               <h2>Already a customer?</h2>
               <p>
@@ -346,7 +349,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
 
       <footer className="landing-footer">
         <div className="landing-footer-copy">
-          <p className="landing-footer-brand">ShiftWorksHR</p>
+          <p className="landing-footer-brand">WorkShift HR</p>
           <p className="landing-footer-domain">shiftworkshr.com</p>
           <p>Compensation analysis for HR teams — built by an HR professional.</p>
           <p className="landing-footer-contact">

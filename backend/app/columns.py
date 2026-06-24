@@ -86,6 +86,17 @@ COLUMN_ALIASES: dict[str, list[str]] = {
         "manager emp id",
         "supervisor employee id",
     ],
+    "manager_name": [
+        "manager name",
+        "supervisor name",
+        "reports to name",
+        "reports to",
+        "manager",
+        "supervisor",
+        "mgr name",
+        "direct manager",
+        "direct manager name",
+    ],
     "bonus_target": [
         "bonus target",
         "target bonus",

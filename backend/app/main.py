@@ -41,7 +41,27 @@ app.add_middleware(
 
 @app.get("/api/health")
 def health() -> dict[str, str | bool]:
-    return {"status": "ok", "auth_enabled": auth_enabled()}
+    return {
+        "status": "ok",
+        "auth_enabled": auth_enabled(),
+        "git_commit": os.getenv("RENDER_GIT_COMMIT", "local"),
+        "frontend_bundle": _frontend_bundle_name(),
+    }
+
+
+def _frontend_bundle_name() -> str:
+    index_file = STATIC_DIR / "index.html"
+    if not index_file.is_file():
+        return "missing"
+    content = index_file.read_text(encoding="utf-8")
+    marker = 'src="/assets/index-'
+    start = content.find(marker)
+    if start == -1:
+        return "unknown"
+    end = content.find('.js"', start)
+    if end == -1:
+        return "unknown"
+    return content[start + len('src="/assets/'):end + 3]
 
 
 @app.get("/api/auth/status")

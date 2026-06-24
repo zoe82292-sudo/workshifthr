@@ -3,7 +3,8 @@ WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm install
 COPY frontend/ ./
-RUN npm run build
+# Force a clean frontend build in Docker (avoid stale incremental artifacts).
+RUN rm -f tsconfig.tsbuildinfo && npm run build
 
 FROM python:3.12-slim
 WORKDIR /app
