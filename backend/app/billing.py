@@ -134,10 +134,10 @@ def _configure_stripe() -> None:
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Online checkout is not configured yet. Add STRIPE_SECRET_KEY on the server.",
         )
-    if not secret.startswith(("sk_test_", "sk_live_")):
+    if not secret.startswith(("sk_test_", "sk_live_", "rk_test_", "rk_live_")):
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="STRIPE_SECRET_KEY looks invalid. It should start with sk_test_ or sk_live_.",
+            detail="STRIPE_SECRET_KEY looks invalid. Use a standard or restricted Stripe secret key.",
         )
     stripe.api_key = secret
 

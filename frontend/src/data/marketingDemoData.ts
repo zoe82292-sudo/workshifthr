@@ -76,10 +76,10 @@ export const MARKETING_DEMO_DATA: MarketingPreviewData = {
   ],
   insights: {
     executive_summary: {
-      headline: "Multiple compensation risks require immediate review.",
+      headline: "11 compensation issues flagged for review.",
       bullets: [
-        "Reviewed 20 rows with 18 employees ready for comp analysis.",
-        "3 employees are below range minimum, requiring $11,000 to bring them to the range floor.",
+        "This analysis covers 18 employees. 2 rows were excluded due to incomplete data.",
+        "3 employees are below range minimum, requiring $11,000 to reach the range floor.",
         "4 salary compression patterns may create internal equity risk.",
         "Gender median pay gap: Male median is 8.9% above Female ($8,500 difference).",
       ],

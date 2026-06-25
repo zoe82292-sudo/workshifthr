@@ -114,6 +114,12 @@ def _build_compa_summary(result: AnalysisResult) -> CompaRatioSummary:
     )
 
 
+def _plural(count: int, singular: str, plural: str | None = None) -> str:
+    if count == 1:
+        return singular
+    return plural if plural is not None else f"{singular}s"
+
+
 def _build_executive_summary(
     result: AnalysisResult,
     cost_metrics: CostMetrics,
@@ -123,39 +129,58 @@ def _build_executive_summary(
     summary = result.summary
     bullets: list[str] = []
 
-    bullets.append(
-        f"Reviewed {summary.total_rows} rows with {summary.valid_rows} employees ready for comp analysis."
-    )
+    scope = f"This analysis covers {summary.valid_rows} {_plural(summary.valid_rows, 'employee')}."
+    skipped_rows = summary.total_rows - summary.valid_rows
+    if skipped_rows > 0:
+        scope += (
+            f" {skipped_rows} {_plural(skipped_rows, 'row')} "
+            f"{_plural(skipped_rows, 'was', 'were')} excluded due to incomplete data."
+        )
+    bullets.append(scope)
 
     if summary.below_minimum:
         bullets.append(
-            f"{summary.below_minimum} employees are below range minimum, requiring "
-            f"${cost_metrics.total_gap_to_minimum:,.0f} to bring them to the range floor."
+            f"{summary.below_minimum} {_plural(summary.below_minimum, 'employee')} "
+            f"{_plural(summary.below_minimum, 'is', 'are')} below range minimum, requiring "
+            f"${cost_metrics.total_gap_to_minimum:,.0f} to reach the range floor."
         )
     else:
         bullets.append("No employees were paid below their assigned range minimum.")
 
     if summary.above_maximum:
         bullets.append(
-            f"{summary.above_maximum} employees exceed their range maximum by a combined "
+            f"{summary.above_maximum} {_plural(summary.above_maximum, 'employee')} "
+            f"{_plural(summary.above_maximum, 'exceeds', 'exceed')} "
+            f"{_plural(summary.above_maximum, 'their', 'their')} range maximum by a combined "
             f"${cost_metrics.total_above_maximum:,.0f}."
         )
 
     if summary.duplicate_ids:
-        bullets.append(f"{summary.duplicate_ids} duplicate employee IDs need cleanup before payroll processing.")
+        bullets.append(
+            f"{summary.duplicate_ids} duplicate employee "
+            f"{_plural(summary.duplicate_ids, 'ID', 'IDs')} "
+            f"{_plural(summary.duplicate_ids, 'was', 'were')} found in the source file."
+        )
 
     if summary.compression_issues:
-        bullets.append(f"{summary.compression_issues} salary compression patterns may create internal equity risk.")
+        bullets.append(
+            f"{summary.compression_issues} salary compression "
+            f"{_plural(summary.compression_issues, 'pattern', 'patterns')} "
+            "may create internal equity risk."
+        )
 
     if summary.managers_below_reports:
         bullets.append(
-            f"{summary.managers_below_reports} managers are paid below at least one direct report."
+            f"{summary.managers_below_reports} "
+            f"{_plural(summary.managers_below_reports, 'manager', 'managers')} "
+            f"{_plural(summary.managers_below_reports, 'is', 'are')} paid below at least one direct report."
         )
 
     if compa_ratio.average_compa_ratio is not None:
         bullets.append(
             f"Average compa-ratio is {compa_ratio.average_compa_ratio:.1f}% "
-            f"({compa_ratio.below_90_percent} employees below 90% of midpoint)."
+            f"({compa_ratio.below_90_percent} "
+            f"{_plural(compa_ratio.below_90_percent, 'employee')} below 90% of midpoint)."
         )
 
     if budget_impact.projected_merit_pool > 0:
@@ -205,13 +230,16 @@ def _build_executive_summary(
 
     if issue_count >= 8:
         risk = "high"
-        headline = "Multiple compensation risks require immediate review."
+        headline = f"{issue_count} compensation issues flagged for review."
     elif issue_count >= 3:
         risk = "moderate"
-        headline = "Several compensation issues should be addressed this cycle."
+        headline = f"{issue_count} compensation items warrant review this cycle."
+    elif issue_count >= 1:
+        risk = "low"
+        headline = "One compensation item should be reviewed before finalizing pay decisions."
     else:
         risk = "low"
-        headline = "Compensation file is in relatively strong shape."
+        headline = "No major compensation issues detected in this file."
 
     return ExecutiveSummary(
         headline=headline,
