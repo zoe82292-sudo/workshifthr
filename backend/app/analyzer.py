@@ -134,7 +134,7 @@ def read_upload(content: bytes, filename: str, sheet_name: str | None = None) ->
 
 def preview_file(content: bytes, filename: str, sheet_name: str | None = None) -> PreviewResponse:
     df, sheet_names = read_upload(content, filename, sheet_name)
-    mapping = detect_column_mapping(list(df.columns))
+    mapping = detect_column_mapping(list(df.columns), df)
     preview_rows = df.head(5).fillna("").astype(str).to_dict(orient="records")
     return PreviewResponse(
         columns=list(df.columns),
@@ -279,7 +279,7 @@ def _prepare_dataframe(
     df: pd.DataFrame,
     mapping_override: ColumnMapping | None = None,
 ) -> tuple[pd.DataFrame, dict[str, str | None], list[str]]:
-    detected = detect_column_mapping(list(df.columns))
+    detected = detect_column_mapping(list(df.columns), df)
     if mapping_override:
         for field in COLUMN_ALIASES:
             override_value = getattr(mapping_override, field)

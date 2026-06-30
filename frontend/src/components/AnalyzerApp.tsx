@@ -206,9 +206,9 @@ export function AnalyzerApp({
           </div>
           <p className="file-meta">
             Upload your <strong>original employee compensation spreadsheet</strong> — not a
-            ShiftWorksHR results export. Include employee ID, salary, range minimum, and range
-            maximum. Add <strong>Gender</strong> and <strong>Race/Ethnicity</strong> for pay
-            equity analysis.
+            ShiftWorksHR results export. Column headers are optional: ShiftWorksHR auto-detects
+            employee ID, salary, and pay range columns from your data. Add{" "}
+            <strong>Gender</strong> and <strong>Race/Ethnicity</strong> for pay equity analysis.
           </p>
           <p className="file-meta legal-notice">
             For decision support only — not legal or professional compensation advice.
