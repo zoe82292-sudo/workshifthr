@@ -51,7 +51,10 @@ app.add_middleware(
 
 
 @app.get("/api/health")
-def health() -> dict[str, str | bool]:
+def health() -> dict[str, object]:
+    favicon_path = STATIC_DIR / "favicon.ico"
+    index_file = STATIC_DIR / "index.html"
+    index_text = index_file.read_text(encoding="utf-8") if index_file.is_file() else ""
     return {
         "status": "ok",
         "auth_enabled": auth_enabled(),
@@ -59,6 +62,10 @@ def health() -> dict[str, str | bool]:
         "billing_missing": billing_missing_config() if not billing_enabled() else [],
         "git_commit": os.getenv("RENDER_GIT_COMMIT", "local"),
         "frontend_bundle": _frontend_bundle_name(),
+        "favicon_ico_exists": favicon_path.is_file(),
+        "favicon_index_version": (
+            "v5" if "favicon.ico?v=5" in index_text else "v4" if "favicon.ico?v=4" in index_text else "legacy"
+        ),
     }
 
 
