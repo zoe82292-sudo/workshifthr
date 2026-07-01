@@ -302,45 +302,37 @@ export function ResultsDashboard({
       />
 
       <InsightsPanel result={result} />
-      <div className="summary-grid card-grid card-grid--4" aria-label="Issue counts">
+      <div className="summary-grid card-grid card-grid--4 card-grid--stats" aria-label="Issue counts">
         <div className="summary-card stat-card">
           <span className="stat-card__label">Total rows</span>
-          <div className="stat-card__spacer" aria-hidden="true" />
           <strong className="stat-card__value">{result.summary.total_rows}</strong>
         </div>
         <div className="summary-card stat-card stat-card--danger">
           <span className="stat-card__label">Below minimum</span>
-          <div className="stat-card__spacer" aria-hidden="true" />
           <strong className="stat-card__value">{result.summary.below_minimum}</strong>
         </div>
         <div className="summary-card stat-card stat-card--warning">
           <span className="stat-card__label">Above maximum</span>
-          <div className="stat-card__spacer" aria-hidden="true" />
           <strong className="stat-card__value">{result.summary.above_maximum}</strong>
         </div>
         <div className="summary-card stat-card stat-card--info">
           <span className="stat-card__label">Managers below reports</span>
-          <div className="stat-card__spacer" aria-hidden="true" />
           <strong className="stat-card__value">{result.summary.managers_below_reports}</strong>
         </div>
         <div className="summary-card stat-card">
           <span className="stat-card__label">Missing salary ranges</span>
-          <div className="stat-card__spacer" aria-hidden="true" />
           <strong className="stat-card__value">{result.summary.missing_salary_ranges}</strong>
         </div>
         <div className="summary-card stat-card stat-card--info">
           <span className="stat-card__label">Pay equity gaps</span>
-          <div className="stat-card__spacer" aria-hidden="true" />
           <strong className="stat-card__value">{result.summary.pay_equity_gaps}</strong>
         </div>
         <div className="summary-card stat-card">
           <span className="stat-card__label">Outlier merit increases</span>
-          <div className="stat-card__spacer" aria-hidden="true" />
           <strong className="stat-card__value">{result.summary.outlier_merit_increases}</strong>
         </div>
         <div className="summary-card stat-card">
           <span className="stat-card__label">Avg penetration</span>
-          <div className="stat-card__spacer" aria-hidden="true" />
           <strong className="stat-card__value">
             {result.summary.average_penetration != null
               ? `${result.summary.average_penetration}%`

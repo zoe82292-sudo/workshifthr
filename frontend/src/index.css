@@ -147,14 +147,102 @@ p {
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
-.metric-card {
-  display: grid;
+/* Metric cards: shared row tracks across columns via subgrid */
+.card-grid--metrics-5 {
   grid-template-rows:
     minmax(2.5em, auto)
     minmax(2.75em, auto)
-    minmax(8px, 1fr)
+    minmax(12px, 1fr)
     auto
     minmax(2.7em, auto);
+}
+
+.card-grid--metrics-5 > .metric-card {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 5;
+}
+
+.card-grid--metrics-5 .metric-card__title {
+  grid-row: 1;
+}
+
+.card-grid--metrics-5 .metric-card__label {
+  grid-row: 2;
+}
+
+.card-grid--metrics-5 .metric-card__value {
+  grid-row: 4;
+  align-self: end;
+}
+
+.card-grid--metrics-5 .metric-card__meta {
+  grid-row: 5;
+  align-self: start;
+}
+
+.card-grid--metrics-6 {
+  grid-template-rows:
+    minmax(2.5em, auto)
+    minmax(2.75em, auto)
+    44px
+    minmax(12px, 1fr)
+    auto
+    minmax(2.7em, auto);
+}
+
+.card-grid--metrics-6 > .metric-card {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 6;
+}
+
+.card-grid--metrics-6 .metric-card__title {
+  grid-row: 1;
+}
+
+.card-grid--metrics-6 .metric-card__label {
+  grid-row: 2;
+}
+
+.card-grid--metrics-6 .metric-card__input-slot,
+.card-grid--metrics-6 .metric-card__input {
+  grid-row: 3;
+  align-self: center;
+}
+
+.card-grid--metrics-6 .metric-card__value {
+  grid-row: 5;
+  align-self: end;
+}
+
+.card-grid--metrics-6 .metric-card__meta {
+  grid-row: 6;
+  align-self: start;
+}
+
+/* Stat cards: shared row tracks across columns via subgrid */
+.card-grid--stats {
+  grid-template-rows: minmax(2.5em, auto) minmax(8px, 1fr) auto;
+}
+
+.card-grid--stats > .stat-card {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 3;
+}
+
+.card-grid--stats .stat-card__label {
+  grid-row: 1;
+  align-self: start;
+}
+
+.card-grid--stats .stat-card__value {
+  grid-row: 3;
+  align-self: end;
+}
+
+.metric-card {
   height: 100%;
   min-height: 192px;
   padding: 16px;
@@ -162,17 +250,6 @@ p {
   border: 1px solid var(--border);
   background: #fff;
   box-sizing: border-box;
-}
-
-.card-grid--has-input .metric-card,
-.metric-card--input {
-  grid-template-rows:
-    minmax(2.5em, auto)
-    minmax(2.75em, auto)
-    44px
-    minmax(8px, 1fr)
-    auto
-    minmax(2.7em, auto);
 }
 
 .metric-card__title {
@@ -198,14 +275,9 @@ p {
 .metric-card__input {
   width: 100%;
   max-width: 120px;
-  height: 44px;
+  height: 40px;
   margin: 0;
-  align-self: center;
   box-sizing: border-box;
-}
-
-.metric-card__spacer {
-  min-height: 8px;
 }
 
 .metric-card__value {
@@ -227,8 +299,6 @@ p {
 }
 
 .stat-card {
-  display: grid;
-  grid-template-rows: minmax(2.5em, auto) minmax(8px, 1fr) auto;
   height: 100%;
   min-height: 92px;
   padding: 14px 10px 12px;
@@ -250,13 +320,8 @@ p {
 }
 
 .stat-card__value {
-  align-self: end;
   font-size: 1.35rem;
   line-height: 1;
-}
-
-.stat-card__spacer {
-  min-height: 8px;
 }
 
 .stat-card--danger {

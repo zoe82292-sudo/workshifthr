@@ -46,14 +46,13 @@ export function InsightsPanel({ result }: InsightsPanelProps) {
       </section>
 
       <section
-        className="insights-grid card-grid card-grid--4 card-grid--has-input"
+        className="insights-grid card-grid card-grid--4 card-grid--metrics-6"
         aria-label="Key metrics"
       >
         <article className="insight-card metric-card">
           <h3 className="metric-card__title">Cost to minimum</h3>
           <p className="metric-card__label">Dollars to bring employees to range floor</p>
           <div className="metric-card__input-slot" aria-hidden="true" />
-          <div className="metric-card__spacer" aria-hidden="true" />
           <strong className="metric-card__value">
             {formatCurrency(insights.cost_metrics.total_gap_to_minimum)}
           </strong>
@@ -67,7 +66,6 @@ export function InsightsPanel({ result }: InsightsPanelProps) {
           <h3 className="metric-card__title">Budget impact</h3>
           <p className="metric-card__label">Remediation plus merit pool exposure</p>
           <div className="metric-card__input-slot" aria-hidden="true" />
-          <div className="metric-card__spacer" aria-hidden="true" />
           <strong className="metric-card__value">{formatCurrency(combinedBudget)}</strong>
           <p className="metric-card__meta">
             Minimum adjustments {formatCurrency(insights.budget_impact.cost_to_minimum)} · merit
@@ -89,7 +87,6 @@ export function InsightsPanel({ result }: InsightsPanelProps) {
             value={targetMerit}
             onChange={(event) => setTargetMerit(event.target.value)}
           />
-          <div className="metric-card__spacer" aria-hidden="true" />
           <strong className="metric-card__value">{formatCurrency(projectedMeritPool)}</strong>
           <p className="metric-card__meta">
             Based on {formatCurrency(insights.merit_calculator.payroll_base)} eligible payroll
@@ -103,7 +100,6 @@ export function InsightsPanel({ result }: InsightsPanelProps) {
           <h3 className="metric-card__title">Compa-ratio</h3>
           <p className="metric-card__label">Average vs. range midpoint</p>
           <div className="metric-card__input-slot" aria-hidden="true" />
-          <div className="metric-card__spacer" aria-hidden="true" />
           <strong className="metric-card__value">
             {insights.compa_ratio.average_compa_ratio != null
               ? `${insights.compa_ratio.average_compa_ratio}%`

@@ -53,7 +53,6 @@ function DemoMetricCard({
     <article className="product-demo__metric metric-card">
       <h3 className="metric-card__title">{title}</h3>
       <p className="metric-card__label">{label}</p>
-      <div className="metric-card__spacer" aria-hidden="true" />
       <strong className="metric-card__value">{value}</strong>
       <p className="metric-card__meta">{meta ?? "\u00a0"}</p>
     </article>
@@ -72,7 +71,6 @@ function DemoStatCard({
   return (
     <div className={`product-demo__stat stat-card ${tone ? `stat-card--${tone}` : ""}`}>
       <span className="stat-card__label">{label}</span>
-      <div className="stat-card__spacer" aria-hidden="true" />
       <strong className="stat-card__value">{value}</strong>
     </div>
   );
@@ -241,13 +239,19 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
               <DemoDownloads result={result} />
             </section>
 
-            <section className="product-demo__metrics card-grid card-grid--4" aria-label="Key metrics">
+            <section
+              className="product-demo__metrics card-grid card-grid--4 card-grid--metrics-5"
+              aria-label="Key metrics"
+            >
               {metrics.map((metric) => (
                 <DemoMetricCard key={metric.title} {...metric} />
               ))}
             </section>
 
-            <section className="product-demo__stats card-grid card-grid--4" aria-label="Issue counts">
+            <section
+              className="product-demo__stats card-grid card-grid--4 card-grid--stats"
+              aria-label="Issue counts"
+            >
               {stats.map((stat) => (
                 <DemoStatCard key={stat.label} {...stat} />
               ))}
@@ -258,7 +262,7 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
         {activeTab === "issues" ? (
           <>
             <section
-              className="product-demo__metrics product-demo__metrics--compact card-grid card-grid--2"
+              className="product-demo__metrics product-demo__metrics--compact card-grid card-grid--2 card-grid--metrics-5"
               aria-label="Issue highlights"
             >
               <DemoMetricCard
@@ -333,7 +337,7 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
             </section>
 
             <section
-              className="product-demo__metrics product-demo__metrics--equity card-grid card-grid--2"
+              className="product-demo__metrics product-demo__metrics--equity card-grid card-grid--2 card-grid--metrics-5"
               aria-label="Pay equity gaps"
             >
               {payGaps.length > 0 ? (
@@ -362,7 +366,7 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
         {activeTab === "budget" ? (
           <>
             <section
-              className="product-demo__metrics product-demo__metrics--triple card-grid card-grid--3"
+              className="product-demo__metrics product-demo__metrics--triple card-grid card-grid--3 card-grid--metrics-5"
               aria-label="Budget impact"
             >
               <DemoMetricCard
@@ -399,7 +403,6 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
                 value={targetMerit}
                 onChange={(event) => setTargetMerit(event.target.value)}
               />
-              <div className="metric-card__spacer" aria-hidden="true" />
               <strong className="metric-card__value">
                 {formatCurrency(projectedMeritPool)}
               </strong>
