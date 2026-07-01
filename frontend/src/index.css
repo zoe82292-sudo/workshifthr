@@ -1166,6 +1166,108 @@ tr:last-child td {
   container-name: preview-embed;
 }
 
+.landing-preview-demo-scroll {
+  max-height: min(720px, 72vh);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 14px 14px 0 0;
+}
+
+.interactive-demo-embed {
+  padding: 14px 14px 6px;
+  background: #fff;
+  border: 1px solid rgba(221, 211, 196, 0.9);
+  border-radius: 14px 14px 0 0;
+  box-shadow: 0 10px 30px rgba(31, 41, 51, 0.08);
+}
+
+.interactive-demo-embed .panel {
+  box-shadow: var(--shadow);
+}
+
+.interactive-demo-embed .tabs {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.interactive-demo__hint {
+  margin: 0 0 12px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.interactive-demo__footer {
+  margin: 14px 0 2px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.interactive-demo__footer a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.interactive-demo__message {
+  margin: 0;
+  padding: 28px 20px;
+  text-align: center;
+  color: var(--text-muted);
+  background: #fff;
+  border-radius: 14px 14px 0 0;
+}
+
+.interactive-demo__message--error {
+  color: var(--danger);
+}
+
+.interactive-demo-shell {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.sample-preview-page {
+  min-height: 100vh;
+  padding: 24px 20px 48px;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(29, 61, 51, 0.08), transparent),
+    linear-gradient(180deg, #f7f3ec 0%, #efe8dc 100%);
+}
+
+.sample-preview-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1120px;
+  margin: 0 auto 24px;
+}
+
+.sample-preview-page__intro {
+  max-width: 52ch;
+  margin: 0 auto 24px;
+  display: grid;
+  gap: 8px;
+}
+
+.sample-preview-page__intro h1 {
+  font-family: "Instrument Serif", serif;
+  font-size: clamp(2rem, 4vw, 2.6rem);
+  line-height: 1.1;
+}
+
+.sample-preview-page__intro p {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.landing-preview-caption a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
 .landing-preview-live .marketing-preview {
   max-width: none;
   margin: 0;

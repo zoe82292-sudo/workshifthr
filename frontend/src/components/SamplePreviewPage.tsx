@@ -1,28 +1,25 @@
-import { useEffect, useState } from "react";
-import { fetchDemoAnalysis } from "../api";
-import { ResultsDashboard } from "./ResultsDashboard";
-import type { AnalysisResult } from "../types";
+import { Link } from "react-router-dom";
+import { BrandLogo } from "./BrandLogo";
+import { InteractiveDemoPreview } from "./InteractiveDemoPreview";
 
 export function SamplePreviewPage() {
-  const [result, setResult] = useState<AnalysisResult | null>(null);
-
-  useEffect(() => {
-    void fetchDemoAnalysis().then(setResult);
-  }, []);
-
-  if (!result) {
-    return <div className="app-shell marketing-screenshot-shell">Loading sample analysis...</div>;
-  }
-
   return (
-    <div className="app-shell marketing-screenshot-shell">
-      <section className="panel" id="sample-output-root">
-        <ResultsDashboard
-          result={result}
-          activeTab="below_minimum"
-          onTabChange={() => undefined}
-        />
-      </section>
+    <div className="sample-preview-page">
+      <header className="sample-preview-page__header">
+        <BrandLogo size="nav" />
+        <Link className="legal-back-link" to="/">
+          ← Back to ShiftWorksHR
+        </Link>
+      </header>
+      <div className="sample-preview-page__intro">
+        <span className="hero-badge">Interactive demo</span>
+        <h1>Explore a real comp analysis</h1>
+        <p>
+          Sample data from a 20-employee file. Click tabs, scroll tables, and review the same
+          output customers see after upload.
+        </p>
+      </div>
+      <InteractiveDemoPreview variant="full" />
     </div>
   );
 }
