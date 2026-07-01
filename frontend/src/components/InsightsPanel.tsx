@@ -47,8 +47,8 @@ export function InsightsPanel({ result }: InsightsPanelProps) {
 
       <section className="insights-grid">
         <div className="insight-card">
-          <h3>Cost Calculator</h3>
-          <p className="insight-label">Total dollars to bring employees to minimum</p>
+          <h3>Cost to minimum</h3>
+          <p className="insight-label">Dollars to bring employees to range floor</p>
           <strong className="insight-value">
             {formatCurrency(insights.cost_metrics.total_gap_to_minimum)}
           </strong>
@@ -59,8 +59,8 @@ export function InsightsPanel({ result }: InsightsPanelProps) {
         </div>
 
         <div className="insight-card">
-          <h3>Budget Impact</h3>
-          <p className="insight-label">Combined remediation + merit exposure</p>
+          <h3>Budget impact</h3>
+          <p className="insight-label">Remediation plus merit pool exposure</p>
           <strong className="insight-value">{formatCurrency(combinedBudget)}</strong>
           <p className="insight-meta">
             Minimum adjustments {formatCurrency(insights.budget_impact.cost_to_minimum)} · merit
@@ -69,7 +69,7 @@ export function InsightsPanel({ result }: InsightsPanelProps) {
         </div>
 
         <div className="insight-card">
-          <h3>Merit Calculator</h3>
+          <h3>Merit pool</h3>
           <label className="insight-label" htmlFor="target-merit">
             Target merit increase %
           </label>
@@ -92,8 +92,8 @@ export function InsightsPanel({ result }: InsightsPanelProps) {
         </div>
 
         <div className="insight-card">
-          <h3>Compa-Ratio</h3>
-          <p className="insight-label">Salary vs. range midpoint (100% = midpoint)</p>
+          <h3>Compa-ratio</h3>
+          <p className="insight-label">Average vs. range midpoint</p>
           <strong className="insight-value">
             {insights.compa_ratio.average_compa_ratio != null
               ? `${insights.compa_ratio.average_compa_ratio}%`

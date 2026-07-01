@@ -1,6 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchDemoAnalysis } from "../api";
+import {
+  downloadExecutiveSummaryExcel,
+  downloadExecutiveSummaryPdf,
+} from "../exportAnalysis";
 import type { AnalysisResult } from "../types";
 import { LogoMark } from "./LogoMark";
 
@@ -17,6 +21,9 @@ const TABS: Array<{ id: DemoTab; label: string }> = [
   { id: "budget", label: "Budget impact" },
 ];
 
+const SAMPLE_PDF = "shiftworkshr-sample-executive-summary.pdf";
+const SAMPLE_XLSX = "shiftworkshr-sample-executive-summary.xlsx";
+
 function formatCurrency(value: number | null | undefined) {
   if (value == null) return "—";
   return new Intl.NumberFormat("en-US", {
@@ -31,13 +38,95 @@ function formatPercent(value: number | null | undefined) {
   return `${value.toFixed(1)}%`;
 }
 
+function DemoMetricCard({
+  title,
+  label,
+  value,
+  meta,
+}: {
+  title: string;
+  label: string;
+  value: string | number;
+  meta?: string;
+}) {
+  return (
+    <article className="product-demo__metric">
+      <h3 className="product-demo__metric-title">{title}</h3>
+      <p className="product-demo__metric-label">{label}</p>
+      <div className="product-demo__metric-fill" aria-hidden="true" />
+      <strong className="product-demo__metric-value">{value}</strong>
+      {meta ? <p className="product-demo__metric-meta">{meta}</p> : null}
+    </article>
+  );
+}
+
+function DemoStatCard({
+  label,
+  value,
+  tone = "",
+}: {
+  label: string;
+  value: number;
+  tone?: string;
+}) {
+  return (
+    <div className={`product-demo__stat ${tone ? `product-demo__stat--${tone}` : ""}`}>
+      <span className="product-demo__stat-label">{label}</span>
+      <strong className="product-demo__stat-value">{value}</strong>
+    </div>
+  );
+}
+
+function DemoDownloads({
+  result,
+  compact = false,
+}: {
+  result: AnalysisResult;
+  compact?: boolean;
+}) {
+  return (
+    <div className={`product-demo__downloads ${compact ? "product-demo__downloads--compact" : ""}`}>
+      <button
+        className="button button-primary"
+        type="button"
+        onClick={() => downloadExecutiveSummaryPdf(result, SAMPLE_PDF)}
+      >
+        Download PDF
+      </button>
+      <button
+        className="button button-secondary"
+        type="button"
+        onClick={() => downloadExecutiveSummaryExcel(result, SAMPLE_XLSX)}
+      >
+        Download Excel
+      </button>
+    </div>
+  );
+}
+
 export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcaseProps) {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [activeTab, setActiveTab] = useState<DemoTab>("overview");
+  const [targetMerit, setTargetMerit] = useState("3.5");
 
   useEffect(() => {
     void fetchDemoAnalysis().then(setResult);
   }, []);
+
+  useEffect(() => {
+    if (!result) return;
+    setTargetMerit(
+      result.insights.merit_calculator.average_merit_percent?.toString() ?? "3.5",
+    );
+  }, [result]);
+
+  const payrollBase = result?.insights.merit_calculator.payroll_base ?? 0;
+
+  const projectedMeritPool = useMemo(() => {
+    const percent = Number(targetMerit);
+    if (!Number.isFinite(percent) || percent < 0) return 0;
+    return (payrollBase * percent) / 100;
+  }, [payrollBase, targetMerit]);
 
   const shellClass = [
     "product-demo",
@@ -49,11 +138,8 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
   }
 
   const { insights, summary } = result;
-  const meritPercent = insights.merit_calculator.average_merit_percent ?? 3.5;
-  const projectedMeritPool =
-    (insights.merit_calculator.payroll_base * meritPercent) / 100;
-  const combinedBudget =
-    insights.cost_metrics.total_gap_to_minimum + projectedMeritPool;
+  const combinedBudget = insights.cost_metrics.total_gap_to_minimum + projectedMeritPool;
+  const meritPercent = Number(targetMerit) || 0;
   const issueRows = result.below_minimum.slice(0, 4);
   const payGaps = [
     ...result.pay_equity.gender_gaps.slice(0, 2),
@@ -106,7 +192,10 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
             <p className="product-demo__title">Sample results</p>
           </div>
         </div>
-        <span className="product-demo__chip">Demo data</span>
+        <div className="product-demo__topbar-actions">
+          <DemoDownloads result={result} compact />
+          <span className="product-demo__chip">Demo data</span>
+        </div>
       </header>
 
       <nav className="product-demo__tabs" aria-label="Demo views">
@@ -134,32 +223,25 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
               </div>
               <p className="product-demo__headline">{insights.executive_summary.headline}</p>
               <ul className="product-demo__bullets">
-                {insights.executive_summary.bullets.slice(0, 3).map((bullet) => (
+                {insights.executive_summary.bullets.map((bullet) => (
                   <li key={bullet}>{bullet}</li>
                 ))}
               </ul>
+              <p className="product-demo__export-note">
+                Same executive summary export customers share with leadership.
+              </p>
+              <DemoDownloads result={result} />
             </section>
 
             <section className="product-demo__metrics" aria-label="Key metrics">
               {metrics.map((metric) => (
-                <article className="product-demo__metric" key={metric.title}>
-                  <h3>{metric.title}</h3>
-                  <p className="product-demo__metric-label">{metric.label}</p>
-                  <strong className="product-demo__metric-value">{metric.value}</strong>
-                  <p className="product-demo__metric-meta">{metric.meta}</p>
-                </article>
+                <DemoMetricCard key={metric.title} {...metric} />
               ))}
             </section>
 
             <section className="product-demo__stats" aria-label="Issue counts">
               {stats.map((stat) => (
-                <div
-                  className={`product-demo__stat ${stat.tone ? `product-demo__stat--${stat.tone}` : ""}`}
-                  key={stat.label}
-                >
-                  <span>{stat.label}</span>
-                  <strong>{stat.value}</strong>
-                </div>
+                <DemoStatCard key={stat.label} {...stat} />
               ))}
             </section>
           </>
@@ -167,31 +249,34 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
 
         {activeTab === "issues" ? (
           <>
-            <section className="product-demo__metrics product-demo__metrics--compact" aria-label="Issue highlights">
-              <article className="product-demo__metric">
-                <h3>Below minimum</h3>
-                <p className="product-demo__metric-label">Employees under range floor</p>
-                <strong className="product-demo__metric-value">{summary.below_minimum}</strong>
-                <p className="product-demo__metric-meta">Requires merit or adjustment review</p>
-              </article>
-              <article className="product-demo__metric">
-                <h3>Above maximum</h3>
-                <p className="product-demo__metric-label">Employees over range ceiling</p>
-                <strong className="product-demo__metric-value">{summary.above_maximum}</strong>
-                <p className="product-demo__metric-meta">Check approvals and exceptions</p>
-              </article>
-              <article className="product-demo__metric">
-                <h3>Compression</h3>
-                <p className="product-demo__metric-label">Same-level pay spread issues</p>
-                <strong className="product-demo__metric-value">{summary.compression_issues}</strong>
-                <p className="product-demo__metric-meta">Structural range or level review</p>
-              </article>
-              <article className="product-demo__metric">
-                <h3>Manager inversions</h3>
-                <p className="product-demo__metric-label">Managers paid below reports</p>
-                <strong className="product-demo__metric-value">{summary.managers_below_reports}</strong>
-                <p className="product-demo__metric-meta">Leadership escalation recommended</p>
-              </article>
+            <section
+              className="product-demo__metrics product-demo__metrics--compact"
+              aria-label="Issue highlights"
+            >
+              <DemoMetricCard
+                title="Below minimum"
+                label="Employees under range floor"
+                value={summary.below_minimum}
+                meta="Requires merit or adjustment review"
+              />
+              <DemoMetricCard
+                title="Above maximum"
+                label="Employees over range ceiling"
+                value={summary.above_maximum}
+                meta="Check approvals and exceptions"
+              />
+              <DemoMetricCard
+                title="Compression"
+                label="Same-level pay spread issues"
+                value={summary.compression_issues}
+                meta="Structural range or level review"
+              />
+              <DemoMetricCard
+                title="Manager inversions"
+                label="Managers paid below reports"
+                value={summary.managers_below_reports}
+                meta="Leadership escalation recommended"
+              />
             </section>
 
             <section className="product-demo__table-section panel">
@@ -239,30 +324,23 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
               <p className="product-demo__note">{result.pay_equity.disclaimer}</p>
             </section>
 
-            <section className="product-demo__metrics product-demo__metrics--equity" aria-label="Pay equity gaps">
+            <section
+              className="product-demo__metrics product-demo__metrics--equity"
+              aria-label="Pay equity gaps"
+            >
               {payGaps.length > 0 ? (
                 payGaps.map((gap) => (
-                  <article
-                    className="product-demo__metric"
+                  <DemoMetricCard
                     key={`${gap.dimension}-${gap.higher_paid_group}-${gap.lower_paid_group}-${gap.scope}`}
-                  >
-                    <h3>
-                      {gap.higher_paid_group} vs. {gap.lower_paid_group}
-                    </h3>
-                    <p className="product-demo__metric-label">
-                      {gap.scope} · {gap.dimension}
-                    </p>
-                    <strong className="product-demo__metric-value">
-                      {formatPercent(gap.gap_percent)}
-                    </strong>
-                    <p className="product-demo__metric-meta">
-                      {formatCurrency(gap.higher_median)} vs. {formatCurrency(gap.lower_median)}
-                    </p>
-                  </article>
+                    title={`${gap.higher_paid_group} vs. ${gap.lower_paid_group}`}
+                    label={`${gap.scope} · ${gap.dimension}`}
+                    value={formatPercent(gap.gap_percent)}
+                    meta={`${formatCurrency(gap.higher_median)} vs. ${formatCurrency(gap.lower_median)}`}
+                  />
                 ))
               ) : (
                 <article className="product-demo__metric product-demo__metric--wide">
-                  <h3>No gaps in sample</h3>
+                  <h3 className="product-demo__metric-title">No gaps in sample</h3>
                   <p className="product-demo__metric-label">
                     Upload data with gender and race columns to populate this view.
                   </p>
@@ -273,30 +351,74 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
         ) : null}
 
         {activeTab === "budget" ? (
-          <section className="product-demo__metrics" aria-label="Budget impact">
-            {metrics.map((metric) => (
-              <article className="product-demo__metric" key={`budget-${metric.title}`}>
-                <h3>{metric.title}</h3>
-                <p className="product-demo__metric-label">{metric.label}</p>
-                <strong className="product-demo__metric-value">{metric.value}</strong>
-                <p className="product-demo__metric-meta">{metric.meta}</p>
-              </article>
-            ))}
-            <article className="product-demo__metric product-demo__metric--wide">
-              <h3>Planning note</h3>
-              <p className="product-demo__metric-label">{insights.budget_impact.note}</p>
-              <strong className="product-demo__metric-value">
-                {formatCurrency(insights.budget_impact.total_budget_impact)}
+          <>
+            <section
+              className="product-demo__metrics product-demo__metrics--triple"
+              aria-label="Budget impact"
+            >
+              <DemoMetricCard
+                title="Cost to minimum"
+                label="Dollars to bring employees to range floor"
+                value={formatCurrency(insights.cost_metrics.total_gap_to_minimum)}
+                meta={`${insights.cost_metrics.employees_below_minimum} employees flagged`}
+              />
+              <DemoMetricCard
+                title="Budget impact"
+                label="Remediation plus merit pool exposure"
+                value={formatCurrency(combinedBudget)}
+                meta={`Minimum ${formatCurrency(insights.budget_impact.cost_to_minimum)}`}
+              />
+              <DemoMetricCard
+                title="Compa-ratio"
+                label="Average vs. range midpoint"
+                value={formatPercent(insights.compa_ratio.average_compa_ratio)}
+                meta={`${insights.compa_ratio.below_90_percent} below 90%`}
+              />
+            </section>
+
+            <section className="product-demo__merit panel">
+              <h3 className="product-demo__merit-title">Merit pool</h3>
+              <label className="product-demo__merit-label" htmlFor="demo-target-merit">
+                Target merit increase %
+              </label>
+              <input
+                id="demo-target-merit"
+                className="merit-input product-demo__merit-input"
+                type="number"
+                min="0"
+                step="0.1"
+                value={targetMerit}
+                onChange={(event) => setTargetMerit(event.target.value)}
+              />
+              <strong className="product-demo__merit-value">
+                {formatCurrency(projectedMeritPool)}
               </strong>
-              <p className="product-demo__metric-meta">Total modeled budget exposure</p>
-            </article>
-          </section>
+              <p className="product-demo__merit-meta">
+                Based on {formatCurrency(insights.merit_calculator.payroll_base)} eligible
+                payroll
+                {insights.merit_calculator.average_merit_percent != null
+                  ? ` · file average ${insights.merit_calculator.average_merit_percent}%`
+                  : ""}
+              </p>
+            </section>
+
+            <section className="product-demo__summary panel">
+              <div className="product-demo__summary-top">
+                <h2>Planning note</h2>
+              </div>
+              <p className="product-demo__headline">{insights.budget_impact.note}</p>
+              <p className="product-demo__note">
+                Total modeled budget exposure:{" "}
+                <strong>{formatCurrency(insights.budget_impact.total_budget_impact)}</strong>
+              </p>
+            </section>
+          </>
         ) : null}
       </div>
 
       {variant === "embedded" ? (
         <footer className="product-demo__footer">
-          <Link to="/sample-preview">Open expanded demo</Link>
+          <Link to="/sample-preview">See full analyzer</Link>
           <span aria-hidden="true"> · </span>
           <Link to="/#pricing">Get full access</Link>
         </footer>

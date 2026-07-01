@@ -328,8 +328,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
             <ProductDemoShowcase variant="embedded" />
           </div>
           <figcaption className="product-demo-frame__caption">
-            Sample comp file ·{" "}
-            <Link to="/sample-preview">open expanded demo</Link>
+            Sample comp file · <Link to="/sample-preview">see full analyzer</Link>
           </figcaption>
         </figure>
       </section>

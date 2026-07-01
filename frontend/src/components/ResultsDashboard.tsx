@@ -51,6 +51,42 @@ const TABS: Array<{ id: AnalysisTab; label: string; count: (result: AnalysisResu
     { id: "missing_data", label: "Missing Data", count: (r) => r.summary.missing_data },
   ];
 
+const TAB_GROUPS: Array<{ title: string; ids: AnalysisTab[] }> = [
+  {
+    title: "Flagged issues",
+    ids: [
+      "below_minimum",
+      "above_maximum",
+      "duplicate_ids",
+      "compression",
+      "managers_below_reports",
+    ],
+  },
+  {
+    title: "Ranges & compa",
+    ids: ["range_penetration", "compa_ratio"],
+  },
+  {
+    title: "Pay equity",
+    ids: ["pay_equity"],
+  },
+  {
+    title: "Data quality",
+    ids: [
+      "missing_bonus_targets",
+      "missing_salary_ranges",
+      "invalid_effective_dates",
+      "outlier_merit_increases",
+      "missing_data",
+    ],
+  },
+];
+
+const TABS_BY_ID = Object.fromEntries(TABS.map((tab) => [tab.id, tab])) as Record<
+  AnalysisTab,
+  (typeof TABS)[number]
+>;
+
 function formatCurrency(value: number | null | undefined) {
   if (value == null) return "—";
   return new Intl.NumberFormat("en-US", {
@@ -184,15 +220,28 @@ export function ResultsDashboard({
         </div>
       </div>
 
-      <div className="tabs">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            className={`tab ${activeTab === tab.id ? "active" : ""}`}
-            onClick={() => onTabChange(tab.id)}
-          >
-            {tab.label} ({tab.count(result)})
-          </button>
+      <div className="tab-groups" role="tablist" aria-label="Issue categories">
+        {TAB_GROUPS.map((group) => (
+          <div className="tab-group" key={group.title}>
+            <span className="tab-group__label">{group.title}</span>
+            <div className="tab-group__tabs">
+              {group.ids.map((tabId) => {
+                const tab = TABS_BY_ID[tabId];
+                return (
+                  <button
+                    key={tabId}
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === tabId}
+                    className={`tab ${activeTab === tabId ? "active" : ""}`}
+                    onClick={() => onTabChange(tabId)}
+                  >
+                    {tab.label} ({tab.count(result)})
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         ))}
       </div>
 

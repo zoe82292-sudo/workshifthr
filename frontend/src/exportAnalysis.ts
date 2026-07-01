@@ -331,3 +331,82 @@ export function downloadAnalysisPdf(result: AnalysisResult, filename = `${BASE_F
   const pdfBlob = doc.output("blob");
   triggerDownload(pdfBlob, filename);
 }
+
+/** Leadership-ready export: executive summary and key metrics only. */
+export function downloadExecutiveSummaryPdf(
+  result: AnalysisResult,
+  filename = "shiftworkshr-executive-summary.pdf",
+) {
+  const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "letter" });
+  const { insights, summary } = result;
+  const margin = 48;
+  let y = margin;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.text("ShiftWorksHR Executive Summary", margin, y);
+  y += 24;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+  doc.text(`Sample analysis · ${new Date().toLocaleDateString()}`, margin, y);
+  y += 28;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.text("Overview", margin, y);
+  y += 16;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+  const headlineLines = doc.splitTextToSize(insights.executive_summary.headline, 520);
+  doc.text(headlineLines, margin, y);
+  y += headlineLines.length * 14 + 8;
+
+  for (const bullet of insights.executive_summary.bullets) {
+    const lines = doc.splitTextToSize(`• ${bullet}`, 520);
+    doc.text(lines, margin, y);
+    y += lines.length * 14 + 4;
+  }
+
+  autoTable(doc, {
+    startY: y + 8,
+    head: [["Metric", "Value"]],
+    body: [
+      ["Risk Level", insights.executive_summary.risk_level],
+      ["Cost to Minimum", formatMoney(insights.budget_impact.cost_to_minimum)],
+      ["Projected Merit Pool", formatMoney(insights.budget_impact.projected_merit_pool)],
+      ["Total Budget Impact", formatMoney(insights.budget_impact.total_budget_impact)],
+      [
+        "Average Compa-Ratio",
+        insights.compa_ratio.average_compa_ratio != null
+          ? `${insights.compa_ratio.average_compa_ratio}%`
+          : "—",
+      ],
+      ["Below Minimum", String(summary.below_minimum)],
+      ["Above Maximum", String(summary.above_maximum)],
+      ["Compression Issues", String(summary.compression_issues)],
+      ["Managers Below Reports", String(summary.managers_below_reports)],
+      ["Pay Equity Gaps", String(summary.pay_equity_gaps)],
+    ],
+    styles: { fontSize: 10, cellPadding: 6 },
+    headStyles: { fillColor: [15, 118, 110] },
+    margin: { left: margin, right: margin },
+  });
+
+  const pdfBlob = doc.output("blob");
+  triggerDownload(pdfBlob, filename);
+}
+
+export function downloadExecutiveSummaryExcel(
+  result: AnalysisResult,
+  filename = "shiftworkshr-executive-summary.xlsx",
+) {
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(
+    workbook,
+    XLSX.utils.aoa_to_sheet(summaryRows(result)),
+    "Executive Summary",
+  );
+  XLSX.writeFile(workbook, filename);
+}
