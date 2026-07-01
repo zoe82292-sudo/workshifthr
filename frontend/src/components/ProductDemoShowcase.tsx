@@ -234,7 +234,8 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
                 ))}
               </ul>
               <p className="product-demo__export-note">
-                Same Excel and PDF exports customers get after running an analysis.
+                Same Excel export as production. Use Executive PDF in the full analyzer for a
+                leadership-ready summary.
               </p>
               <DemoDownloads result={result} />
             </section>

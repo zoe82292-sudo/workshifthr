@@ -12,3 +12,5 @@ node_modules/
 dist/
 .playwright-browsers/
 *.egg-info/
+backend/data/analysis_history/
+backend/data/provisioned_orgs.json

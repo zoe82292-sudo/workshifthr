@@ -58,9 +58,10 @@ def _max_per_org() -> int:
 
 
 def org_storage_key(organization: str, email: str) -> str:
+    """Per-user storage namespace within an organization."""
     slug = re.sub(r"[^\w\-]+", "-", organization.lower()).strip("-") or "org"
-    domain = email.split("@", 1)[1].lower() if "@" in email else "unknown"
-    digest = hashlib.sha256(f"{organization}:{domain}".encode()).hexdigest()[:12]
+    normalized_email = email.strip().lower()
+    digest = hashlib.sha256(f"{organization}:{normalized_email}".encode()).hexdigest()[:12]
     return f"{slug}-{digest}"
 
 

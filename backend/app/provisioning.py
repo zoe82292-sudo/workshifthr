@@ -244,12 +244,44 @@ def credentials_for_session(session_id: str) -> dict[str, str] | None:
         if not password or not email:
             return None
 
+        org["initial_password"] = None
+        _write_store(store)
+
         return {
             "email": email,
             "organization": org.get("organization", ""),
             "password": password,
             "plan_id": org.get("plan_id", ""),
         }
+
+
+def revoke_org_access(
+    *,
+    stripe_customer_id: str | None = None,
+    stripe_subscription_id: str | None = None,
+) -> bool:
+    """End subscription access immediately (cancel or failed payment)."""
+    with _file_lock:
+        store = _read_store()
+        org = _find_org_by_stripe(
+            store,
+            customer_id=stripe_customer_id,
+            subscription_id=stripe_subscription_id,
+        )
+        if org is None:
+            return False
+
+        now = datetime.now(UTC).isoformat()
+        org["expires_at"] = now
+        org["last_renewed_at"] = now
+        _write_store(store)
+        org_name = org.get("organization")
+
+    from app.auth import invalidate_credentials_cache
+
+    invalidate_credentials_cache()
+    logger.info("Revoked org access for %s", org_name)
+    return True
 
 
 def provision_from_stripe_session(session: Any) -> dict[str, Any] | None:

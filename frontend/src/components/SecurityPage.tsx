@@ -136,7 +136,9 @@ export function SecurityPage() {
       <ul>
         <li>Clear in-product disclaimers that outputs are decision support only</li>
         <li>Groups with fewer than five employees are hidden to reduce re-identification risk</li>
-        <li>No separate long-term store of demographic fields after the request completes</li>
+        <li>
+          No long-term store of demographic fields unless you explicitly save a run to history
+        </li>
       </ul>
       <p>
         Your organization remains responsible for lawful collection and use of demographic

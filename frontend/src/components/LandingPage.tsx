@@ -61,7 +61,7 @@ const AUDIENCES = [
 const TRUST_POINTS = [
   { stat: "< 30 sec", label: "Typical time to first insights" },
   { stat: "$249", label: "Cycle pass vs. $10k+ platforms" },
-  { stat: "In memory", label: "Data not stored after analysis" },
+  { stat: "Opt-in", label: "Server storage only when you save" },
   { stat: "HR-built", label: "Designed by a comp practitioner" },
 ];
 
@@ -91,7 +91,7 @@ const FAQ_BASE: Array<{ q: string; a: string }> = [
   },
   {
     q: "Is my compensation data stored?",
-    a: "No. Uploads are processed in memory and not kept on our servers after analysis. See our Security page for details.",
+    a: "Uploads are processed in memory and not kept after analysis by default. If you click Save to history while signed in, that run is stored as JSON on our server for your account only (up to 25 saved runs, deletable anytime). See our Security page for details.",
   },
   {
     q: "How do teammates get access?",
@@ -118,7 +118,9 @@ function buildFaq(scrollTo: (id: string) => void): Array<{ q: string; a: ReactNo
           >
             View the sample analysis
           </button>{" "}
-          on this page — it uses our demo comp file and does not require an account. To upload your
+          on this page, or open the{" "}
+          <Link to="/sample-preview">full analyzer preview</Link> for the complete post-upload
+          experience — both use our demo comp file and do not require an account. To upload your
           own spreadsheet, choose a plan (login is instant after checkout). Prefer a walkthrough
           first? Email{" "}
           <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Sample walkthrough request")}`}>
@@ -316,9 +318,15 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
           <span className="hero-badge">Product preview</span>
           <h2>See what you get before you buy</h2>
           <p>
-            Explore a live sample analysis with the same views customers see after upload — switch
-            tabs to review flags, pay equity, and budget impact.
+            Explore a curated sample below, or open the{" "}
+            <Link to="/sample-preview">full analyzer preview</Link> for the complete post-upload
+            experience with all issue tabs, filters, and exports.
           </p>
+          <div className="landing-preview-actions">
+            <Link className="button button-primary" to="/sample-preview">
+              Open full sample analysis
+            </Link>
+          </div>
         </div>
         <figure
           className="product-demo-frame"
@@ -434,15 +442,16 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
                 {plan.featured ? (
                   <span className="landing-price-badge">Best value</span>
                 ) : (
-                  <span className="landing-price-badge landing-price-badge--placeholder" aria-hidden="true" />
+                  <span
+                    className="landing-price-badge landing-price-badge--placeholder"
+                    aria-hidden="true"
+                  />
                 )}
               </div>
-              <div className="landing-price-card__head">
-                <h3>{plan.name}</h3>
-                <p className="landing-price-amount">{plan.price}</p>
-                <p className="landing-price-period">{plan.period}</p>
-                <p className="landing-price-description">{plan.description}</p>
-              </div>
+              <h3 className="landing-price-card__title">{plan.name}</h3>
+              <p className="landing-price-amount">{plan.price}</p>
+              <p className="landing-price-period">{plan.period}</p>
+              <p className="landing-price-description">{plan.description}</p>
               <ul className="landing-checklist landing-price-card__features">
                 {plan.features.map((feature) => (
                   <li key={feature}>{feature}</li>
@@ -469,8 +478,8 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
             <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Add authorized users")}`}>
               {CONTACT_EMAIL}
             </a>{" "}
-            to add people. Payments are processed securely by Stripe. Your compensation data is
-            processed in memory and not stored on our servers after analysis.
+            to add people. Payments are processed securely by Stripe. Uploads are processed in
+            memory by default. Optional Save to history stores a JSON snapshot for your account only.
           </p>
         </div>
       </section>

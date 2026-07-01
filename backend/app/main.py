@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile, status
@@ -41,6 +43,9 @@ from app.billing import (
     handle_stripe_webhook,
 )
 from app.models import AnalysisResult, ColumnMapping, PreviewResponse
+from app.rate_limit import enforce_rate_limit
+
+logger = logging.getLogger(__name__)
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 STATIC_DIR = ROOT_DIR / "frontend" / "dist"
@@ -50,7 +55,25 @@ ALLOWED_ORIGINS = os.getenv(
     "http://localhost:5173,http://127.0.0.1:5173",
 ).split(",")
 
-app = FastAPI(title="ShiftWorksHR Compensation Analyzer")
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    if auth_enabled() and not os.getenv("JWT_SECRET", "").strip():
+        raise RuntimeError(
+            "JWT_SECRET is required when authentication is enabled. "
+            "Set JWT_SECRET in your environment before starting the server."
+        )
+    yield
+
+
+app = FastAPI(title="ShiftWorksHR Compensation Analyzer", lifespan=lifespan)
+
+
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    if request.url.path.startswith("/api/"):
+        enforce_rate_limit(request)
+    return await call_next(request)
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -197,7 +220,13 @@ async def analyze(
 
     mapping_override = None
     if column_mapping:
-        mapping_override = ColumnMapping(**json.loads(column_mapping))
+        try:
+            mapping_override = ColumnMapping(**json.loads(column_mapping))
+        except json.JSONDecodeError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid column mapping payload.",
+            ) from exc
 
     try:
         return analyze_file(
@@ -212,8 +241,9 @@ async def analyze(
             detail=str(exc),
         ) from exc
     except Exception as exc:
+        logger.exception("Unexpected analyze failure for %s", file.filename)
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=(
                 "Unable to process this file. Try uploading the original Excel workbook "
                 "(.xlsx), or re-save CSV as UTF-8 comma-separated."

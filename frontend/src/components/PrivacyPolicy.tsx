@@ -121,12 +121,18 @@ export function PrivacyPolicy() {
         California Consumer Privacy Act (CCPA/CPRA) definition of “sale.”
       </p>
 
-      <h2>5. What we do not store long-term</h2>
+      <h2>5. What we do not store long-term (by default)</h2>
       <ul>
         <li>Uploaded spreadsheet files — not retained after processing</li>
-        <li>Employee rows from your file — not retained in a customer database</li>
-        <li>Historical analysis results — not retained on our servers between sessions</li>
+        <li>Employee rows from your file — not retained in a customer database unless you opt in</li>
       </ul>
+      <h3>5a. Optional saved analysis history</h3>
+      <p>
+        Signed-in customers may click <strong>Save to history</strong> to store a JSON snapshot of
+        a completed analysis on our servers. Saved runs are scoped to your account, limited to 25 per
+        organization, and can be deleted from the analyzer at any time. Saved history may include
+        employee names, salaries, and demographic fields from your upload.
+      </p>
 
       <h2>6. Service providers (subprocessors)</h2>
       <p>We use trusted providers to run the Service, including:</p>
@@ -177,7 +183,12 @@ export function PrivacyPolicy() {
       <h2>9. Retention</h2>
       <ul>
         <li>
-          <strong>Uploads:</strong> not retained after analysis (see above)
+          <strong>Uploads:</strong> not retained after analysis unless you explicitly save a run to
+          history (see section 5a)
+        </li>
+        <li>
+          <strong>Saved analysis history:</strong> retained until you delete it or until older runs
+          are removed after the 25-run limit per organization
         </li>
         <li>
           <strong>Login sessions:</strong> until token expiry or sign-out (typically up to

@@ -25,8 +25,10 @@ function formatMoney(value: number | null | undefined): string {
 
 function summaryRows(result: AnalysisResult): Array<Array<string | number>> {
   const { insights, summary } = result;
+  const generatedAt = new Date().toLocaleString();
   return [
     ["ShiftWorksHR Compensation Analysis"],
+    ["Generated", generatedAt],
     [],
     ["Executive Summary"],
     ["Headline", insights.executive_summary.headline],
@@ -315,9 +317,15 @@ export function downloadAnalysisExcel(result: AnalysisResult, filename = `${BASE
 
 export function downloadAnalysisPdf(result: AnalysisResult, filename = `${BASE_FILENAME}.pdf`) {
   const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "letter" });
-  const { insights, summary } = result;
+  const { insights, summary, pay_equity: payEquity } = result;
   const margin = 48;
   let y = margin;
+
+  type AutoTableDoc = jsPDF & { lastAutoTable?: { finalY: number } };
+
+  function nextY(fallback = margin) {
+    return (doc as AutoTableDoc).lastAutoTable?.finalY ?? fallback;
+  }
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
@@ -350,6 +358,12 @@ export function downloadAnalysisPdf(result: AnalysisResult, filename = `${BASE_F
     }
   }
 
+  if (insights.budget_impact.note) {
+    const noteLines = doc.splitTextToSize(insights.budget_impact.note, 520);
+    doc.text(noteLines, margin, y + 4);
+    y += noteLines.length * 14 + 8;
+  }
+
   autoTable(doc, {
     startY: y + 8,
     head: [["Metric", "Value"]],
@@ -358,23 +372,39 @@ export function downloadAnalysisPdf(result: AnalysisResult, filename = `${BASE_F
       ["Cost to Minimum", formatMoney(insights.budget_impact.cost_to_minimum)],
       ["Projected Merit Pool", formatMoney(insights.budget_impact.projected_merit_pool)],
       ["Total Budget Impact", formatMoney(insights.budget_impact.total_budget_impact)],
-      ["Average Compa-Ratio", insights.compa_ratio.average_compa_ratio != null ? `${insights.compa_ratio.average_compa_ratio}%` : "—"],
+      [
+        "Average Compa-Ratio",
+        insights.compa_ratio.average_compa_ratio != null
+          ? `${insights.compa_ratio.average_compa_ratio}%`
+          : "—",
+      ],
       ["Below Minimum", String(summary.below_minimum)],
       ["Above Maximum", String(summary.above_maximum)],
       ["Duplicate IDs", String(summary.duplicate_ids)],
       ["Compression Issues", String(summary.compression_issues)],
+      ["Managers Below Reports", String(summary.managers_below_reports)],
+      ["Pay Equity Gaps", String(summary.pay_equity_gaps)],
+      ["Missing Salary Ranges", String(summary.missing_salary_ranges)],
+      ["Outlier Merit Increases", String(summary.outlier_merit_increases)],
     ],
     styles: { fontSize: 10, cellPadding: 6 },
     headStyles: { fillColor: [15, 118, 110] },
     margin: { left: margin, right: margin },
   });
 
-  const afterMetrics = (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y + 120;
+  let sectionY = nextY(y + 120) + 24;
+
+  const issueSections: Array<{
+    title: string;
+    head: string[];
+    body: string[][];
+    color: [number, number, number];
+  }> = [];
 
   if (result.below_minimum.length > 0) {
-    autoTable(doc, {
-      startY: afterMetrics + 24,
-      head: [["Row", "Employee ID", "Name", "Salary", "Range Min", "Gap to Minimum"]],
+    issueSections.push({
+      title: "Below Minimum",
+      head: ["Row", "Employee ID", "Name", "Salary", "Range Min", "Gap to Minimum"],
       body: result.below_minimum.map((row) => [
         String(row.row_number),
         row.employee_id ?? "",
@@ -383,43 +413,114 @@ export function downloadAnalysisPdf(result: AnalysisResult, filename = `${BASE_F
         formatMoney(row.range_min),
         formatMoney(row.gap_to_minimum),
       ]),
-      styles: { fontSize: 9, cellPadding: 5 },
-      headStyles: { fillColor: [180, 35, 24] },
-      margin: { left: margin, right: margin },
-      theme: "grid",
+      color: [180, 35, 24],
     });
   }
 
-  doc.addPage();
-  autoTable(doc, {
-    startY: margin,
-    head: [[
-      "Row",
-      "Employee ID",
-      "Name",
-      "Department",
-      "Salary",
-      "Range Min",
-      "Range Max",
-      "Compa %",
-      "Penetration %",
-    ]],
-    body: result.range_penetration.map((row) => [
-      String(row.row_number),
-      row.employee_id ?? "",
-      row.employee_name ?? "",
-      row.department ?? "",
-      formatMoney(row.salary),
-      formatMoney(row.range_min),
-      formatMoney(row.range_max),
-      row.compa_ratio != null ? `${row.compa_ratio}%` : "",
-      row.range_penetration != null ? `${row.range_penetration}%` : "",
-    ]),
-    styles: { fontSize: 8, cellPadding: 4 },
-    headStyles: { fillColor: [15, 118, 110] },
-    margin: { left: margin, right: margin },
-    theme: "striped",
-  });
+  if (result.above_maximum.length > 0) {
+    issueSections.push({
+      title: "Above Maximum",
+      head: ["Row", "Employee ID", "Name", "Salary", "Range Max"],
+      body: result.above_maximum.map((row) => [
+        String(row.row_number),
+        row.employee_id ?? "",
+        row.employee_name ?? "",
+        formatMoney(row.salary),
+        formatMoney(row.range_max),
+      ]),
+      color: [180, 95, 24],
+    });
+  }
+
+  if (result.compression.length > 0) {
+    issueSections.push({
+      title: "Salary Compression",
+      head: ["Type", "Description", "Employee", "Row"],
+      body: result.compression.map((issue) => [
+        issue.issue_type,
+        issue.description,
+        issue.employee_name ?? issue.employee_id ?? "",
+        issue.row_number != null ? String(issue.row_number) : "",
+      ]),
+      color: [120, 90, 20],
+    });
+  }
+
+  if (result.managers_below_reports.length > 0) {
+    issueSections.push({
+      title: "Managers Below Reports",
+      head: ["Manager", "Manager Pay", "Report", "Report Pay", "Gap"],
+      body: result.managers_below_reports.map((issue) => [
+        issue.manager_name ?? issue.manager_id,
+        formatMoney(issue.manager_salary),
+        issue.report_name ?? issue.report_id,
+        formatMoney(issue.report_salary),
+        formatMoney(issue.pay_gap),
+      ]),
+      color: [24, 78, 119],
+    });
+  }
+
+  if (result.duplicate_ids.length > 0) {
+    issueSections.push({
+      title: "Duplicate IDs",
+      head: ["Employee ID", "Occurrences", "Excel Rows"],
+      body: result.duplicate_ids.map((group) => [
+        group.employee_id,
+        String(group.count),
+        group.rows.join(", "),
+      ]),
+      color: [90, 90, 90],
+    });
+  }
+
+  if (payEquity.available && (payEquity.gender_gaps.length > 0 || payEquity.race_gaps.length > 0)) {
+    const combinedGaps = [...payEquity.gender_gaps, ...payEquity.race_gaps];
+    issueSections.push({
+      title: "Pay Equity Gaps",
+      head: ["Dimension", "Scope", "Higher Paid", "Lower Paid", "Gap %", "Gap Amount"],
+      body: combinedGaps.map((gap) => [
+        gap.dimension,
+        gap.scope,
+        gap.higher_paid_group,
+        gap.lower_paid_group,
+        gap.gap_percent != null ? `${gap.gap_percent}%` : "",
+        formatMoney(gap.gap_amount),
+      ]),
+      color: [15, 118, 110],
+    });
+  }
+
+  for (const section of issueSections) {
+    if (sectionY > 680) {
+      doc.addPage();
+      sectionY = margin;
+    }
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text(section.title, margin, sectionY);
+    autoTable(doc, {
+      startY: sectionY + 10,
+      head: [section.head],
+      body: section.body,
+      styles: { fontSize: 9, cellPadding: 5 },
+      headStyles: { fillColor: section.color },
+      margin: { left: margin, right: margin },
+      theme: "grid",
+    });
+    sectionY = nextY(sectionY + 40) + 24;
+  }
+
+  if (payEquity.disclaimer) {
+    if (sectionY > 640) {
+      doc.addPage();
+      sectionY = margin;
+    }
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(9);
+    const disclaimerLines = doc.splitTextToSize(payEquity.disclaimer, 520);
+    doc.text(disclaimerLines, margin, sectionY);
+  }
 
   const pdfBlob = doc.output("blob");
   triggerDownload(pdfBlob, filename);
@@ -442,7 +543,7 @@ export function downloadExecutiveSummaryPdf(
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
-  doc.text(`Sample analysis · ${new Date().toLocaleDateString()}`, margin, y);
+  doc.text(`Analysis · ${new Date().toLocaleDateString()}`, margin, y);
   y += 28;
 
   doc.setFont("helvetica", "bold");

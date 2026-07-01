@@ -81,7 +81,7 @@ Use `sample-data/compensation-sample.csv` to verify all analysis categories.
 - Salary compression is strongest when a job level or grade column is present.
 - Manager vs. report checks require manager IDs that match employee IDs in the same file.
 - Outlier merit detection uses the interquartile range (IQR) and needs at least 4 populated merit values.
-- Analysis results are returned in the browser and are not persisted server-side.
+- Analysis results are returned in the browser. Uploads are not persisted server-side by default. Signed-in users may optionally **Save to history** (JSON snapshot, up to 25 runs per org, deletable).
 
 ## Authentication
 

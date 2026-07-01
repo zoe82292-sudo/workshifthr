@@ -1,6 +1,7 @@
 import type { AnalysisResult, AnalysisTab } from "../types";
 import { PENETRATION_BAND_LABELS } from "../types";
-import { downloadAnalysisExcel, downloadAnalysisPdf } from "../exportAnalysis";
+import { useSortableRows } from "../useSortableRows";
+import { exportAnalysisExcel, exportAnalysisPdf, exportExecutiveSummaryPdf } from "../exportActions";
 import { saveAnalysisHistory } from "../api";
 import { ColumnMappingSummary } from "./ColumnMappingSummary";
 import { InsightsPanel } from "./InsightsPanel";
@@ -130,11 +131,13 @@ function formatCurrency(value: number | null | undefined) {
 function EmployeeTable({
   rows,
   showPenetration = false,
+  showGapToMinimum = false,
   departmentFilter = "",
   search = "",
 }: {
   rows: AnalysisResult["below_minimum"];
   showPenetration?: boolean;
+  showGapToMinimum?: boolean;
   departmentFilter?: string;
   search?: string;
 }) {
@@ -158,7 +161,8 @@ function EmployeeTable({
     });
   }, [rows, departmentFilter, search]);
 
-  const pagination = useTablePagination(filtered);
+  const { sortedRows, toggleSort, sortLabel } = useSortableRows(filtered, "row_number");
+  const pagination = useTablePagination(sortedRows);
 
   if (rows.length === 0) {
     return <div className="empty-state">No issues found in this category.</div>;
@@ -174,15 +178,68 @@ function EmployeeTable({
         <table>
           <thead>
             <tr>
-              <th>Row</th>
-              <th>Employee ID</th>
-              <th>Name</th>
-              <th>Department</th>
-              <th>Level</th>
-              <th>Salary</th>
-              <th>Range Min</th>
-              <th>Range Max</th>
-              {showPenetration ? <th>Penetration</th> : null}
+              <th>
+                <button type="button" className="sortable-header" onClick={() => toggleSort("row_number")}>
+                  {sortLabel("row_number", "Row")}
+                </button>
+              </th>
+              <th>
+                <button type="button" className="sortable-header" onClick={() => toggleSort("employee_id")}>
+                  {sortLabel("employee_id", "Employee ID")}
+                </button>
+              </th>
+              <th>
+                <button type="button" className="sortable-header" onClick={() => toggleSort("employee_name")}>
+                  {sortLabel("employee_name", "Name")}
+                </button>
+              </th>
+              <th>
+                <button type="button" className="sortable-header" onClick={() => toggleSort("department")}>
+                  {sortLabel("department", "Department")}
+                </button>
+              </th>
+              <th>
+                <button type="button" className="sortable-header" onClick={() => toggleSort("job_level")}>
+                  {sortLabel("job_level", "Level")}
+                </button>
+              </th>
+              <th>
+                <button type="button" className="sortable-header" onClick={() => toggleSort("salary")}>
+                  {sortLabel("salary", "Salary")}
+                </button>
+              </th>
+              <th>
+                <button type="button" className="sortable-header" onClick={() => toggleSort("range_min")}>
+                  {sortLabel("range_min", "Range Min")}
+                </button>
+              </th>
+              <th>
+                <button type="button" className="sortable-header" onClick={() => toggleSort("range_max")}>
+                  {sortLabel("range_max", "Range Max")}
+                </button>
+              </th>
+              {showGapToMinimum ? (
+                <th>
+                  <button
+                    type="button"
+                    className="sortable-header"
+                    onClick={() => toggleSort("gap_to_minimum")}
+                  >
+                    {sortLabel("gap_to_minimum", "Gap to Min")}
+                  </button>
+                </th>
+              ) : null}
+              {showPenetration ? (
+                <th>
+                  <button
+                    type="button"
+                    className="sortable-header"
+                    onClick={() => toggleSort("range_penetration")}
+                  >
+                    {sortLabel("range_penetration", "Penetration")}
+                  </button>
+                </th>
+              ) : null}
               {showPenetration ? <th>Band</th> : null}
             </tr>
           </thead>
@@ -197,6 +254,7 @@ function EmployeeTable({
               <td>{formatCurrency(row.salary)}</td>
               <td>{formatCurrency(row.range_min)}</td>
               <td>{formatCurrency(row.range_max)}</td>
+              {showGapToMinimum ? <td>{formatCurrency(row.gap_to_minimum)}</td> : null}
               {showPenetration ? (
                 <td>
                   {row.range_penetration != null ? `${row.range_penetration}%` : "—"}
@@ -238,6 +296,36 @@ export function ResultsDashboard({
   const [search, setSearch] = useState("");
   const [savingHistory, setSavingHistory] = useState(false);
   const [historyMessage, setHistoryMessage] = useState<string | null>(null);
+  const [exporting, setExporting] = useState<string | null>(null);
+
+  const filteredCompression = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return result.compression;
+    return result.compression.filter((issue) =>
+      [issue.issue_type, issue.description, issue.employee_name, issue.employee_id]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+        .includes(query),
+    );
+  }, [result.compression, search]);
+
+  const filteredManagers = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return result.managers_below_reports;
+    return result.managers_below_reports.filter((issue) =>
+      [
+        issue.manager_id,
+        issue.manager_name,
+        issue.report_id,
+        issue.report_name,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+        .includes(query),
+    );
+  }, [result.managers_below_reports, search]);
 
   const departments = useMemo(() => {
     const values = new Set<string>();
@@ -253,7 +341,7 @@ export function ResultsDashboard({
     setHistoryMessage(null);
     try {
       await saveAnalysisHistory(fileName, result);
-      setHistoryMessage("Analysis saved to your organization history.");
+      setHistoryMessage("Analysis saved to your account history.");
       onHistorySaved?.();
     } catch (caught) {
       setHistoryMessage(
@@ -281,15 +369,36 @@ export function ResultsDashboard({
           ) : null}
           <button
             className="button button-primary"
-            onClick={() => downloadAnalysisExcel(result)}
+            type="button"
+            disabled={exporting === "excel"}
+            onClick={() => {
+              setExporting("excel");
+              void exportAnalysisExcel(result).finally(() => setExporting(null));
+            }}
           >
-            Download Excel
+            {exporting === "excel" ? "Preparing…" : "Download Excel"}
           </button>
           <button
             className="button button-secondary"
-            onClick={() => downloadAnalysisPdf(result)}
+            type="button"
+            disabled={exporting === "pdf"}
+            onClick={() => {
+              setExporting("pdf");
+              void exportAnalysisPdf(result).finally(() => setExporting(null));
+            }}
           >
-            Download PDF
+            {exporting === "pdf" ? "Preparing…" : "Download PDF"}
+          </button>
+          <button
+            className="button button-secondary"
+            type="button"
+            disabled={exporting === "exec-pdf"}
+            onClick={() => {
+              setExporting("exec-pdf");
+              void exportExecutiveSummaryPdf(result).finally(() => setExporting(null));
+            }}
+          >
+            {exporting === "exec-pdf" ? "Preparing…" : "Executive PDF"}
           </button>
         </div>
       </div>
@@ -366,7 +475,7 @@ export function ResultsDashboard({
         ))}
       </div>
 
-      {departments.length > 0 ? (
+      {result.range_penetration.length > 0 ? (
         <div className="table-filters">
           <label className="table-filters__field">
             <span>Department</span>
@@ -395,7 +504,12 @@ export function ResultsDashboard({
       ) : null}
 
       {activeTab === "below_minimum" ? (
-        <EmployeeTable rows={result.below_minimum} departmentFilter={departmentFilter} search={search} />
+        <EmployeeTable
+          rows={result.below_minimum}
+          showGapToMinimum
+          departmentFilter={departmentFilter}
+          search={search}
+        />
       ) : null}
       {activeTab === "above_maximum" ? (
         <EmployeeTable rows={result.above_maximum} departmentFilter={departmentFilter} search={search} />
@@ -450,7 +564,14 @@ export function ResultsDashboard({
         result.compression.length === 0 ? (
           <div className="empty-state">No salary compression patterns detected.</div>
         ) : (
-          <PaginatedSlice items={result.compression}>
+          <>
+            {result.compression.length >= 100 && result.summary.compression_issues >= 100 ? (
+              <p className="file-meta" style={{ marginBottom: 12 }}>
+                Showing the first 100 compression issues. Download Excel for the full export if your
+                file triggered additional patterns.
+              </p>
+            ) : null}
+            <PaginatedSlice items={filteredCompression}>
             {(pageItems) => (
               <div className="table-wrap">
                 <table>
@@ -477,7 +598,8 @@ export function ResultsDashboard({
                 </table>
               </div>
             )}
-          </PaginatedSlice>
+            </PaginatedSlice>
+          </>
         )
       ) : null}
 
@@ -485,7 +607,7 @@ export function ResultsDashboard({
         result.managers_below_reports.length === 0 ? (
           <div className="empty-state">No managers paid below direct reports.</div>
         ) : (
-          <PaginatedSlice items={result.managers_below_reports}>
+          <PaginatedSlice items={filteredManagers}>
             {(pageItems) => (
               <div className="table-wrap">
                 <table>

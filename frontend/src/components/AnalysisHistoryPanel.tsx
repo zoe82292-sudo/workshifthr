@@ -46,6 +46,11 @@ export function AnalysisHistoryPanel({ authRequired, onLoad }: AnalysisHistoryPa
   }
 
   async function removeItem(item: AnalysisHistorySummary) {
+    const confirmed = window.confirm(
+      `Delete saved analysis "${item.file_name}"? This cannot be undone.`,
+    );
+    if (!confirmed) return;
+
     setError(null);
     try {
       await deleteAnalysisHistory(item.id);
@@ -62,8 +67,8 @@ export function AnalysisHistoryPanel({ authRequired, onLoad }: AnalysisHistoryPa
         <span className="pill">{items.length} saved</span>
       </div>
       <p className="analysis-history__intro">
-        Saved runs are stored securely on the server for your organization so you can reopen prior
-        comp reviews without re-uploading.
+        Saved runs are stored on the server for your account when you click Save to history. Only you
+        can view or delete your saved analyses.
       </p>
 
       {loading ? <p className="file-meta">Loading saved analyses…</p> : null}

@@ -90,11 +90,16 @@ export function TermsOfService() {
         </li>
       </ul>
       <p>
-        <strong>No long-term storage of uploaded files.</strong> Uploaded spreadsheets are
-        processed in server memory to generate analysis results and are not intentionally
-        saved to a database or persistent file storage after the request completes.
-        Analysis output is returned to your browser session; we do not maintain a library
-        of your historical uploads on our servers.
+        <strong>No long-term storage of uploaded files by default.</strong> Uploaded spreadsheets
+        are processed in server memory to generate analysis results and are not saved to persistent
+        storage after the request completes unless you explicitly click{" "}
+        <strong>Save to history</strong> while signed in.
+      </p>
+      <p>
+        Optional saved analysis history stores a JSON snapshot of results (including employee rows
+        from your file) on our servers for your account, up to 25 runs per organization, deletable
+        at any time. We do not maintain a general library of your uploads beyond what you choose
+        to save.
       </p>
       <p>
         Results may remain visible in your browser until you refresh, navigate away, or

@@ -10,14 +10,14 @@ Site: https://shiftworkshr.com · Demo: view the sample analysis on the homepage
 ### Before the call
 - Ask them to export a **sanitized** comp file (no names if they prefer — Employee ID + salary + ranges is enough).
 - Have shiftworkshr.com open on the demo/sample view.
-- Optional: send `sample-data/harborview-demo.csv` ahead of time.
+- Optional: send `sample-data/compensation-sample.csv` ahead of time (same file used by `/sample-preview`).
 
 ### Opening (2 min)
 > “Thanks for making time. ShiftWorksHR is a comp spreadsheet analyzer — you upload Excel or CSV and get flags for below-min, above-max, compression, manager inversions, budget impact, and basic pay equity views in under a minute. I built it as an HR practitioner who got tired of spending days QA-ing comp files in Excel. I’ll show you a sample file first, then we can run yours if you’d like.”
 
 ### Live demo — sample file (5 min)
 1. Show homepage → **View sample analysis** (free preview) or sign in after purchase.
-2. Upload `harborview-demo.csv` (or use marketing preview on site).
+2. Upload `compensation-sample.csv` or open `/sample-preview` on the site.
 3. Walk through in this order:
    - **Executive summary** — headline + risk level
    - **Below minimum / above maximum** — “These are the rows leadership always asks about.”

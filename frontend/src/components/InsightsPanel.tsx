@@ -43,6 +43,9 @@ export function InsightsPanel({ result }: InsightsPanelProps) {
             <li key={bullet}>{bullet}</li>
           ))}
         </ul>
+        {insights.budget_impact.note ? (
+          <p className="insights-note">{insights.budget_impact.note}</p>
+        ) : null}
       </section>
 
       <section

@@ -293,7 +293,7 @@ async def handle_stripe_webhook(request: Request) -> dict[str, bool]:
             )
 
     if event.type == "customer.subscription.updated":
-        from app.provisioning import renew_org_access
+        from app.provisioning import renew_org_access, revoke_org_access
 
         subscription = event.data.object
         status_value = str(subscription.get("status") or "")
@@ -315,6 +315,34 @@ async def handle_stripe_webhook(request: Request) -> dict[str, bool]:
                 customer_id,
                 status_value,
                 renewed,
+            )
+        elif status_value in {"canceled", "unpaid", "incomplete_expired"} and customer_id:
+            revoked = revoke_org_access(
+                stripe_customer_id=customer_id,
+                stripe_subscription_id=subscription_id,
+            )
+            logger.info(
+                "Stripe subscription.updated: customer=%s status=%s revoked=%s",
+                customer_id,
+                status_value,
+                revoked,
+            )
+
+    if event.type == "customer.subscription.deleted":
+        from app.provisioning import revoke_org_access
+
+        subscription = event.data.object
+        customer_id = str(subscription.get("customer") or "")
+        subscription_id = str(subscription.get("id") or "")
+        if customer_id:
+            revoked = revoke_org_access(
+                stripe_customer_id=customer_id,
+                stripe_subscription_id=subscription_id,
+            )
+            logger.info(
+                "Stripe subscription.deleted: customer=%s revoked=%s",
+                customer_id,
+                revoked,
             )
 
     return {"received": True}

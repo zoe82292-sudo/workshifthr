@@ -6,7 +6,7 @@ services:
     healthCheckPath: /api/health
     envVars:
       - key: ALLOWED_ORIGINS
-        value: "*"
+        value: https://shiftworkshr.com,https://www.shiftworkshr.com
       - key: JWT_SECRET
         sync: false
       - key: AUTH_USERS
