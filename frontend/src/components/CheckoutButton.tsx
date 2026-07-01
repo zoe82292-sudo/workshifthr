@@ -38,9 +38,11 @@ export function CheckoutButton({
 
   if (!checkoutEnabled && fallbackHref) {
     return (
-      <a className={classes} href={fallbackHref}>
-        {label}
-      </a>
+      <div className="checkout-button-wrap">
+        <a className={classes} href={fallbackHref}>
+          {label}
+        </a>
+      </div>
     );
   }
 
