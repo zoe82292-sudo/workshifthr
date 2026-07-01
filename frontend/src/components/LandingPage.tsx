@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { MARKETING_DEMO_DATA } from "../data/marketingDemoData";
 import { checkBillingStatus, type PlanId } from "../api";
@@ -85,7 +85,7 @@ const STEPS = [
   },
 ];
 
-const FAQ = [
+const FAQ_BASE: Array<{ q: string; a: string }> = [
   {
     q: "What file format do I need?",
     a: "Excel (.xlsx) or CSV. Include employee ID, salary, and range min/mid/max when possible. Gender and race columns unlock pay equity views.",
@@ -102,11 +102,35 @@ const FAQ = [
     q: "How is this different from a full comp platform?",
     a: "ShiftWorksHR is focused on spreadsheet QA — flags, budget impact, and exports — not job architecture or ongoing HRIS sync. Most teams use it for one cycle or as a supplement.",
   },
-  {
-    q: "Can I try it before buying?",
-    a: "Yes. Use Try the analyzer on this page for a sample file, or email us for a walkthrough on your sanitized export.",
-  },
 ];
+
+function buildFaq(scrollTo: (id: string) => void): Array<{ q: string; a: ReactNode }> {
+  return [
+    ...FAQ_BASE.map((item) => ({ q: item.q, a: item.a as ReactNode })),
+    {
+      q: "Can I try it before buying?",
+      a: (
+        <>
+          Yes.{" "}
+          <button
+            type="button"
+            className="landing-text-link"
+            onClick={() => scrollTo("see-it-in-action")}
+          >
+            View the sample analysis
+          </button>{" "}
+          on this page — it uses our demo comp file and does not require an account. To upload your
+          own spreadsheet, choose a plan (login is instant after checkout). Prefer a walkthrough
+          first? Email{" "}
+          <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Sample walkthrough request")}`}>
+            {CONTACT_EMAIL}
+          </a>
+          .
+        </>
+      ),
+    },
+  ];
+}
 
 const PRICING_PLANS: Array<{
   id: PlanId;
@@ -189,6 +213,8 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
     window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
   }
 
+  const faqItems = buildFaq(scrollTo);
+
   return (
     <div className="landing-page">
       <header className="landing-nav">
@@ -252,9 +278,9 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
               <button
                 className="button button-secondary"
                 type="button"
-                onClick={() => scrollTo("sign-in")}
+                onClick={() => scrollTo("see-it-in-action")}
               >
-                Existing customer sign in
+                View sample analysis
               </button>
             ) : onTryDemo ? (
               <button className="button button-secondary" type="button" onClick={onTryDemo}>
@@ -288,11 +314,11 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
 
       <section className="landing-section landing-preview" id="see-it-in-action">
         <div className="landing-section-header landing-preview-header">
-          <span className="hero-badge">See it in action</span>
-          <h2>Real output from a 20-employee comp file</h2>
+          <span className="hero-badge">Free preview</span>
+          <h2>See real output before you buy</h2>
           <p>
-            Upload your spreadsheet and get an executive summary, budget impact, compa-ratio
-            trends, and pay equity signals — in seconds, not weeks.
+            No account needed. This is the same analysis view customers get after upload — using
+            our demo comp file with executive summary, budget impact, and pay equity signals.
           </p>
         </div>
         <figure
@@ -459,10 +485,10 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
           <h2>Frequently asked questions</h2>
         </div>
         <div className="landing-faq-list">
-          {FAQ.map((item) => (
+          {faqItems.map((item) => (
             <details className="landing-faq-item panel" key={item.q}>
               <summary>{item.q}</summary>
-              <p>{item.a}</p>
+              <div className="landing-faq-answer">{item.a}</div>
             </details>
           ))}
         </div>

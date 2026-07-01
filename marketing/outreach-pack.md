@@ -1,7 +1,7 @@
 # ShiftWorksHR Outreach Pack
 
 Use this folder for LinkedIn posts, cold outreach emails, and demo calls.  
-Site: https://shiftworkshr.com · Demo: try the analyzer on the homepage · Checklist: https://shiftworkshr.com/checklist
+Site: https://shiftworkshr.com · Demo: view the sample analysis on the homepage · Checklist: https://shiftworkshr.com/checklist
 
 ---
 
@@ -16,7 +16,7 @@ Site: https://shiftworkshr.com · Demo: try the analyzer on the homepage · Chec
 > “Thanks for making time. ShiftWorksHR is a comp spreadsheet analyzer — you upload Excel or CSV and get flags for below-min, above-max, compression, manager inversions, budget impact, and basic pay equity views in under a minute. I built it as an HR practitioner who got tired of spending days QA-ing comp files in Excel. I’ll show you a sample file first, then we can run yours if you’d like.”
 
 ### Live demo — sample file (5 min)
-1. Show homepage → **Try the analyzer** or sign in.
+1. Show homepage → **View sample analysis** (free preview) or sign in after purchase.
 2. Upload `harborview-demo.csv` (or use marketing preview on site).
 3. Walk through in this order:
    - **Executive summary** — headline + risk level
