@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchDemoAnalysis } from "../api";
 import {
-  downloadExecutiveSummaryExcel,
+  downloadAnalysisExcel,
   downloadExecutiveSummaryPdf,
 } from "../exportAnalysis";
 import type { AnalysisResult } from "../types";
@@ -22,7 +22,7 @@ const TABS: Array<{ id: DemoTab; label: string }> = [
 ];
 
 const SAMPLE_PDF = "shiftworkshr-sample-executive-summary.pdf";
-const SAMPLE_XLSX = "shiftworkshr-sample-executive-summary.xlsx";
+const SAMPLE_XLSX = "shiftworkshr-sample-analysis.xlsx";
 
 function formatCurrency(value: number | null | undefined) {
   if (value == null) return "—";
@@ -50,12 +50,12 @@ function DemoMetricCard({
   meta?: string;
 }) {
   return (
-    <article className="product-demo__metric">
-      <h3 className="product-demo__metric-title">{title}</h3>
-      <p className="product-demo__metric-label">{label}</p>
-      <div className="product-demo__metric-fill" aria-hidden="true" />
-      <strong className="product-demo__metric-value">{value}</strong>
-      {meta ? <p className="product-demo__metric-meta">{meta}</p> : null}
+    <article className="product-demo__metric metric-card">
+      <h3 className="metric-card__title">{title}</h3>
+      <p className="metric-card__label">{label}</p>
+      <div className="metric-card__spacer" aria-hidden="true" />
+      <strong className="metric-card__value">{value}</strong>
+      <p className="metric-card__meta">{meta ?? "\u00a0"}</p>
     </article>
   );
 }
@@ -66,13 +66,14 @@ function DemoStatCard({
   tone = "",
 }: {
   label: string;
-  value: number;
+  value: string | number;
   tone?: string;
 }) {
   return (
-    <div className={`product-demo__stat ${tone ? `product-demo__stat--${tone}` : ""}`}>
-      <span className="product-demo__stat-label">{label}</span>
-      <strong className="product-demo__stat-value">{value}</strong>
+    <div className={`product-demo__stat stat-card ${tone ? `stat-card--${tone}` : ""}`}>
+      <span className="stat-card__label">{label}</span>
+      <div className="stat-card__spacer" aria-hidden="true" />
+      <strong className="stat-card__value">{value}</strong>
     </div>
   );
 }
@@ -96,7 +97,7 @@ function DemoDownloads({
       <button
         className="button button-secondary"
         type="button"
-        onClick={() => downloadExecutiveSummaryExcel(result, SAMPLE_XLSX)}
+        onClick={() => downloadAnalysisExcel(result, SAMPLE_XLSX)}
       >
         Download Excel
       </button>
@@ -177,9 +178,16 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
     { label: "Total rows", value: summary.total_rows, tone: "" },
     { label: "Below minimum", value: summary.below_minimum, tone: "danger" },
     { label: "Above maximum", value: summary.above_maximum, tone: "warning" },
-    { label: "Compression", value: summary.compression_issues, tone: "info" },
-    { label: "Mgr below reports", value: summary.managers_below_reports, tone: "info" },
+    { label: "Managers below reports", value: summary.managers_below_reports, tone: "info" },
+    { label: "Missing salary ranges", value: summary.missing_salary_ranges, tone: "" },
     { label: "Pay equity gaps", value: summary.pay_equity_gaps, tone: "info" },
+    { label: "Outlier merit increases", value: summary.outlier_merit_increases, tone: "" },
+    {
+      label: "Avg penetration",
+      value:
+        summary.average_penetration != null ? `${summary.average_penetration}%` : "—",
+      tone: "",
+    },
   ];
 
   return (
@@ -193,7 +201,7 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
           </div>
         </div>
         <div className="product-demo__topbar-actions">
-          <DemoDownloads result={result} compact />
+          {variant === "full" ? <DemoDownloads result={result} compact /> : null}
           <span className="product-demo__chip">Demo data</span>
         </div>
       </header>
@@ -214,7 +222,7 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
       <div className="product-demo__body">
         {activeTab === "overview" ? (
           <>
-            <section className="product-demo__summary panel">
+            <section className="product-demo__summary">
               <div className="product-demo__summary-top">
                 <h2>Executive summary</h2>
                 <span className={`pill risk-${insights.executive_summary.risk_level}`}>
@@ -228,18 +236,18 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
                 ))}
               </ul>
               <p className="product-demo__export-note">
-                Same executive summary export customers share with leadership.
+                Same Excel and PDF exports customers get after running an analysis.
               </p>
               <DemoDownloads result={result} />
             </section>
 
-            <section className="product-demo__metrics" aria-label="Key metrics">
+            <section className="product-demo__metrics card-grid card-grid--4" aria-label="Key metrics">
               {metrics.map((metric) => (
                 <DemoMetricCard key={metric.title} {...metric} />
               ))}
             </section>
 
-            <section className="product-demo__stats" aria-label="Issue counts">
+            <section className="product-demo__stats card-grid card-grid--4" aria-label="Issue counts">
               {stats.map((stat) => (
                 <DemoStatCard key={stat.label} {...stat} />
               ))}
@@ -250,7 +258,7 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
         {activeTab === "issues" ? (
           <>
             <section
-              className="product-demo__metrics product-demo__metrics--compact"
+              className="product-demo__metrics product-demo__metrics--compact card-grid card-grid--2"
               aria-label="Issue highlights"
             >
               <DemoMetricCard
@@ -279,7 +287,7 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
               />
             </section>
 
-            <section className="product-demo__table-section panel">
+            <section className="product-demo__table-section">
               <div className="product-demo__table-header">
                 <h2>Below minimum</h2>
                 <span className="product-demo__table-count">{summary.below_minimum} flagged</span>
@@ -314,7 +322,7 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
 
         {activeTab === "pay-equity" ? (
           <>
-            <section className="product-demo__summary panel">
+            <section className="product-demo__summary">
               <div className="product-demo__summary-top">
                 <h2>Pay equity signals</h2>
               </div>
@@ -325,7 +333,7 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
             </section>
 
             <section
-              className="product-demo__metrics product-demo__metrics--equity"
+              className="product-demo__metrics product-demo__metrics--equity card-grid card-grid--2"
               aria-label="Pay equity gaps"
             >
               {payGaps.length > 0 ? (
@@ -339,11 +347,12 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
                   />
                 ))
               ) : (
-                <article className="product-demo__metric product-demo__metric--wide">
-                  <h3 className="product-demo__metric-title">No gaps in sample</h3>
-                  <p className="product-demo__metric-label">
+                <article className="product-demo__metric product-demo__metric--wide metric-card">
+                  <h3 className="metric-card__title">No gaps in sample</h3>
+                  <p className="metric-card__label">
                     Upload data with gender and race columns to populate this view.
                   </p>
+                  <p className="metric-card__meta">&nbsp;</p>
                 </article>
               )}
             </section>
@@ -353,7 +362,7 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
         {activeTab === "budget" ? (
           <>
             <section
-              className="product-demo__metrics product-demo__metrics--triple"
+              className="product-demo__metrics product-demo__metrics--triple card-grid card-grid--3"
               aria-label="Budget impact"
             >
               <DemoMetricCard
@@ -376,24 +385,25 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
               />
             </section>
 
-            <section className="product-demo__merit panel">
-              <h3 className="product-demo__merit-title">Merit pool</h3>
-              <label className="product-demo__merit-label" htmlFor="demo-target-merit">
+            <section className="product-demo__merit metric-card metric-card--input">
+              <h3 className="metric-card__title">Merit pool</h3>
+              <label className="metric-card__label" htmlFor="demo-target-merit">
                 Target merit increase %
               </label>
               <input
                 id="demo-target-merit"
-                className="merit-input product-demo__merit-input"
+                className="merit-input metric-card__input"
                 type="number"
                 min="0"
                 step="0.1"
                 value={targetMerit}
                 onChange={(event) => setTargetMerit(event.target.value)}
               />
-              <strong className="product-demo__merit-value">
+              <div className="metric-card__spacer" aria-hidden="true" />
+              <strong className="metric-card__value">
                 {formatCurrency(projectedMeritPool)}
               </strong>
-              <p className="product-demo__merit-meta">
+              <p className="metric-card__meta">
                 Based on {formatCurrency(insights.merit_calculator.payroll_base)} eligible
                 payroll
                 {insights.merit_calculator.average_merit_percent != null
@@ -402,7 +412,7 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
               </p>
             </section>
 
-            <section className="product-demo__summary panel">
+            <section className="product-demo__summary">
               <div className="product-demo__summary-top">
                 <h2>Planning note</h2>
               </div>

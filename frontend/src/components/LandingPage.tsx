@@ -340,7 +340,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
         </div>
         <div className="landing-feature-grid">
           {FEATURES.map((feature) => (
-            <article className="landing-feature panel" key={feature.title}>
+            <article className="landing-feature" key={feature.title}>
               <h3>{feature.title}</h3>
               <p>{feature.copy}</p>
             </article>
