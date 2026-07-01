@@ -1780,6 +1780,196 @@ tr:last-child td {
   border-color: rgba(29, 107, 138, 0.25);
 }
 
+.landing-step:nth-child(4) {
+  background: linear-gradient(160deg, #fff, #f3eef8);
+  border-color: rgba(107, 76, 138, 0.25);
+}
+
+.landing-trust-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border-block: 1px solid var(--border);
+}
+
+.landing-trust-item {
+  display: grid;
+  gap: 4px;
+  padding: 20px 24px;
+  background: var(--surface);
+  text-align: center;
+}
+
+.landing-trust-stat {
+  font-family: "Instrument Serif", serif;
+  font-size: 1.5rem;
+  color: var(--accent);
+  line-height: 1.1;
+}
+
+.landing-trust-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.landing-audience-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.landing-audience h3 {
+  margin-bottom: 8px;
+}
+
+.landing-audience p {
+  color: var(--text-muted);
+}
+
+.landing-lead-magnet-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px 32px;
+}
+
+.landing-lead-magnet-card h2 {
+  font-family: "Instrument Serif", serif;
+  font-size: clamp(1.65rem, 3vw, 2rem);
+  margin: 8px 0;
+}
+
+.landing-lead-magnet-card p {
+  color: var(--text-muted);
+  max-width: 52ch;
+}
+
+.landing-faq-list {
+  display: grid;
+  gap: 12px;
+  max-width: 760px;
+}
+
+.landing-faq-item {
+  padding: 0;
+  overflow: hidden;
+}
+
+.landing-faq-item summary {
+  padding: 18px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+
+.landing-faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.landing-faq-item summary::after {
+  content: "+";
+  float: right;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.landing-faq-item[open] summary::after {
+  content: "−";
+}
+
+.landing-faq-item p {
+  padding: 0 20px 18px;
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.checklist-intro {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.checklist-print-btn {
+  width: fit-content;
+}
+
+.checklist-section {
+  margin-top: 28px;
+}
+
+.checklist-section h2 {
+  font-size: 1.15rem;
+  margin-bottom: 12px;
+}
+
+.checklist-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.checklist-items li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  line-height: 1.45;
+}
+
+.checklist-boxed {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+}
+
+.checklist-cta {
+  margin-top: 32px;
+  padding: 24px;
+}
+
+.checklist-cta h2 {
+  font-size: 1.25rem;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 768px) {
+  .landing-trust-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .landing-lead-magnet-card {
+    padding: 20px;
+  }
+}
+
+@media print {
+  .legal-page-brand,
+  .checklist-print-btn,
+  .checklist-cta,
+  .legal-footer {
+    display: none !important;
+  }
+
+  .legal-page-inner {
+    max-width: none;
+    padding: 0;
+  }
+
+  .checklist-boxed {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
 .landing-step-number {
   display: inline-flex;
   align-items: center;

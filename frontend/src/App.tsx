@@ -10,6 +10,7 @@ import { LandingPage } from "./components/LandingPage";
 import { PrivacyPolicy } from "./components/PrivacyPolicy";
 import { MarketingPreviewPage } from "./components/MarketingPreviewPage";
 import { SamplePreviewPage } from "./components/SamplePreviewPage";
+import { MeritChecklistPage } from "./components/MeritChecklistPage";
 import { SecurityPage } from "./components/SecurityPage";
 import { TermsOfService } from "./components/TermsOfService";
 
@@ -77,6 +78,7 @@ export default function App() {
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/security" element={<SecurityPage />} />
+      <Route path="/checklist" element={<MeritChecklistPage />} />
       <Route path="/sample-preview" element={<SamplePreviewPage />} />
       <Route path="/marketing-preview" element={<MarketingPreviewPage />} />
       <Route path="*" element={<MainApp />} />

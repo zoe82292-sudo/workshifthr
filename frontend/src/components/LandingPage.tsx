@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { MARKETING_DEMO_DATA } from "../data/marketingDemoData";
 import { checkBillingStatus, type PlanId } from "../api";
 import { BrandLogo } from "./BrandLogo";
@@ -43,18 +44,67 @@ const FEATURES = [
   },
 ];
 
+const AUDIENCES = [
+  {
+    title: "In-house HR & total rewards",
+    copy: "Run a first-pass comp QA before merit meetings — without living in Excel for a week.",
+  },
+  {
+    title: "Comp analysts & HRBPs",
+    copy: "Validate exports from your HRIS, spot range and compression issues, and export summaries for leadership.",
+  },
+  {
+    title: "HR & comp consultants",
+    copy: "Speed up client deliverables with a focused analysis pass at $249 per cycle — not per employee row.",
+  },
+];
+
+const TRUST_POINTS = [
+  { stat: "< 30 sec", label: "Typical time to first insights" },
+  { stat: "$249", label: "Cycle pass vs. $10k+ platforms" },
+  { stat: "In memory", label: "Data not stored after analysis" },
+  { stat: "HR-built", label: "Designed by a comp practitioner" },
+];
+
 const STEPS = [
   {
     title: "Choose a plan",
-    copy: "Pick monthly, annual, or a one-time comp cycle pass — we send your login within one business day.",
+    copy: "Pick monthly, annual, or a one-time Cycle Pass — login details appear instantly after checkout.",
   },
   {
     title: "Upload your file",
     copy: "Drop an Excel or CSV — columns are detected automatically.",
   },
   {
+    title: "Add your team",
+    copy: "Share the org password with authorized HR and comp teammates — each signs in with their own work email.",
+  },
+  {
     title: "Act on findings",
     copy: "Review flagged issues, budget impact, pay equity, and export reports.",
+  },
+];
+
+const FAQ = [
+  {
+    q: "What file format do I need?",
+    a: "Excel (.xlsx) or CSV. Include employee ID, salary, and range min/mid/max when possible. Gender and race columns unlock pay equity views.",
+  },
+  {
+    q: "Is my compensation data stored?",
+    a: "No. Uploads are processed in memory and not kept on our servers after analysis. See our Security page for details.",
+  },
+  {
+    q: "How do teammates get access?",
+    a: "One organization, one shared password. After purchase, each authorized person signs in with their work email and that password. Email us to add teammates.",
+  },
+  {
+    q: "How is this different from a full comp platform?",
+    a: "ShiftWorksHR is focused on spreadsheet QA — flags, budget impact, and exports — not job architecture or ongoing HRIS sync. Most teams use it for one cycle or as a supplement.",
+  },
+  {
+    q: "Can I try it before buying?",
+    a: "Yes. Use Try the analyzer on this page for a sample file, or email us for a walkthrough on your sanitized export.",
   },
 ];
 
@@ -159,6 +209,12 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
             <button type="button" onClick={() => scrollTo("features")}>
               Features
             </button>
+            <button type="button" onClick={() => scrollTo("who-its-for")}>
+              Who it&apos;s for
+            </button>
+            <button type="button" onClick={() => scrollTo("faq")}>
+              FAQ
+            </button>
             <button type="button" onClick={() => scrollTo("pricing")}>
               Pricing
             </button>
@@ -221,6 +277,15 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
         </div>
       </section>
 
+      <section className="landing-trust-strip" aria-label="Why teams choose ShiftWorksHR">
+        {TRUST_POINTS.map((point) => (
+          <div className="landing-trust-item" key={point.label}>
+            <span className="landing-trust-stat">{point.stat}</span>
+            <span className="landing-trust-label">{point.label}</span>
+          </div>
+        ))}
+      </section>
+
       <section className="landing-section landing-preview" id="see-it-in-action">
         <div className="landing-section-header landing-preview-header">
           <span className="hero-badge">See it in action</span>
@@ -267,6 +332,21 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
         </div>
       </section>
 
+      <section className="landing-section" id="who-its-for">
+        <div className="landing-section-header">
+          <h2>Who it&apos;s for</h2>
+          <p>HR teams and consultants who need fast answers from a comp spreadsheet — not a six-month rollout.</p>
+        </div>
+        <div className="landing-audience-grid">
+          {AUDIENCES.map((audience) => (
+            <article className="landing-audience panel" key={audience.title}>
+              <h3>{audience.title}</h3>
+              <p>{audience.copy}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className="landing-section landing-about" id="about">
         <div className="landing-about-card panel">
           <span className="hero-badge">Built by an HR practitioner</span>
@@ -284,10 +364,26 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
         </div>
       </section>
 
+      <section className="landing-section landing-lead-magnet">
+        <div className="landing-lead-magnet-card panel">
+          <div>
+            <span className="hero-badge">Free resource</span>
+            <h2>Merit season comp checklist</h2>
+            <p>
+              A printable prep list for exports, first-pass QA, pay equity review, and
+              leadership readouts — use it with or without ShiftWorksHR.
+            </p>
+          </div>
+          <Link className="button button-secondary" to="/checklist">
+            Download checklist
+          </Link>
+        </div>
+      </section>
+
       <section className="landing-section landing-steps">
         <div className="landing-section-header">
           <h2>How it works</h2>
-          <p>From purchase to insights in three steps.</p>
+          <p>From purchase to insights in four steps.</p>
         </div>
         <div className="landing-step-grid">
           {STEPS.map((step, index) => (
@@ -322,7 +418,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
                 className={`landing-price-badge ${plan.featured ? "" : "landing-price-badge--spacer"}`}
                 aria-hidden={!plan.featured}
               >
-                {plan.featured ? "Best value" : "Best value"}
+                {plan.featured ? "Best value" : "\u00A0"}
               </span>
               <h3>{plan.name}</h3>
               <p className="landing-price-amount">{plan.price}</p>
@@ -347,11 +443,28 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
         <div className="landing-pricing-footnote panel">
           <p>
             <strong>One organization, one shared password.</strong> Pricing is per organization
-            (not per employee row). Teammates can each sign in with their own work email and
-            the same password. Payments are processed securely by Stripe. Your compensation data is processed in memory and
-            not stored on our servers after analysis. Questions? Email{" "}
-            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+            (not per employee row). Teammates sign in with their own work email and the same
+            password — email{" "}
+            <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Add authorized users")}`}>
+              {CONTACT_EMAIL}
+            </a>{" "}
+            to add people. Payments are processed securely by Stripe. Your compensation data is
+            processed in memory and not stored on our servers after analysis.
           </p>
+        </div>
+      </section>
+
+      <section className="landing-section landing-faq" id="faq">
+        <div className="landing-section-header">
+          <h2>Frequently asked questions</h2>
+        </div>
+        <div className="landing-faq-list">
+          {FAQ.map((item) => (
+            <details className="landing-faq-item panel" key={item.q}>
+              <summary>{item.q}</summary>
+              <p>{item.a}</p>
+            </details>
+          ))}
         </div>
       </section>
 
@@ -362,9 +475,9 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
               <span className="hero-badge">Customer sign in</span>
               <h2>Already a customer?</h2>
               <p>
-                Sign in with your work email and your organization&apos;s shared password. We
-                send login details to your team after purchase — share them with authorized
-                HR and comp teammates.
+                Sign in with your work email and your organization&apos;s shared password.
+                Login details appear on the confirmation page right after checkout — share
+                them with authorized HR and comp teammates.
               </p>
             </div>
             <div className="landing-sign-in-form">
@@ -384,6 +497,8 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
           <p>Compensation analysis for HR teams — built by an HR professional.</p>
           <p className="landing-footer-contact">
             <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+            {" · "}
+            <Link to="/checklist">Merit checklist</Link>
           </p>
           <LegalFooter />
         </div>
