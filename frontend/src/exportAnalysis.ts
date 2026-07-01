@@ -159,6 +159,99 @@ export function downloadAnalysisExcel(result: AnalysisResult, filename = `${BASE
     );
   }
 
+  if (result.managers_below_reports.length > 0) {
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.aoa_to_sheet([
+        [
+          "Manager ID",
+          "Manager Name",
+          "Manager Salary",
+          "Report ID",
+          "Report Name",
+          "Report Salary",
+          "Pay Gap",
+        ],
+        ...result.managers_below_reports.map((row) => [
+          row.manager_id,
+          row.manager_name ?? "",
+          row.manager_salary,
+          row.report_id,
+          row.report_name ?? "",
+          row.report_salary,
+          row.pay_gap,
+        ]),
+      ]),
+      "Managers Below Reports",
+    );
+  }
+
+  if (result.duplicate_ids.length > 0) {
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.aoa_to_sheet([
+        ["Employee ID", "Occurrences", "Rows"],
+        ...result.duplicate_ids.map((group) => [
+          group.employee_id,
+          group.count,
+          group.rows.join(", "),
+        ]),
+      ]),
+      "Duplicate IDs",
+    );
+  }
+
+  if (result.missing_data.length > 0) {
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.aoa_to_sheet([
+        ["Row", "Employee ID", "Name", "Missing Fields"],
+        ...result.missing_data.map((row) => [
+          row.row_number,
+          row.employee_id ?? "",
+          row.employee_name ?? "",
+          row.missing_fields.join(", "),
+        ]),
+      ]),
+      "Missing Data",
+    );
+  }
+
+  if (result.outlier_merit_increases.length > 0) {
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.aoa_to_sheet([
+        ["Row", "Employee ID", "Name", "Merit Increase %", "Reason"],
+        ...result.outlier_merit_increases.map((row) => [
+          row.row_number,
+          row.employee_id ?? "",
+          row.employee_name ?? "",
+          row.merit_increase,
+          row.reason,
+        ]),
+      ]),
+      "Outlier Merit",
+    );
+  }
+
+  if (result.compa_ratios.length > 0) {
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.aoa_to_sheet([
+        ["Row", "Employee ID", "Name", "Salary", "Range Midpoint", "Compa Ratio %"],
+        ...result.compa_ratios.map((row) => [
+          row.row_number,
+          row.employee_id ?? "",
+          row.employee_name ?? "",
+          row.salary,
+          row.range_midpoint,
+          row.compa_ratio,
+        ]),
+      ]),
+      "Compa-Ratio",
+    );
+  }
+
   if (result.pay_equity.available) {
     const equity = result.pay_equity;
     XLSX.utils.book_append_sheet(

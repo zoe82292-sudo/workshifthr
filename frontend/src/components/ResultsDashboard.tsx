@@ -1,8 +1,10 @@
 import type { AnalysisResult, AnalysisTab } from "../types";
 import { PENETRATION_BAND_LABELS } from "../types";
 import { downloadAnalysisExcel, downloadAnalysisPdf } from "../exportAnalysis";
+import { ColumnMappingSummary } from "./ColumnMappingSummary";
 import { InsightsPanel } from "./InsightsPanel";
 import { PayEquityPanel, payEquityTabCount } from "./PayEquityPanel";
+import { useMemo, useState } from "react";
 
 interface ResultsDashboardProps {
   result: AnalysisResult;
@@ -99,12 +101,40 @@ function formatCurrency(value: number | null | undefined) {
 function EmployeeTable({
   rows,
   showPenetration = false,
+  departmentFilter = "",
+  search = "",
 }: {
   rows: AnalysisResult["below_minimum"];
   showPenetration?: boolean;
+  departmentFilter?: string;
+  search?: string;
 }) {
+  const filtered = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return rows.filter((row) => {
+      if (departmentFilter && (row.department ?? "") !== departmentFilter) {
+        return false;
+      }
+      if (!query) return true;
+      const haystack = [
+        row.employee_id,
+        row.employee_name,
+        row.department,
+        row.job_level,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(query);
+    });
+  }, [rows, departmentFilter, search]);
+
   if (rows.length === 0) {
     return <div className="empty-state">No issues found in this category.</div>;
+  }
+
+  if (filtered.length === 0) {
+    return <div className="empty-state">No rows match your filters.</div>;
   }
 
   return (
@@ -125,7 +155,7 @@ function EmployeeTable({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
+          {filtered.map((row) => (
             <tr key={`${row.row_number}-${row.employee_id}`}>
               <td>{row.row_number}</td>
               <td>{row.employee_id ?? "—"}</td>
@@ -160,6 +190,17 @@ export function ResultsDashboard({
   activeTab,
   onTabChange,
 }: ResultsDashboardProps) {
+  const [departmentFilter, setDepartmentFilter] = useState("");
+  const [search, setSearch] = useState("");
+
+  const departments = useMemo(() => {
+    const values = new Set<string>();
+    for (const row of result.range_penetration) {
+      if (row.department) values.add(row.department);
+    }
+    return Array.from(values).sort((a, b) => a.localeCompare(b));
+  }, [result.range_penetration]);
+
   return (
     <>
       <div className="panel-header" style={{ marginBottom: 16 }}>
@@ -179,6 +220,11 @@ export function ResultsDashboard({
           </button>
         </div>
       </div>
+
+      <ColumnMappingSummary
+        mapping={result.column_mapping}
+        detectedColumns={result.detected_columns}
+      />
 
       <InsightsPanel result={result} />
       <div className="summary-grid card-grid card-grid--4" aria-label="Issue counts">
@@ -253,8 +299,40 @@ export function ResultsDashboard({
         ))}
       </div>
 
-      {activeTab === "below_minimum" ? <EmployeeTable rows={result.below_minimum} /> : null}
-      {activeTab === "above_maximum" ? <EmployeeTable rows={result.above_maximum} /> : null}
+      {departments.length > 0 ? (
+        <div className="table-filters">
+          <label className="table-filters__field">
+            <span>Department</span>
+            <select
+              value={departmentFilter}
+              onChange={(event) => setDepartmentFilter(event.target.value)}
+            >
+              <option value="">All departments</option>
+              {departments.map((department) => (
+                <option key={department} value={department}>
+                  {department}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="table-filters__field table-filters__field--grow">
+            <span>Search</span>
+            <input
+              type="search"
+              placeholder="Employee, ID, department, level…"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+          </label>
+        </div>
+      ) : null}
+
+      {activeTab === "below_minimum" ? (
+        <EmployeeTable rows={result.below_minimum} departmentFilter={departmentFilter} search={search} />
+      ) : null}
+      {activeTab === "above_maximum" ? (
+        <EmployeeTable rows={result.above_maximum} departmentFilter={departmentFilter} search={search} />
+      ) : null}
 
       {activeTab === "duplicate_ids" ? (
         result.duplicate_ids.length === 0 ? (
@@ -288,7 +366,12 @@ export function ResultsDashboard({
           <p className="file-meta" style={{ marginBottom: 16 }}>
             Range penetration = (salary − range min) ÷ (range max − range min) × 100
           </p>
-          <EmployeeTable rows={result.range_penetration} showPenetration />
+          <EmployeeTable
+            rows={result.range_penetration}
+            showPenetration
+            departmentFilter={departmentFilter}
+            search={search}
+          />
         </>
       ) : null}
 

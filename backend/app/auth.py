@@ -15,6 +15,9 @@ JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_HOURS = int(os.getenv("JWT_EXPIRE_HOURS", "24"))
 security = HTTPBearer(auto_error=False)
 
+_CREDENTIALS_CACHE: tuple[dict[str, "_OrgCredential"], dict[str, "_OrgCredential"]] | None = None
+_CREDENTIALS_CACHE_MTIME: float = -1.0
+
 
 class LoginRequest(BaseModel):
     email: EmailStr
@@ -41,6 +44,12 @@ class _OrgCredential:
     password_hash: bytes
 
 
+def invalidate_credentials_cache() -> None:
+    global _CREDENTIALS_CACHE, _CREDENTIALS_CACHE_MTIME
+    _CREDENTIALS_CACHE = None
+    _CREDENTIALS_CACHE_MTIME = -1.0
+
+
 def _jwt_secret() -> str:
     secret = os.getenv("JWT_SECRET", "").strip()
     if not secret:
@@ -49,7 +58,11 @@ def _jwt_secret() -> str:
 
 
 def auth_enabled() -> bool:
-    return bool(os.getenv("AUTH_USERS", "").strip())
+    if os.getenv("AUTH_USERS", "").strip():
+        return True
+    from app.provisioning import has_orgs
+
+    return has_orgs()
 
 
 def _hash_password(password: str) -> bytes:
@@ -72,8 +85,8 @@ def _organization_name(entry: dict, fallback_email: str) -> str:
     return "Organization"
 
 
-def _parse_auth_users() -> tuple[dict[str, _OrgCredential], dict[str, _OrgCredential]]:
-    """Return direct email logins and domain-wide shared org logins."""
+def _parse_env_auth_users() -> tuple[dict[str, _OrgCredential], dict[str, _OrgCredential]]:
+    """Return direct email logins and domain-wide shared org logins from AUTH_USERS."""
     raw = os.getenv("AUTH_USERS", "").strip()
     email_users: dict[str, _OrgCredential] = {}
     domain_users: dict[str, _OrgCredential] = {}
@@ -131,12 +144,28 @@ def _parse_auth_users() -> tuple[dict[str, _OrgCredential], dict[str, _OrgCreden
     return email_users, domain_users
 
 
-_EMAIL_USERS, _DOMAIN_USERS = _parse_auth_users()
+def _get_credentials() -> tuple[dict[str, _OrgCredential], dict[str, _OrgCredential]]:
+    global _CREDENTIALS_CACHE, _CREDENTIALS_CACHE_MTIME
+
+    from app.provisioning import load_credentials, store_mtime
+
+    mtime = store_mtime()
+    if _CREDENTIALS_CACHE is not None and _CREDENTIALS_CACHE_MTIME == mtime:
+        return _CREDENTIALS_CACHE
+
+    email_users, domain_users = _parse_env_auth_users()
+    prov_email, prov_domain = load_credentials()
+    email_users = {**email_users, **prov_email}
+    domain_users = {**domain_users, **prov_domain}
+    _CREDENTIALS_CACHE = (email_users, domain_users)
+    _CREDENTIALS_CACHE_MTIME = mtime
+    return email_users, domain_users
 
 
 def _credential_for_email(email: str) -> _OrgCredential | None:
     normalized = email.strip().lower()
-    direct = _EMAIL_USERS.get(normalized)
+    email_users, domain_users = _get_credentials()
+    direct = email_users.get(normalized)
     if direct is not None:
         return direct
 
@@ -144,21 +173,31 @@ def _credential_for_email(email: str) -> _OrgCredential | None:
         return None
 
     domain = normalized.split("@", 1)[1]
-    return _DOMAIN_USERS.get(domain)
+    return domain_users.get(domain)
 
 
 def _session_allowed(email: str) -> bool:
+    from app.provisioning import org_access_expired
+
+    if org_access_expired(email):
+        return False
     return _credential_for_email(email) is not None
 
 
 def authenticate_user(email: str, password: str) -> AuthUser | None:
-    credential = _credential_for_email(email)
+    from app.provisioning import org_access_expired
+
+    normalized = email.strip().lower()
+    if org_access_expired(normalized):
+        return None
+
+    credential = _credential_for_email(normalized)
     if credential is None:
         return None
     if not bcrypt.checkpw(password.encode("utf-8"), credential.password_hash):
         return None
     return AuthUser(
-        email=email.strip().lower(),
+        email=normalized,
         password_hash=credential.password_hash,
         organization=credential.organization,
     )
@@ -172,7 +211,7 @@ def create_access_token(email: str, organization: str) -> str:
 
 def decode_access_token(token: str) -> str:
     try:
-        payload = jwt.decode(token, _jwt_secret(), algorithms=[JWT_ALGORITHM])
+        payload = jwt.decode(token, _jwt_secret(), algorithm=JWT_ALGORITHM)
     except jwt.PyJWTError as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -201,4 +240,14 @@ def require_auth(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    return decode_access_token(credentials.credentials)
+    email = decode_access_token(credentials.credentials)
+
+    from app.provisioning import org_access_expired
+
+    if org_access_expired(email):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your plan has expired. Renew at shiftworkshr.com/#pricing or email hello@shiftworkshr.com.",
+        )
+
+    return email

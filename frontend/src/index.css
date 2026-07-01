@@ -380,6 +380,164 @@ p {
   gap: 16px;
 }
 
+.field-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.mapping-step__intro {
+  margin: 0 0 16px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.mapping-step__sheet {
+  margin-bottom: 16px;
+  max-width: 320px;
+}
+
+.mapping-step__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.mapping-preview-table {
+  margin-top: 20px;
+}
+
+.mapping-preview-table h3 {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+}
+
+.mapping-summary {
+  margin-bottom: 20px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+
+.mapping-summary h3 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+
+.mapping-summary__meta {
+  margin: 0 0 12px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.mapping-summary__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px 16px;
+  margin: 0;
+}
+
+.mapping-summary__item dt {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.mapping-summary__item dd {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.table-filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin: 0 0 16px;
+}
+
+.table-filters__field {
+  display: grid;
+  gap: 6px;
+  min-width: 180px;
+}
+
+.table-filters__field--grow {
+  flex: 1 1 240px;
+  min-width: 220px;
+}
+
+.table-filters__field span {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.table-filters__field select,
+.table-filters__field input {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+
+.snapshot-restore {
+  display: grid;
+  gap: 12px;
+}
+
+.snapshot-restore__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.checkout-credentials {
+  margin: 20px 0;
+  background: var(--surface-muted);
+}
+
+.checkout-credentials h2 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+}
+
+.checkout-credentials__list {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0 0;
+}
+
+.checkout-credentials__list dt {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.checkout-credentials__list dd {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.checkout-credentials__password {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.checkout-credentials__password code {
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+
 .field label {
   display: block;
   font-size: 0.9rem;

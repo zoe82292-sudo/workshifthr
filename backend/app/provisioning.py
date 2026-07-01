@@ -5,7 +5,7 @@ import logging
 import os
 import secrets
 import threading
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -17,6 +17,12 @@ logger = logging.getLogger(__name__)
 
 _file_lock = threading.Lock()
 _store_mtime: float | None = None
+
+PLAN_DURATION_DAYS: dict[str, int] = {
+    "cycle": 90,
+    "monthly": 31,
+    "annual": 365,
+}
 
 
 def auto_provision_enabled() -> bool:
@@ -83,7 +89,52 @@ def _normalize_org(raw: dict[str, Any]) -> dict[str, Any]:
         "initial_password": raw.get("initial_password"),
         "plan_id": str(raw.get("plan_id", "")),
         "created_at": str(raw.get("created_at", "")),
+        "expires_at": str(raw.get("expires_at", "")),
     }
+
+
+def _plan_expires_at(plan_id: str, created_at: str) -> str:
+    days = PLAN_DURATION_DAYS.get(plan_id)
+    if not days:
+        return ""
+    try:
+        start = datetime.fromisoformat(created_at)
+    except ValueError:
+        start = datetime.now(UTC)
+    if start.tzinfo is None:
+        start = start.replace(tzinfo=UTC)
+    return (start + timedelta(days=days)).isoformat()
+
+
+def _find_org_by_email(store: dict[str, Any], email: str) -> dict[str, Any] | None:
+    normalized = email.strip().lower()
+    for org in store.get("orgs", []):
+        if normalized in org.get("authorized_emails", []):
+            return org
+        company_domain = str(org.get("company_domain", "")).lower()
+        if company_domain and normalized.endswith(f"@{company_domain}"):
+            return org
+    return None
+
+
+def org_access_expired(email: str) -> bool:
+    normalized = email.strip().lower()
+    with _file_lock:
+        org = _find_org_by_email(_read_store(), normalized)
+    if org is None:
+        return False
+
+    expires_at = str(org.get("expires_at") or "")
+    if not expires_at:
+        return False
+
+    try:
+        expiry = datetime.fromisoformat(expires_at)
+    except ValueError:
+        return False
+    if expiry.tzinfo is None:
+        expiry = expiry.replace(tzinfo=UTC)
+    return datetime.now(UTC) > expiry
 
 
 def _find_org(store: dict[str, Any], *, session_id: str | None = None, email: str | None = None) -> dict[str, Any] | None:
@@ -106,10 +157,13 @@ def load_credentials() -> tuple[dict[str, _OrgCredential], dict[str, _OrgCredent
         credential = _OrgCredential(
             organization=org["organization"],
             password_hash=password_hash,
-            company_domain=org["company_domain"] or None,
         )
         for authorized_email in org["authorized_emails"]:
             email_users[authorized_email] = credential
+
+        company_domain = org["company_domain"]
+        if company_domain:
+            domain_users[company_domain.lower()] = credential
 
     return email_users, domain_users
 
@@ -170,6 +224,9 @@ def provision_from_stripe_session(session: Any) -> dict[str, Any] | None:
                 existing["stripe_session_id"] = session_id
             if plan_id:
                 existing["plan_id"] = plan_id
+                if not existing.get("expires_at"):
+                    created = str(existing.get("created_at") or datetime.now(UTC).isoformat())
+                    existing["expires_at"] = _plan_expires_at(plan_id, created)
             _write_store(store)
             logger.info(
                 "Stripe checkout %s matched existing org %s for %s",
@@ -186,6 +243,7 @@ def provision_from_stripe_session(session: Any) -> dict[str, Any] | None:
             }
 
         password = _generate_password()
+        created_at = datetime.now(UTC).isoformat()
         org = {
             "stripe_session_id": session_id,
             "organization": organization,
@@ -194,7 +252,8 @@ def provision_from_stripe_session(session: Any) -> dict[str, Any] | None:
             "password_hash": _hash_password(password).decode("utf-8"),
             "initial_password": password,
             "plan_id": plan_id,
-            "created_at": datetime.now(UTC).isoformat(),
+            "created_at": created_at,
+            "expires_at": _plan_expires_at(plan_id, created_at),
         }
         store.setdefault("orgs", []).append(org)
         _write_store(store)

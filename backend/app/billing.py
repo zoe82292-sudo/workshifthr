@@ -54,6 +54,8 @@ class CheckoutSessionResponse(BaseModel):
     plan_id: PlanId | None
     plan_name: str | None
     status: str
+    organization: str | None = None
+    password: str | None = None
 
 
 def _env(name: str) -> str:
@@ -183,6 +185,8 @@ def create_checkout_session(plan_id: PlanId) -> CheckoutResponse:
 
 
 def get_checkout_session(session_id: str) -> CheckoutSessionResponse:
+    from app.provisioning import credentials_for_session, provision_from_stripe_session
+
     _configure_stripe()
     try:
         session = stripe.checkout.Session.retrieve(session_id)
@@ -198,11 +202,23 @@ def get_checkout_session(session_id: str) -> CheckoutSessionResponse:
     if session.customer_details and session.customer_details.email:
         email = session.customer_details.email
 
+    organization = None
+    password = None
+    if session.status in {"complete", "paid"}:
+        provision_from_stripe_session(session)
+        creds = credentials_for_session(session_id)
+        if creds:
+            email = creds.get("email") or email
+            organization = creds.get("organization")
+            password = creds.get("password")
+
     return CheckoutSessionResponse(
         email=email,
         plan_id=typed_plan_id,
         plan_name=PLAN_LABELS.get(typed_plan_id) if typed_plan_id else None,
         status=session.status or "unknown",
+        organization=organization,
+        password=password,
     )
 
 
@@ -228,14 +244,18 @@ async def handle_stripe_webhook(request: Request) -> dict[str, bool]:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Stripe signature.") from exc
 
     if event.type == "checkout.session.completed":
+        from app.provisioning import provision_from_stripe_session
+
         session = event.data.object
         plan_id = session.get("metadata", {}).get("plan_id", "unknown")
         customer_email = session.get("customer_details", {}).get("email", "unknown")
+        provisioned = provision_from_stripe_session(session)
         logger.info(
-            "Stripe checkout completed: plan=%s email=%s session=%s",
+            "Stripe checkout completed: plan=%s email=%s session=%s provisioned=%s",
             plan_id,
             customer_email,
             session.get("id"),
+            bool(provisioned),
         )
 
     return {"received": True}

@@ -1,8 +1,14 @@
-import type { AnalysisInsights, AnalysisResult, AnalysisSummary } from "./types";
+import type { AnalysisInsights, AnalysisResult, AnalysisSummary, ColumnMapping, PreviewResponse } from "./types";
 import { getBundledDemoAnalysis } from "./data/bundledDemoAnalysis";
 import { authHeaders, clearSession } from "./auth";
 
 const API_BASE = "/api";
+const ALLOWED_EXTENSIONS = /\.(xlsx|xls|csv)$/i;
+const ANALYSIS_STORAGE_KEY = "shiftworkshr:lastAnalysis";
+
+function isAllowedUpload(file: File): boolean {
+  return ALLOWED_EXTENSIONS.test(file.name);
+}
 
 const EMPTY_INSIGHTS: AnalysisInsights = {
   executive_summary: {
@@ -172,6 +178,8 @@ export async function fetchCheckoutSession(sessionId: string): Promise<{
   plan_id: PlanId | null;
   plan_name: string | null;
   status: string;
+  organization: string | null;
+  password: string | null;
 }> {
   const response = await fetch(`${API_BASE}/billing/session/${encodeURIComponent(sessionId)}`);
   if (!response.ok) {
@@ -183,24 +191,23 @@ export async function fetchCheckoutSession(sessionId: string): Promise<{
     plan_id: PlanId | null;
     plan_name: string | null;
     status: string;
+    organization: string | null;
+    password: string | null;
   };
 }
 
-const ALLOWED_EXTENSIONS = /\.(xlsx|xls|csv)$/i;
-
-function isAllowedUpload(file: File): boolean {
-  return ALLOWED_EXTENSIONS.test(file.name);
-}
-
-export async function analyzeFile(file: File): Promise<AnalysisResult> {
+export async function previewFile(file: File, sheetName?: string | null): Promise<PreviewResponse> {
   if (!isAllowedUpload(file)) {
     throw new Error("Please upload an .xlsx, .xls, or .csv file.");
   }
 
   const formData = new FormData();
   formData.append("file", file, file.name);
+  if (sheetName) {
+    formData.append("sheet_name", sheetName);
+  }
 
-  const response = await fetch(`${API_BASE}/analyze`, {
+  const response = await fetch(`${API_BASE}/preview`, {
     method: "POST",
     headers: authHeaders(),
     body: formData,
@@ -215,8 +222,87 @@ export async function analyzeFile(file: File): Promise<AnalysisResult> {
     throw new Error(await readError(response));
   }
 
+  return (await response.json()) as PreviewResponse;
+}
+
+export async function analyzeFile(
+  file: File,
+  options?: { columnMapping?: ColumnMapping; sheetName?: string | null },
+): Promise<AnalysisResult> {
+  if (!isAllowedUpload(file)) {
+    throw new Error("Please upload an .xlsx, .xls, or .csv file.");
+  }
+
+  const formData = new FormData();
+  formData.append("file", file, file.name);
+  if (options?.sheetName) {
+    formData.append("sheet_name", options.sheetName);
+  }
+  if (options?.columnMapping) {
+    formData.append("column_mapping", JSON.stringify(options.columnMapping));
+  }
+
+  const response = await fetch(`${API_BASE}/analyze`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: formData,
+  });
+
+  if (response.status === 401) {
+    clearSession();
+    throw new Error("Your session expired. Please sign in again.");
+  }
+
+  if (response.status === 403) {
+    clearSession();
+    throw new Error(await readError(response));
+  }
+
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+
   const payload = (await response.json()) as AnalysisResult;
   return normalizeResult(payload);
+}
+
+/** @deprecated Use analyzeFile with options instead */
+export function saveAnalysisSnapshot(fileName: string, result: AnalysisResult): void {
+  try {
+    localStorage.setItem(
+      ANALYSIS_STORAGE_KEY,
+      JSON.stringify({ fileName, result, savedAt: new Date().toISOString() }),
+    );
+  } catch {
+    // ignore quota errors
+  }
+}
+
+export function loadAnalysisSnapshot(): {
+  fileName: string;
+  result: AnalysisResult;
+  savedAt: string;
+} | null {
+  try {
+    const raw = localStorage.getItem(ANALYSIS_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as {
+      fileName: string;
+      result: AnalysisResult;
+      savedAt: string;
+    };
+    return {
+      fileName: parsed.fileName,
+      result: normalizeResult(parsed.result),
+      savedAt: parsed.savedAt,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function clearAnalysisSnapshot(): void {
+  localStorage.removeItem(ANALYSIS_STORAGE_KEY);
 }
 
 export async function fetchDemoAnalysis(): Promise<AnalysisResult> {

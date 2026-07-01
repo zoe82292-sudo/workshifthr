@@ -1,10 +1,18 @@
 import { useEffect, useRef, useState } from "react";
-import { analyzeFile, checkBackendHealth } from "../api";
+import {
+  analyzeFile,
+  checkBackendHealth,
+  clearAnalysisSnapshot,
+  loadAnalysisSnapshot,
+  previewFile,
+  saveAnalysisSnapshot,
+} from "../api";
+import { ColumnMappingStep } from "./ColumnMappingStep";
 import { ResultsDashboard } from "./ResultsDashboard";
 import { BrandLogo } from "./BrandLogo";
 import { LegalConsentLinks } from "./LegalConsentLinks";
 import { LegalFooter } from "./LegalFooter";
-import type { AnalysisResult, AnalysisTab } from "../types";
+import type { AnalysisResult, AnalysisTab, ColumnMapping, PreviewResponse } from "../types";
 
 function pickInitialTab(analysis: AnalysisResult): AnalysisTab {
   if (analysis.pay_equity.available && analysis.summary.pay_equity_gaps > 0) {
@@ -31,6 +39,9 @@ export function AnalyzerApp({
   onLogout,
 }: AnalyzerAppProps) {
   const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<PreviewResponse | null>(null);
+  const [mapping, setMapping] = useState<ColumnMapping | null>(null);
+  const [sheetName, setSheetName] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [activeTab, setActiveTab] = useState<AnalysisTab>("below_minimum");
   const [dragging, setDragging] = useState(false);
@@ -38,13 +49,27 @@ export function AnalyzerApp({
   const [error, setError] = useState<string | null>(null);
   const [backendReady, setBackendReady] = useState<boolean | null>(null);
   const [uploadAuthorized, setUploadAuthorized] = useState(false);
+  const [savedSnapshot, setSavedSnapshot] = useState<ReturnType<typeof loadAnalysisSnapshot>>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     void checkBackendHealth().then(setBackendReady);
+    setSavedSnapshot(loadAnalysisSnapshot());
   }, []);
 
-  async function handleFile(selected: File | null) {
+  function resetWorkflow() {
+    setFile(null);
+    setPreview(null);
+    setMapping(null);
+    setSheetName(null);
+    setResult(null);
+    setError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }
+
+  async function handleFileSelected(selected: File | null) {
     if (!selected) return;
 
     if (!uploadAuthorized) {
@@ -65,15 +90,17 @@ export function AnalyzerApp({
     setLoading(true);
 
     try {
-      const analysis = await analyzeFile(selected);
-      setResult(analysis);
-      setActiveTab(pickInitialTab(analysis));
+      const previewResponse = await previewFile(selected);
+      setPreview(previewResponse);
+      setMapping(previewResponse.suggested_mapping);
+      setSheetName(previewResponse.sheet_names[0] ?? null);
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : "Unable to analyze file.";
+      const message = caught instanceof Error ? caught.message : "Unable to read file.";
       setError(message);
-      if (message.includes("sign in again")) {
+      if (message.includes("sign in again") || message.includes("expired")) {
         onLogout();
       }
+      resetWorkflow();
     } finally {
       setLoading(false);
       if (fileInputRef.current) {
@@ -82,10 +109,59 @@ export function AnalyzerApp({
     }
   }
 
-  function clearFile() {
-    setFile(null);
-    setResult(null);
+  async function runAnalysis() {
+    if (!file || !mapping) return;
+
+    setLoading(true);
     setError(null);
+
+    try {
+      const analysis = await analyzeFile(file, { columnMapping: mapping, sheetName });
+      setResult(analysis);
+      setActiveTab(pickInitialTab(analysis));
+      setPreview(null);
+      saveAnalysisSnapshot(file.name, analysis);
+      setSavedSnapshot(loadAnalysisSnapshot());
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : "Unable to analyze file.";
+      setError(message);
+      if (message.includes("sign in again") || message.includes("expired")) {
+        onLogout();
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSheetChange(nextSheet: string | null) {
+    if (!file) return;
+    setSheetName(nextSheet);
+    setLoading(true);
+    setError(null);
+    try {
+      const previewResponse = await previewFile(file, nextSheet);
+      setPreview(previewResponse);
+      setMapping(previewResponse.suggested_mapping);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Unable to read worksheet.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function restoreSnapshot() {
+    if (!savedSnapshot) return;
+    setFile(null);
+    setPreview(null);
+    setMapping(null);
+    setResult(savedSnapshot.result);
+    setActiveTab(pickInitialTab(savedSnapshot.result));
+    setError(null);
+  }
+
+  function dismissSnapshot() {
+    clearAnalysisSnapshot();
+    setSavedSnapshot(null);
   }
 
   return (
@@ -126,102 +202,136 @@ export function AnalyzerApp({
 
       {backendReady === false ? (
         <div className="alert alert-error">
-          The ShiftWorksHR server is not running. In Terminal, run{" "}
-          <code>cd ~/Desktop/WorkShiftHR && ./start.sh</code>, then open{" "}
-          <a href="http://localhost:8080">http://localhost:8080</a>.
+          Unable to reach the ShiftWorksHR server. If you just deployed, wait a moment and
+          refresh. Still stuck? Email{" "}
+          <a href="mailto:hello@shiftworkshr.com">hello@shiftworkshr.com</a>.
         </div>
       ) : null}
 
-      <section className="panel">
-        <div className="panel-header">
-          <h2>Upload compensation file</h2>
-          {file ? <span className="pill pill-success">{file.name}</span> : null}
-        </div>
-
-        <div className="upload-consent-block">
-          <label className="legal-consent-checkbox">
-            <input
-              type="checkbox"
-              checked={uploadAuthorized}
-              onChange={(event) => {
-                setUploadAuthorized(event.target.checked);
-                if (event.target.checked) {
-                  setError(null);
-                }
-              }}
-            />
-            <span>
-              I confirm I am authorized to upload this compensation data on behalf of my
-              organization, and I have read the <LegalConsentLinks />.
-            </span>
-          </label>
-        </div>
-
-        <div
-          className={`upload-zone ${dragging ? "dragging" : ""} ${uploadAuthorized ? "" : "upload-zone--locked"}`}
-          onDragOver={(event) => {
-            event.preventDefault();
-            setDragging(true);
-          }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={(event) => {
-            event.preventDefault();
-            setDragging(false);
-            if (!uploadAuthorized) {
-              setError(
-                "Please confirm you are authorized to upload this compensation data before continuing.",
-              );
-              return;
-            }
-            const dropped = event.dataTransfer.files?.[0];
-            if (dropped) {
-              void handleFile(dropped);
-            }
-          }}
-        >
+      {savedSnapshot && !result && !preview ? (
+        <div className="alert alert-info snapshot-restore">
           <p>
-            Drop an `.xlsx`, `.xls`, or `.csv` file here. Analysis starts automatically
-            after upload.
+            You have a saved analysis from <strong>{savedSnapshot.fileName}</strong> (
+            {new Date(savedSnapshot.savedAt).toLocaleString()}).
           </p>
-          <div className="upload-actions">
-            <label className={`button button-primary ${uploadAuthorized ? "" : "button-disabled"}`}>
-              {loading ? "Analyzing..." : "Choose file"}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".xlsx,.xls,.csv,text/csv,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                disabled={loading || !uploadAuthorized}
-                onChange={(event) => void handleFile(event.target.files?.[0] ?? null)}
-              />
-            </label>
-            {file ? (
-              <button
-                className="button button-secondary"
-                disabled={loading}
-                onClick={clearFile}
-              >
-                Clear
-              </button>
-            ) : null}
+          <div className="snapshot-restore__actions">
+            <button className="button button-primary button-small" type="button" onClick={restoreSnapshot}>
+              Restore results
+            </button>
+            <button className="button button-secondary button-small" type="button" onClick={dismissSnapshot}>
+              Dismiss
+            </button>
           </div>
-          <p className="file-meta">
-            Upload your <strong>original employee compensation spreadsheet</strong> — not a
-            ShiftWorksHR results export. Column headers are optional: ShiftWorksHR auto-detects
-            employee ID, salary, and pay range columns from your data. Add{" "}
-            <strong>Gender</strong> and <strong>Race/Ethnicity</strong> for pay equity analysis.
-          </p>
-          <p className="file-meta legal-notice">
-            For decision support only — not legal or professional compensation advice.
-            Uploaded files are processed in memory and not stored on our servers after
-            analysis. See our <a href="/security">Security &amp; Data Handling</a> page
-            for details.
-          </p>
         </div>
-      </section>
+      ) : null}
 
-      {loading ? (
+      {!preview ? (
+        <section className="panel">
+          <div className="panel-header">
+            <h2>Upload compensation file</h2>
+            {file ? <span className="pill pill-success">{file.name}</span> : null}
+          </div>
+
+          <div className="upload-consent-block">
+            <label className="legal-consent-checkbox">
+              <input
+                type="checkbox"
+                checked={uploadAuthorized}
+                onChange={(event) => {
+                  setUploadAuthorized(event.target.checked);
+                  if (event.target.checked) {
+                    setError(null);
+                  }
+                }}
+              />
+              <span>
+                I confirm I am authorized to upload this compensation data on behalf of my
+                organization, and I have read the <LegalConsentLinks />.
+              </span>
+            </label>
+          </div>
+
+          <div
+            className={`upload-zone ${dragging ? "dragging" : ""} ${uploadAuthorized ? "" : "upload-zone--locked"}`}
+            onDragOver={(event) => {
+              event.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(event) => {
+              event.preventDefault();
+              setDragging(false);
+              if (!uploadAuthorized) {
+                setError(
+                  "Please confirm you are authorized to upload this compensation data before continuing.",
+                );
+                return;
+              }
+              const dropped = event.dataTransfer.files?.[0];
+              if (dropped) {
+                void handleFileSelected(dropped);
+              }
+            }}
+          >
+            <p>Drop an `.xlsx`, `.xls`, or `.csv` file here to map columns and run analysis.</p>
+            <div className="upload-actions">
+              <label className={`button button-primary ${uploadAuthorized ? "" : "button-disabled"}`}>
+                {loading ? "Reading file…" : "Choose file"}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".xlsx,.xls,.csv,text/csv,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                  disabled={loading || !uploadAuthorized}
+                  onChange={(event) => void handleFileSelected(event.target.files?.[0] ?? null)}
+                />
+              </label>
+              {file ? (
+                <button
+                  className="button button-secondary"
+                  disabled={loading}
+                  onClick={resetWorkflow}
+                  type="button"
+                >
+                  Clear
+                </button>
+              ) : null}
+              <a className="button button-secondary" href="/api/sample-template" download>
+                Download template
+              </a>
+            </div>
+            <p className="file-meta">
+              Required: <strong>Employee ID</strong>, <strong>Salary</strong>,{" "}
+              <strong>Range min</strong>, and <strong>Range max</strong>. Range midpoint is
+              calculated automatically. Add <strong>Gender</strong> and{" "}
+              <strong>Race/Ethnicity</strong> for pay equity analysis.
+            </p>
+            <p className="file-meta legal-notice">
+              For decision support only — not legal or professional compensation advice.
+              Uploaded files are processed in memory and not stored on our servers after
+              analysis. See our <a href="/security">Security &amp; Data Handling</a> page
+              for details.
+            </p>
+          </div>
+        </section>
+      ) : null}
+
+      {preview && mapping && file ? (
+        <ColumnMappingStep
+          fileName={file.name}
+          preview={preview}
+          mapping={mapping}
+          sheetName={sheetName}
+          loading={loading}
+          onMappingChange={setMapping}
+          onSheetChange={(next) => void handleSheetChange(next)}
+          onAnalyze={() => void runAnalysis()}
+          onCancel={resetWorkflow}
+        />
+      ) : null}
+
+      {loading && !preview ? (
         <div className="alert alert-info">
-          Analyzing your file — this usually takes a few seconds. If the site just woke up,
+          Working on your file — this usually takes a few seconds. If the site just woke up,
           it can take up to a minute.
         </div>
       ) : null}

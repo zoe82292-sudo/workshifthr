@@ -99,6 +99,13 @@ def login(payload: LoginRequest) -> LoginResponse:
 
     user = authenticate_user(payload.email, payload.password)
     if user is None:
+        from app.provisioning import org_access_expired
+
+        if org_access_expired(payload.email):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Your plan has expired. Renew at shiftworkshr.com/#pricing or email hello@shiftworkshr.com.",
+            )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password.",
@@ -137,6 +144,20 @@ def billing_session(session_id: str) -> CheckoutSessionResponse:
 @app.post("/api/billing/webhook")
 async def billing_webhook(request: Request) -> dict[str, bool]:
     return await handle_stripe_webhook(request)
+
+
+@app.get("/api/sample-template")
+def sample_template() -> FileResponse:
+    if not SAMPLE_DATA_FILE.is_file():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Sample template is not available.",
+        )
+    return FileResponse(
+        SAMPLE_DATA_FILE,
+        media_type="text/csv",
+        filename="shiftworkshr-compensation-template.csv",
+    )
 
 
 @app.post("/api/preview", response_model=PreviewResponse)
