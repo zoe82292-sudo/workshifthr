@@ -11,12 +11,23 @@ from fastapi.staticfiles import StaticFiles
 
 from app.analyzer import analyze_file, preview_file
 from app.auth import (
+    AuthContext,
     LoginRequest,
     LoginResponse,
     auth_enabled,
     authenticate_user,
     create_access_token,
     require_auth,
+    require_auth_user,
+)
+from app.analysis_history import (
+    AnalysisHistoryDetail,
+    AnalysisHistorySummary,
+    SaveAnalysisRequest,
+    delete_history,
+    get_history,
+    list_history,
+    save_history,
 )
 from app.billing import (
     BillingStatusResponse,
@@ -220,6 +231,61 @@ def demo_analysis() -> AnalysisResult:
 
     content = SAMPLE_DATA_FILE.read_bytes()
     return analyze_file(content, SAMPLE_DATA_FILE.name)
+
+
+@app.get("/api/analysis/history", response_model=list[AnalysisHistorySummary])
+def analysis_history_list(user: AuthContext = Depends(require_auth_user)) -> list[AnalysisHistorySummary]:
+    if user.email == "anonymous":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Sign in to view saved analyses.",
+        )
+    return list_history(user.organization, user.email)
+
+
+@app.post("/api/analysis/history", response_model=AnalysisHistorySummary)
+def analysis_history_save(
+    payload: SaveAnalysisRequest,
+    user: AuthContext = Depends(require_auth_user),
+) -> AnalysisHistorySummary:
+    if user.email == "anonymous":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Sign in to save analyses.",
+        )
+    return save_history(user.organization, user.email, payload.file_name, payload.result)
+
+
+@app.get("/api/analysis/history/{history_id}", response_model=AnalysisHistoryDetail)
+def analysis_history_get(
+    history_id: str,
+    user: AuthContext = Depends(require_auth_user),
+) -> AnalysisHistoryDetail:
+    if user.email == "anonymous":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Sign in to view saved analyses.",
+        )
+    record = get_history(user.organization, user.email, history_id)
+    if record is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Saved analysis not found.")
+    return record
+
+
+@app.delete("/api/analysis/history/{history_id}")
+def analysis_history_delete(
+    history_id: str,
+    user: AuthContext = Depends(require_auth_user),
+) -> dict[str, bool]:
+    if user.email == "anonymous":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Sign in to manage saved analyses.",
+        )
+    deleted = delete_history(user.organization, user.email, history_id)
+    if not deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Saved analysis not found.")
+    return {"deleted": True}
 
 
 if STATIC_DIR.exists():

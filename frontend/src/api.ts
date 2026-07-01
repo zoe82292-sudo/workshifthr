@@ -1,4 +1,12 @@
-import type { AnalysisInsights, AnalysisResult, AnalysisSummary, ColumnMapping, PreviewResponse } from "./types";
+import type {
+  AnalysisHistoryDetail,
+  AnalysisHistorySummary,
+  AnalysisInsights,
+  AnalysisResult,
+  AnalysisSummary,
+  ColumnMapping,
+  PreviewResponse,
+} from "./types";
 import { getBundledDemoAnalysis } from "./data/bundledDemoAnalysis";
 import { authHeaders, clearSession } from "./auth";
 
@@ -315,6 +323,74 @@ export async function fetchDemoAnalysis(): Promise<AnalysisResult> {
     return normalizeResult(payload);
   } catch {
     return normalizeResult(getBundledDemoAnalysis());
+  }
+}
+
+export async function fetchAnalysisHistory(): Promise<AnalysisHistorySummary[]> {
+  const response = await fetch(`${API_BASE}/analysis/history`, {
+    headers: authHeaders(),
+  });
+  if (response.status === 401) {
+    clearSession();
+    throw new Error("Your session expired. Please sign in again.");
+  }
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+  return (await response.json()) as AnalysisHistorySummary[];
+}
+
+export async function saveAnalysisHistory(
+  fileName: string,
+  result: AnalysisResult,
+): Promise<AnalysisHistorySummary> {
+  const response = await fetch(`${API_BASE}/analysis/history`, {
+    method: "POST",
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ file_name: fileName, result }),
+  });
+  if (response.status === 401) {
+    clearSession();
+    throw new Error("Your session expired. Please sign in again.");
+  }
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+  return (await response.json()) as AnalysisHistorySummary;
+}
+
+export async function loadAnalysisHistory(historyId: string): Promise<AnalysisHistoryDetail> {
+  const response = await fetch(`${API_BASE}/analysis/history/${encodeURIComponent(historyId)}`, {
+    headers: authHeaders(),
+  });
+  if (response.status === 401) {
+    clearSession();
+    throw new Error("Your session expired. Please sign in again.");
+  }
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+  const payload = (await response.json()) as AnalysisHistoryDetail;
+  return {
+    ...payload,
+    result: normalizeResult(payload.result),
+  };
+}
+
+export async function deleteAnalysisHistory(historyId: string): Promise<void> {
+  const response = await fetch(`${API_BASE}/analysis/history/${encodeURIComponent(historyId)}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (response.status === 401) {
+    clearSession();
+    throw new Error("Your session expired. Please sign in again.");
+  }
+  if (!response.ok) {
+    throw new Error(await readError(response));
   }
 }
 

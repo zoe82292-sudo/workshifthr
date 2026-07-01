@@ -222,6 +222,15 @@ def get_checkout_session(session_id: str) -> CheckoutSessionResponse:
     )
 
 
+def _plan_id_for_price(price_id: str | None) -> PlanId | None:
+    if not price_id:
+        return None
+    for plan_id, env_name in PRICE_ENV_VARS.items():
+        if _plan_price_id(plan_id) == price_id:
+            return plan_id
+    return None
+
+
 async def handle_stripe_webhook(request: Request) -> dict[str, bool]:
     webhook_secret = _stripe_webhook_secret()
     if not webhook_secret:
@@ -257,5 +266,55 @@ async def handle_stripe_webhook(request: Request) -> dict[str, bool]:
             session.get("id"),
             bool(provisioned),
         )
+
+    if event.type == "invoice.paid":
+        from app.provisioning import renew_org_access
+
+        invoice = event.data.object
+        customer_id = str(invoice.get("customer") or "")
+        subscription_id = str(invoice.get("subscription") or "")
+        billing_reason = str(invoice.get("billing_reason") or "")
+        if billing_reason in {"subscription_cycle", "subscription_create"} and customer_id:
+            price_id = None
+            lines = invoice.get("lines", {}).get("data", [])
+            if lines:
+                price_id = lines[0].get("price", {}).get("id")
+            plan_id = _plan_id_for_price(price_id)
+            renewed = renew_org_access(
+                stripe_customer_id=customer_id,
+                stripe_subscription_id=subscription_id or None,
+                plan_id=plan_id,
+            )
+            logger.info(
+                "Stripe invoice.paid: customer=%s subscription=%s renewed=%s",
+                customer_id,
+                subscription_id,
+                renewed,
+            )
+
+    if event.type == "customer.subscription.updated":
+        from app.provisioning import renew_org_access
+
+        subscription = event.data.object
+        status_value = str(subscription.get("status") or "")
+        customer_id = str(subscription.get("customer") or "")
+        subscription_id = str(subscription.get("id") or "")
+        if status_value in {"active", "trialing"} and customer_id:
+            price_id = None
+            items = subscription.get("items", {}).get("data", [])
+            if items:
+                price_id = items[0].get("price", {}).get("id")
+            plan_id = _plan_id_for_price(price_id)
+            renewed = renew_org_access(
+                stripe_customer_id=customer_id,
+                stripe_subscription_id=subscription_id,
+                plan_id=plan_id,
+            )
+            logger.info(
+                "Stripe subscription.updated: customer=%s status=%s renewed=%s",
+                customer_id,
+                status_value,
+                renewed,
+            )
 
     return {"received": True}

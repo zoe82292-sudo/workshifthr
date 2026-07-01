@@ -8,6 +8,7 @@ import {
   saveAnalysisSnapshot,
 } from "../api";
 import { ColumnMappingStep } from "./ColumnMappingStep";
+import { AnalysisHistoryPanel } from "./AnalysisHistoryPanel";
 import { ResultsDashboard } from "./ResultsDashboard";
 import { BrandLogo } from "./BrandLogo";
 import { LegalConsentLinks } from "./LegalConsentLinks";
@@ -39,6 +40,8 @@ export function AnalyzerApp({
   onLogout,
 }: AnalyzerAppProps) {
   const [file, setFile] = useState<File | null>(null);
+  const [analyzedFileName, setAnalyzedFileName] = useState<string | null>(null);
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
   const [preview, setPreview] = useState<PreviewResponse | null>(null);
   const [mapping, setMapping] = useState<ColumnMapping | null>(null);
   const [sheetName, setSheetName] = useState<string | null>(null);
@@ -63,6 +66,7 @@ export function AnalyzerApp({
     setMapping(null);
     setSheetName(null);
     setResult(null);
+    setAnalyzedFileName(null);
     setError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -118,6 +122,7 @@ export function AnalyzerApp({
     try {
       const analysis = await analyzeFile(file, { columnMapping: mapping, sheetName });
       setResult(analysis);
+      setAnalyzedFileName(file.name);
       setActiveTab(pickInitialTab(analysis));
       setPreview(null);
       saveAnalysisSnapshot(file.name, analysis);
@@ -155,6 +160,7 @@ export function AnalyzerApp({
     setPreview(null);
     setMapping(null);
     setResult(savedSnapshot.result);
+    setAnalyzedFileName(savedSnapshot.fileName);
     setActiveTab(pickInitialTab(savedSnapshot.result));
     setError(null);
   }
@@ -162,6 +168,18 @@ export function AnalyzerApp({
   function dismissSnapshot() {
     clearAnalysisSnapshot();
     setSavedSnapshot(null);
+  }
+
+  function loadFromHistory(fileName: string, analysis: AnalysisResult) {
+    setFile(null);
+    setPreview(null);
+    setMapping(null);
+    setResult(analysis);
+    setAnalyzedFileName(fileName);
+    setActiveTab(pickInitialTab(analysis));
+    setError(null);
+    saveAnalysisSnapshot(fileName, analysis);
+    setSavedSnapshot(loadAnalysisSnapshot());
   }
 
   return (
@@ -225,7 +243,15 @@ export function AnalyzerApp({
         </div>
       ) : null}
 
-      {!preview ? (
+      {authRequired ? (
+        <AnalysisHistoryPanel
+          key={historyRefreshKey}
+          authRequired={authRequired}
+          onLoad={loadFromHistory}
+        />
+      ) : null}
+
+      {!preview && !result ? (
         <section className="panel">
           <div className="panel-header">
             <h2>Upload compensation file</h2>
@@ -307,9 +333,9 @@ export function AnalyzerApp({
             </p>
             <p className="file-meta legal-notice">
               For decision support only — not legal or professional compensation advice.
-              Uploaded files are processed in memory and not stored on our servers after
-              analysis. See our <a href="/security">Security &amp; Data Handling</a> page
-              for details.
+              Uploaded files are processed in memory and are not kept unless you explicitly
+              save an analysis to your organization history. See our{" "}
+              <a href="/security">Security &amp; Data Handling</a> page for details.
             </p>
           </div>
         </section>
@@ -358,6 +384,9 @@ export function AnalyzerApp({
             result={result}
             activeTab={activeTab}
             onTabChange={setActiveTab}
+            fileName={analyzedFileName}
+            authRequired={authRequired}
+            onHistorySaved={() => setHistoryRefreshKey((value) => value + 1)}
           />
         </section>
       ) : null}

@@ -13,12 +13,12 @@ export function SecurityPage() {
       <h2>1. At a glance</h2>
       <ul>
         <li>
-          <strong>Uploads are processed in memory</strong> — not saved to a customer
-          database or file store after analysis completes
+          <strong>Uploads are processed in memory</strong> — spreadsheet files are not kept
+          after analysis unless you explicitly save a run to history
         </li>
         <li>
-          <strong>Results return to your browser</strong> — we do not keep a server-side
-          history of past analyses
+          <strong>Results return to your browser</strong> — optional saved analyses are
+          stored only when your organization chooses to save them
         </li>
         <li>
           <strong>HTTPS encryption</strong> for data in transit between your browser and
@@ -48,7 +48,7 @@ export function SecurityPage() {
         </li>
         <li>
           The result is returned to your browser. The in-memory copy from that request is
-          discarded when processing finishes.
+          discarded when processing finishes unless you click <strong>Save to history</strong>.
         </li>
         <li>
           If you export Excel or PDF reports, those files are generated in your browser
@@ -60,15 +60,23 @@ export function SecurityPage() {
         a discrete request.
       </p>
 
-      <h2>3. What we do not store</h2>
+      <h2>3. What we do not store by default</h2>
       <ul>
-        <li>Uploaded spreadsheet files after analysis</li>
-        <li>Employee salary rows in a persistent customer database</li>
-        <li>Historical analysis results on our servers between sessions</li>
+        <li>Uploaded spreadsheet files after analysis completes</li>
+        <li>Employee salary rows in a general-purpose customer database</li>
+        <li>Automatic server-side history — saving is explicit and opt-in per run</li>
       </ul>
       <p>
-        Refreshing the page, signing out, or closing your browser ends the visible session
-        output in the app. We cannot retrieve a prior upload for you after that.
+        Refreshing the page or signing out ends the visible session output unless you saved
+        the analysis to your organization history or exported a report to your device.
+      </p>
+
+      <h2>3a. Optional saved analysis history</h2>
+      <p>
+        Signed-in customers can click <strong>Save to history</strong> to store a JSON
+        snapshot of analysis results for their organization on the server (up to 25 runs per
+        org by default). This lets comp teams reopen prior review outputs without
+        re-uploading. Saved history can be deleted from the analyzer at any time.
       </p>
 
       <h2>4. What may exist temporarily or operationally</h2>

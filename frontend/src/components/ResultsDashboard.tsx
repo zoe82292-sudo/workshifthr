@@ -1,15 +1,44 @@
 import type { AnalysisResult, AnalysisTab } from "../types";
 import { PENETRATION_BAND_LABELS } from "../types";
 import { downloadAnalysisExcel, downloadAnalysisPdf } from "../exportAnalysis";
+import { saveAnalysisHistory } from "../api";
 import { ColumnMappingSummary } from "./ColumnMappingSummary";
 import { InsightsPanel } from "./InsightsPanel";
 import { PayEquityPanel, payEquityTabCount } from "./PayEquityPanel";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
+import { TablePagination, useTablePagination } from "./TablePagination";
 
 interface ResultsDashboardProps {
   result: AnalysisResult;
   activeTab: AnalysisTab;
   onTabChange: (tab: AnalysisTab) => void;
+  fileName?: string | null;
+  authRequired?: boolean;
+  onHistorySaved?: () => void;
+}
+
+function PaginatedSlice<T>({
+  items,
+  children,
+}: {
+  items: T[];
+  children: (pageItems: T[]) => ReactNode;
+}) {
+  const pagination = useTablePagination(items);
+
+  return (
+    <div className="paginated-slice">
+      {children(pagination.pageItems)}
+      <TablePagination
+        page={pagination.page}
+        totalPages={pagination.totalPages}
+        totalItems={pagination.totalItems}
+        showingFrom={pagination.showingFrom}
+        showingTo={pagination.showingTo}
+        onPageChange={pagination.setPage}
+      />
+    </div>
+  );
 }
 
 const TABS: Array<{ id: AnalysisTab; label: string; count: (result: AnalysisResult) => number }> =
@@ -129,6 +158,8 @@ function EmployeeTable({
     });
   }, [rows, departmentFilter, search]);
 
+  const pagination = useTablePagination(filtered);
+
   if (rows.length === 0) {
     return <div className="empty-state">No issues found in this category.</div>;
   }
@@ -138,24 +169,25 @@ function EmployeeTable({
   }
 
   return (
-    <div className="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Row</th>
-            <th>Employee ID</th>
-            <th>Name</th>
-            <th>Department</th>
-            <th>Level</th>
-            <th>Salary</th>
-            <th>Range Min</th>
-            <th>Range Max</th>
-            {showPenetration ? <th>Penetration</th> : null}
-            {showPenetration ? <th>Band</th> : null}
-          </tr>
-        </thead>
-        <tbody>
-          {filtered.map((row) => (
+    <div className="paginated-slice">
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Row</th>
+              <th>Employee ID</th>
+              <th>Name</th>
+              <th>Department</th>
+              <th>Level</th>
+              <th>Salary</th>
+              <th>Range Min</th>
+              <th>Range Max</th>
+              {showPenetration ? <th>Penetration</th> : null}
+              {showPenetration ? <th>Band</th> : null}
+            </tr>
+          </thead>
+          <tbody>
+            {pagination.pageItems.map((row) => (
             <tr key={`${row.row_number}-${row.employee_id}`}>
               <td>{row.row_number}</td>
               <td>{row.employee_id ?? "—"}</td>
@@ -178,9 +210,18 @@ function EmployeeTable({
                 </td>
               ) : null}
             </tr>
-          ))}
-        </tbody>
-      </table>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <TablePagination
+        page={pagination.page}
+        totalPages={pagination.totalPages}
+        totalItems={pagination.totalItems}
+        showingFrom={pagination.showingFrom}
+        showingTo={pagination.showingTo}
+        onPageChange={pagination.setPage}
+      />
     </div>
   );
 }
@@ -189,9 +230,14 @@ export function ResultsDashboard({
   result,
   activeTab,
   onTabChange,
+  fileName,
+  authRequired = false,
+  onHistorySaved,
 }: ResultsDashboardProps) {
   const [departmentFilter, setDepartmentFilter] = useState("");
   const [search, setSearch] = useState("");
+  const [savingHistory, setSavingHistory] = useState(false);
+  const [historyMessage, setHistoryMessage] = useState<string | null>(null);
 
   const departments = useMemo(() => {
     const values = new Set<string>();
@@ -201,11 +247,38 @@ export function ResultsDashboard({
     return Array.from(values).sort((a, b) => a.localeCompare(b));
   }, [result.range_penetration]);
 
+  async function handleSaveHistory() {
+    if (!fileName) return;
+    setSavingHistory(true);
+    setHistoryMessage(null);
+    try {
+      await saveAnalysisHistory(fileName, result);
+      setHistoryMessage("Analysis saved to your organization history.");
+      onHistorySaved?.();
+    } catch (caught) {
+      setHistoryMessage(
+        caught instanceof Error ? caught.message : "Unable to save analysis history.",
+      );
+    } finally {
+      setSavingHistory(false);
+    }
+  }
+
   return (
     <>
       <div className="panel-header" style={{ marginBottom: 16 }}>
         <h2>Analysis results</h2>
         <div className="download-actions">
+          {authRequired && fileName ? (
+            <button
+              className="button button-secondary"
+              type="button"
+              disabled={savingHistory}
+              onClick={() => void handleSaveHistory()}
+            >
+              {savingHistory ? "Saving…" : "Save to history"}
+            </button>
+          ) : null}
           <button
             className="button button-primary"
             onClick={() => downloadAnalysisExcel(result)}
@@ -220,6 +293,8 @@ export function ResultsDashboard({
           </button>
         </div>
       </div>
+
+      {historyMessage ? <div className="alert alert-info">{historyMessage}</div> : null}
 
       <ColumnMappingSummary
         mapping={result.column_mapping}
@@ -338,26 +413,30 @@ export function ResultsDashboard({
         result.duplicate_ids.length === 0 ? (
           <div className="empty-state">No duplicate employee IDs found.</div>
         ) : (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Employee ID</th>
-                  <th>Occurrences</th>
-                  <th>Excel Rows</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.duplicate_ids.map((group) => (
-                  <tr key={group.employee_id}>
-                    <td>{group.employee_id}</td>
-                    <td>{group.count}</td>
-                    <td>{group.rows.join(", ")}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <PaginatedSlice items={result.duplicate_ids}>
+            {(pageItems) => (
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Employee ID</th>
+                      <th>Occurrences</th>
+                      <th>Excel Rows</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pageItems.map((group) => (
+                      <tr key={group.employee_id}>
+                        <td>{group.employee_id}</td>
+                        <td>{group.count}</td>
+                        <td>{group.rows.join(", ")}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </PaginatedSlice>
         )
       ) : null}
 
@@ -379,30 +458,34 @@ export function ResultsDashboard({
         result.compression.length === 0 ? (
           <div className="empty-state">No salary compression patterns detected.</div>
         ) : (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Type</th>
-                  <th>Description</th>
-                  <th>Employee</th>
-                  <th>Row</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.compression.map((issue, index) => (
-                  <tr key={`${issue.issue_type}-${index}`}>
-                    <td>
-                      <span className="pill pill-warning">{issue.issue_type}</span>
-                    </td>
-                    <td>{issue.description}</td>
-                    <td>{issue.employee_name ?? issue.employee_id ?? "—"}</td>
-                    <td>{issue.row_number ?? "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <PaginatedSlice items={result.compression}>
+            {(pageItems) => (
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Description</th>
+                      <th>Employee</th>
+                      <th>Row</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pageItems.map((issue, index) => (
+                      <tr key={`${issue.issue_type}-${index}`}>
+                        <td>
+                          <span className="pill pill-warning">{issue.issue_type}</span>
+                        </td>
+                        <td>{issue.description}</td>
+                        <td>{issue.employee_name ?? issue.employee_id ?? "—"}</td>
+                        <td>{issue.row_number ?? "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </PaginatedSlice>
         )
       ) : null}
 
@@ -410,36 +493,40 @@ export function ResultsDashboard({
         result.managers_below_reports.length === 0 ? (
           <div className="empty-state">No managers paid below direct reports.</div>
         ) : (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Row</th>
-                  <th>Manager</th>
-                  <th>Manager Pay</th>
-                  <th>Direct Report</th>
-                  <th>Report Pay</th>
-                  <th>Gap</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.managers_below_reports.map((issue) => (
-                  <tr key={`${issue.row_number}-${issue.report_id}`}>
-                    <td>{issue.row_number}</td>
-                    <td>
-                      {issue.manager_name ?? issue.manager_id} ({issue.manager_id})
-                    </td>
-                    <td>{formatCurrency(issue.manager_salary)}</td>
-                    <td>
-                      {issue.report_name ?? issue.report_id} ({issue.report_id})
-                    </td>
-                    <td>{formatCurrency(issue.report_salary)}</td>
-                    <td>{formatCurrency(issue.pay_gap)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <PaginatedSlice items={result.managers_below_reports}>
+            {(pageItems) => (
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Row</th>
+                      <th>Manager</th>
+                      <th>Manager Pay</th>
+                      <th>Direct Report</th>
+                      <th>Report Pay</th>
+                      <th>Gap</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pageItems.map((issue) => (
+                      <tr key={`${issue.row_number}-${issue.report_id}`}>
+                        <td>{issue.row_number}</td>
+                        <td>
+                          {issue.manager_name ?? issue.manager_id} ({issue.manager_id})
+                        </td>
+                        <td>{formatCurrency(issue.manager_salary)}</td>
+                        <td>
+                          {issue.report_name ?? issue.report_id} ({issue.report_id})
+                        </td>
+                        <td>{formatCurrency(issue.report_salary)}</td>
+                        <td>{formatCurrency(issue.pay_gap)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </PaginatedSlice>
         )
       ) : null}
 
@@ -565,32 +652,36 @@ export function ResultsDashboard({
         result.compa_ratios.length === 0 ? (
           <div className="empty-state">No compa-ratio values available.</div>
         ) : (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Row</th>
-                  <th>Employee ID</th>
-                  <th>Name</th>
-                  <th>Salary</th>
-                  <th>Range Midpoint</th>
-                  <th>Compa-Ratio</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.compa_ratios.map((row) => (
-                  <tr key={row.row_number}>
-                    <td>{row.row_number}</td>
-                    <td>{row.employee_id ?? "—"}</td>
-                    <td>{row.employee_name ?? "—"}</td>
-                    <td>{formatCurrency(row.salary)}</td>
-                    <td>{formatCurrency(row.range_midpoint)}</td>
-                    <td>{row.compa_ratio}%</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <PaginatedSlice items={result.compa_ratios}>
+            {(pageItems) => (
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Row</th>
+                      <th>Employee ID</th>
+                      <th>Name</th>
+                      <th>Salary</th>
+                      <th>Range Midpoint</th>
+                      <th>Compa-Ratio</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pageItems.map((row) => (
+                      <tr key={row.row_number}>
+                        <td>{row.row_number}</td>
+                        <td>{row.employee_id ?? "—"}</td>
+                        <td>{row.employee_name ?? "—"}</td>
+                        <td>{formatCurrency(row.salary)}</td>
+                        <td>{formatCurrency(row.range_midpoint)}</td>
+                        <td>{row.compa_ratio}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </PaginatedSlice>
         )
       ) : null}
 
@@ -600,28 +691,32 @@ export function ResultsDashboard({
         result.missing_data.length === 0 ? (
           <div className="empty-state">All required compensation fields are present.</div>
         ) : (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Row</th>
-                  <th>Employee ID</th>
-                  <th>Name</th>
-                  <th>Missing Fields</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.missing_data.map((row) => (
-                  <tr key={row.row_number}>
-                    <td>{row.row_number}</td>
-                    <td>{row.employee_id ?? "—"}</td>
-                    <td>{row.employee_name ?? "—"}</td>
-                    <td>{row.missing_fields.join(", ")}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <PaginatedSlice items={result.missing_data}>
+            {(pageItems) => (
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Row</th>
+                      <th>Employee ID</th>
+                      <th>Name</th>
+                      <th>Missing Fields</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pageItems.map((row) => (
+                      <tr key={row.row_number}>
+                        <td>{row.row_number}</td>
+                        <td>{row.employee_id ?? "—"}</td>
+                        <td>{row.employee_name ?? "—"}</td>
+                        <td>{row.missing_fields.join(", ")}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </PaginatedSlice>
         )
       ) : null}
     </>

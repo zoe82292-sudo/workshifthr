@@ -90,6 +90,9 @@ def _normalize_org(raw: dict[str, Any]) -> dict[str, Any]:
         "plan_id": str(raw.get("plan_id", "")),
         "created_at": str(raw.get("created_at", "")),
         "expires_at": str(raw.get("expires_at", "")),
+        "stripe_customer_id": str(raw.get("stripe_customer_id", "")),
+        "stripe_subscription_id": str(raw.get("stripe_subscription_id", "")),
+        "last_renewed_at": str(raw.get("last_renewed_at", "")),
     }
 
 
@@ -115,6 +118,67 @@ def _find_org_by_email(store: dict[str, Any], email: str) -> dict[str, Any] | No
         if company_domain and normalized.endswith(f"@{company_domain}"):
             return org
     return None
+
+
+def _find_org_by_stripe(
+    store: dict[str, Any],
+    *,
+    customer_id: str | None = None,
+    subscription_id: str | None = None,
+) -> dict[str, Any] | None:
+    for org in store.get("orgs", []):
+        if customer_id and org.get("stripe_customer_id") == customer_id:
+            return org
+        if subscription_id and org.get("stripe_subscription_id") == subscription_id:
+            return org
+    return None
+
+
+def renew_org_access(
+    *,
+    stripe_customer_id: str | None = None,
+    stripe_subscription_id: str | None = None,
+    plan_id: str | None = None,
+) -> bool:
+    """Extend subscription access after a successful renewal payment."""
+    with _file_lock:
+        store = _read_store()
+        org = _find_org_by_stripe(
+            store,
+            customer_id=stripe_customer_id,
+            subscription_id=stripe_subscription_id,
+        )
+        if org is None:
+            return False
+
+        effective_plan = plan_id or str(org.get("plan_id") or "")
+        if effective_plan not in {"monthly", "annual"}:
+            logger.info("Skipping renewal for non-subscription plan %s", effective_plan)
+            return False
+
+        now = datetime.now(UTC).isoformat()
+        org["expires_at"] = _plan_expires_at(effective_plan, now)
+        org["last_renewed_at"] = now
+        if plan_id:
+            org["plan_id"] = plan_id
+        if stripe_customer_id:
+            org["stripe_customer_id"] = stripe_customer_id
+        if stripe_subscription_id:
+            org["stripe_subscription_id"] = stripe_subscription_id
+        _write_store(store)
+        org_name = org.get("organization")
+        expires_at = org.get("expires_at")
+
+    from app.auth import invalidate_credentials_cache
+
+    invalidate_credentials_cache()
+    logger.info(
+        "Renewed org %s until %s (plan=%s)",
+        org_name,
+        expires_at,
+        effective_plan,
+    )
+    return True
 
 
 def org_access_expired(email: str) -> bool:
@@ -216,6 +280,9 @@ def provision_from_stripe_session(session: Any) -> dict[str, Any] | None:
     organization = business_name or _organization_name({}, email)
     company_domain = _company_domain(email)
 
+    customer_id = str(getattr(session, "customer", None) or session.get("customer") or "")
+    subscription_id = str(getattr(session, "subscription", None) or session.get("subscription") or "")
+
     with _file_lock:
         store = _read_store()
         existing = _find_org(store, session_id=session_id) or _find_org(store, email=email)
@@ -227,6 +294,10 @@ def provision_from_stripe_session(session: Any) -> dict[str, Any] | None:
                 if not existing.get("expires_at"):
                     created = str(existing.get("created_at") or datetime.now(UTC).isoformat())
                     existing["expires_at"] = _plan_expires_at(plan_id, created)
+            if customer_id:
+                existing["stripe_customer_id"] = customer_id
+            if subscription_id:
+                existing["stripe_subscription_id"] = subscription_id
             _write_store(store)
             logger.info(
                 "Stripe checkout %s matched existing org %s for %s",
@@ -254,6 +325,8 @@ def provision_from_stripe_session(session: Any) -> dict[str, Any] | None:
             "plan_id": plan_id,
             "created_at": created_at,
             "expires_at": _plan_expires_at(plan_id, created_at),
+            "stripe_customer_id": customer_id,
+            "stripe_subscription_id": subscription_id,
         }
         store.setdefault("orgs", []).append(org)
         _write_store(store)

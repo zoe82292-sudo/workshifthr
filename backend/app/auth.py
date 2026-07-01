@@ -30,6 +30,11 @@ class LoginResponse(BaseModel):
     organization: str
 
 
+class AuthContext(BaseModel):
+    email: str
+    organization: str
+
+
 class AuthUser(BaseModel):
     email: str
     password_hash: bytes
@@ -209,9 +214,9 @@ def create_access_token(email: str, organization: str) -> str:
     return jwt.encode(payload, _jwt_secret(), algorithm=JWT_ALGORITHM)
 
 
-def decode_access_token(token: str) -> str:
+def decode_auth_context(token: str) -> AuthContext:
     try:
-        payload = jwt.decode(token, _jwt_secret(), algorithm=JWT_ALGORITHM)
+        payload = jwt.decode(token, _jwt_secret(), algorithms=[JWT_ALGORITHM])
     except jwt.PyJWTError as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -224,14 +229,24 @@ def decode_access_token(token: str) -> str:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired session. Please sign in again.",
         )
-    return email
+
+    organization = payload.get("org")
+    if not isinstance(organization, str) or not organization.strip():
+        credential = _credential_for_email(email)
+        organization = credential.organization if credential else "Organization"
+
+    return AuthContext(email=email.strip().lower(), organization=organization.strip())
 
 
-def require_auth(
+def decode_access_token(token: str) -> str:
+    return decode_auth_context(token).email
+
+
+def require_auth_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(security),
-) -> str:
+) -> AuthContext:
     if not auth_enabled():
-        return "anonymous"
+        return AuthContext(email="anonymous", organization="Anonymous")
 
     if credentials is None or credentials.scheme.lower() != "bearer":
         raise HTTPException(
@@ -240,14 +255,20 @@ def require_auth(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    email = decode_access_token(credentials.credentials)
+    context = decode_auth_context(credentials.credentials)
 
     from app.provisioning import org_access_expired
 
-    if org_access_expired(email):
+    if org_access_expired(context.email):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Your plan has expired. Renew at shiftworkshr.com/#pricing or email hello@shiftworkshr.com.",
         )
 
-    return email
+    return context
+
+
+def require_auth(
+    credentials: HTTPAuthorizationCredentials | None = Depends(security),
+) -> str:
+    return require_auth_user(credentials).email

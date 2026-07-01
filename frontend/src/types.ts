@@ -230,6 +230,20 @@ export interface PreviewResponse {
   sheet_names: string[];
 }
 
+export interface AnalysisHistorySummary {
+  id: string;
+  file_name: string;
+  saved_at: string;
+  saved_by: string;
+  total_rows: number;
+  below_minimum: number;
+  risk_level: string;
+}
+
+export interface AnalysisHistoryDetail extends AnalysisHistorySummary {
+  result: AnalysisResult;
+}
+
 export type AnalysisTab =
   | "below_minimum"
   | "above_maximum"

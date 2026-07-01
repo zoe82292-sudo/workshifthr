@@ -538,6 +538,69 @@ p {
   font-size: 0.95rem;
 }
 
+.table-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.table-pagination__meta {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.table-pagination__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.table-pagination__page {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.analysis-history__intro {
+  margin: 0 0 16px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.analysis-history__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.analysis-history__item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.analysis-history__meta {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.analysis-history__actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .field label {
   display: block;
   font-size: 0.9rem;
