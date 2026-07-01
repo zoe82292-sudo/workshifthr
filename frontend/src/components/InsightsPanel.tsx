@@ -48,14 +48,12 @@ export function InsightsPanel({ result }: InsightsPanelProps) {
         ) : null}
       </section>
 
-      <section
-        className="insights-grid card-grid card-grid--4 card-grid--metrics-6"
-        aria-label="Key metrics"
-      >
+      <section className="insights-grid card-grid card-grid--4" aria-label="Key metrics">
         <article className="insight-card metric-card">
           <h3 className="metric-card__title">Cost to minimum</h3>
           <p className="metric-card__label">Dollars to bring employees to range floor</p>
-          <div className="metric-card__input-slot" aria-hidden="true" />
+          <div className="metric-card__controls" aria-hidden="true" />
+          <div className="metric-card__grow" aria-hidden="true" />
           <strong className="metric-card__value">
             {formatCurrency(insights.cost_metrics.total_gap_to_minimum)}
           </strong>
@@ -68,7 +66,8 @@ export function InsightsPanel({ result }: InsightsPanelProps) {
         <article className="insight-card metric-card">
           <h3 className="metric-card__title">Budget impact</h3>
           <p className="metric-card__label">Remediation plus merit pool exposure</p>
-          <div className="metric-card__input-slot" aria-hidden="true" />
+          <div className="metric-card__controls" aria-hidden="true" />
+          <div className="metric-card__grow" aria-hidden="true" />
           <strong className="metric-card__value">{formatCurrency(combinedBudget)}</strong>
           <p className="metric-card__meta">
             Minimum adjustments {formatCurrency(insights.budget_impact.cost_to_minimum)} · merit
@@ -81,15 +80,18 @@ export function InsightsPanel({ result }: InsightsPanelProps) {
           <label className="metric-card__label" htmlFor="target-merit">
             Target merit increase %
           </label>
-          <input
-            id="target-merit"
-            className="merit-input metric-card__input"
-            type="number"
-            min="0"
-            step="0.1"
-            value={targetMerit}
-            onChange={(event) => setTargetMerit(event.target.value)}
-          />
+          <div className="metric-card__controls">
+            <input
+              id="target-merit"
+              className="merit-input metric-card__input"
+              type="number"
+              min="0"
+              step="0.1"
+              value={targetMerit}
+              onChange={(event) => setTargetMerit(event.target.value)}
+            />
+          </div>
+          <div className="metric-card__grow" aria-hidden="true" />
           <strong className="metric-card__value">{formatCurrency(projectedMeritPool)}</strong>
           <p className="metric-card__meta">
             Based on {formatCurrency(insights.merit_calculator.payroll_base)} eligible payroll
@@ -102,7 +104,8 @@ export function InsightsPanel({ result }: InsightsPanelProps) {
         <article className="insight-card metric-card">
           <h3 className="metric-card__title">Compa-ratio</h3>
           <p className="metric-card__label">Average vs. range midpoint</p>
-          <div className="metric-card__input-slot" aria-hidden="true" />
+          <div className="metric-card__controls" aria-hidden="true" />
+          <div className="metric-card__grow" aria-hidden="true" />
           <strong className="metric-card__value">
             {insights.compa_ratio.average_compa_ratio != null
               ? `${insights.compa_ratio.average_compa_ratio}%`

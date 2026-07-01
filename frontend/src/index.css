@@ -154,104 +154,12 @@ p {
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
-/* Metric cards: shared row tracks across columns via subgrid */
-.card-grid--metrics-5 {
-  grid-template-rows:
-    minmax(2.5em, auto)
-    minmax(2.75em, auto)
-    minmax(12px, 1fr)
-    auto
-    minmax(2.7em, auto);
-}
-
-.card-grid--metrics-5 > .metric-card {
-  display: grid;
-  grid-template-rows: subgrid;
-  grid-row: span 5;
-}
-
-.card-grid--metrics-5 .metric-card__title {
-  grid-row: 1;
-}
-
-.card-grid--metrics-5 .metric-card__label {
-  grid-row: 2;
-}
-
-.card-grid--metrics-5 .metric-card__value {
-  grid-row: 4;
-  align-self: end;
-}
-
-.card-grid--metrics-5 .metric-card__meta {
-  grid-row: 5;
-  align-self: start;
-}
-
-.card-grid--metrics-6 {
-  grid-template-rows:
-    minmax(2.5em, auto)
-    minmax(2.75em, auto)
-    44px
-    minmax(12px, 1fr)
-    auto
-    minmax(2.7em, auto);
-}
-
-.card-grid--metrics-6 > .metric-card {
-  display: grid;
-  grid-template-rows: subgrid;
-  grid-row: span 6;
-}
-
-.card-grid--metrics-6 .metric-card__title {
-  grid-row: 1;
-}
-
-.card-grid--metrics-6 .metric-card__label {
-  grid-row: 2;
-}
-
-.card-grid--metrics-6 .metric-card__input-slot,
-.card-grid--metrics-6 .metric-card__input {
-  grid-row: 3;
-  align-self: center;
-}
-
-.card-grid--metrics-6 .metric-card__value {
-  grid-row: 5;
-  align-self: end;
-}
-
-.card-grid--metrics-6 .metric-card__meta {
-  grid-row: 6;
-  align-self: start;
-}
-
-/* Stat cards: shared row tracks across columns via subgrid */
-.card-grid--stats {
-  grid-template-rows: minmax(2.5em, auto) minmax(8px, 1fr) auto;
-}
-
-.card-grid--stats > .stat-card {
-  display: grid;
-  grid-template-rows: subgrid;
-  grid-row: span 3;
-}
-
-.card-grid--stats .stat-card__label {
-  grid-row: 1;
-  align-self: start;
-}
-
-.card-grid--stats .stat-card__value {
-  grid-row: 3;
-  align-self: end;
-}
-
+/* Metric & stat cards: flex columns with fixed-height slots (no subgrid) */
 .metric-card {
+  display: flex;
+  flex-direction: column;
   height: 100%;
-  min-height: 192px;
+  min-height: 228px;
   padding: 16px;
   border-radius: 16px;
   border: 1px solid var(--border);
@@ -261,22 +169,40 @@ p {
 
 .metric-card__title {
   margin: 0;
+  height: 40px;
   font-size: 0.92rem;
   line-height: 1.25;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   flex-shrink: 0;
 }
 
 .metric-card__label {
-  margin: 6px 0 0;
+  margin: 4px 0 0;
+  height: 40px;
   color: var(--text-muted);
   font-size: 0.8rem;
   line-height: 1.35;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   flex-shrink: 0;
 }
 
-.metric-card__input-slot {
+.metric-card__controls {
   height: 44px;
-  margin-top: 0;
+  margin-top: 4px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.metric-card__grow {
+  flex: 1 1 8px;
+  min-height: 8px;
 }
 
 .metric-card__input {
@@ -288,26 +214,36 @@ p {
 }
 
 .metric-card__value {
-  display: block;
+  display: flex;
+  align-items: flex-end;
+  height: 34px;
   font-size: 1.5rem;
   line-height: 1.1;
   margin: 0;
-  padding-top: 4px;
+  padding-top: 0;
   color: var(--accent);
   letter-spacing: -0.02em;
+  flex-shrink: 0;
 }
 
 .metric-card__meta {
   margin: 6px 0 0;
+  height: 42px;
   color: var(--text-muted);
   font-size: 0.78rem;
   line-height: 1.4;
-  min-height: 2.7em;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  flex-shrink: 0;
 }
 
 .stat-card {
+  display: flex;
+  flex-direction: column;
   height: 100%;
-  min-height: 92px;
+  min-height: 96px;
   padding: 14px 10px 12px;
   border-radius: 14px;
   border: 1px solid var(--border);
@@ -321,14 +257,27 @@ p {
   align-items: flex-start;
   justify-content: center;
   margin: 0;
+  height: 40px;
   color: var(--text-muted);
   font-size: 0.74rem;
   line-height: 1.25;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.stat-card__grow {
+  flex: 1 1 4px;
+  min-height: 4px;
 }
 
 .stat-card__value {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 28px;
   font-size: 1.35rem;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .stat-card--danger {
@@ -2350,96 +2299,89 @@ a:focus-visible {
   gap: 20px;
   margin-bottom: 20px;
   align-items: stretch;
-  grid-template-rows:
-    32px
-    minmax(1.35em, auto)
-    auto
-    1.25em
-    minmax(2.9em, auto)
-    minmax(7.5rem, 1fr)
-    auto;
 }
 
 @media (max-width: 900px) {
   .landing-pricing-grid {
     grid-template-columns: 1fr;
-    grid-template-rows: none;
-    grid-auto-rows: auto;
     max-width: 420px;
     margin-left: auto;
     margin-right: auto;
   }
 
-  .landing-pricing-grid > .landing-price-card {
-    grid-row: auto;
+  .landing-price-card {
     min-height: 0;
   }
 }
 
 .landing-price-card {
-  display: grid;
-  grid-template-rows: subgrid;
-  grid-row: span 7;
+  display: flex;
+  flex-direction: column;
   height: 100%;
-  min-height: 0;
+  min-height: 500px;
   box-sizing: border-box;
   position: relative;
 }
 
 .landing-price-card__badge-row {
-  grid-row: 1;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  height: 28px;
+  height: 32px;
+  flex-shrink: 0;
   margin: 0;
 }
 
 .landing-price-card__title {
-  grid-row: 2;
+  height: 28px;
   font-size: 1.1rem;
   margin: 0;
   line-height: 1.35;
-  align-self: start;
+  flex-shrink: 0;
 }
 
 .landing-price-amount {
-  grid-row: 3;
-  align-self: end;
+  height: 52px;
+  display: flex;
+  align-items: flex-end;
   font-family: "Instrument Serif", serif;
   font-size: 2.8rem;
   line-height: 1;
   color: var(--accent);
   margin: 8px 0 0;
+  flex-shrink: 0;
 }
 
 .landing-price-period {
-  grid-row: 4;
-  align-self: start;
+  height: 20px;
   color: var(--text-muted);
   margin: 4px 0 0;
   line-height: 1.25;
+  flex-shrink: 0;
 }
 
 .landing-price-description {
-  grid-row: 5;
-  align-self: start;
+  height: 48px;
   color: var(--text-muted);
   margin: 12px 0 0;
   line-height: 1.45;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  flex-shrink: 0;
 }
 
 .landing-price-card__features {
-  grid-row: 6;
-  align-self: start;
+  flex: 1 1 120px;
+  min-height: 120px;
   margin: 16px 0 0;
 }
 
 .landing-price-card__cta {
-  grid-row: 7;
-  align-self: end;
-  margin: 0;
+  margin-top: auto;
   padding-top: 16px;
+  flex-shrink: 0;
 }
 
 .landing-price-card.featured {
