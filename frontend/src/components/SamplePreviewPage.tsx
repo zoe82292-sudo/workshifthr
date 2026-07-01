@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { BrandLogo } from "./BrandLogo";
-import { InteractiveDemoPreview } from "./InteractiveDemoPreview";
+import { ProductDemoShowcase } from "./ProductDemoShowcase";
 
 export function SamplePreviewPage() {
   return (
@@ -12,14 +12,14 @@ export function SamplePreviewPage() {
         </Link>
       </header>
       <div className="sample-preview-page__intro">
-        <span className="hero-badge">Interactive demo</span>
-        <h1>Explore a real comp analysis</h1>
+        <span className="hero-badge">Product preview</span>
+        <h1>Sample compensation analysis</h1>
         <p>
-          Sample data from a 20-employee file. Click tabs, scroll tables, and review the same
-          output customers see after upload.
+          Switch tabs to explore overview, flagged issues, pay equity, and budget impact — the same
+          core views available after upload.
         </p>
       </div>
-      <InteractiveDemoPreview variant="full" />
+      <ProductDemoShowcase variant="full" />
     </div>
   );
 }

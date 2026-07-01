@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { checkBillingStatus, type PlanId } from "../api";
 import { BrandLogo } from "./BrandLogo";
 import { CheckoutButton } from "./CheckoutButton";
-import { InteractiveDemoPreview } from "./InteractiveDemoPreview";
+import { ProductDemoShowcase } from "./ProductDemoShowcase";
 import { LegalConsentLinks } from "./LegalConsentLinks";
 import { LegalFooter } from "./LegalFooter";
 import { LoginForm } from "./LoginForm";
@@ -313,33 +313,23 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
 
       <section className="landing-section landing-preview" id="see-it-in-action">
         <div className="landing-section-header landing-preview-header">
-          <span className="hero-badge">Free preview</span>
-          <h2>Try the real product — not a screenshot</h2>
+          <span className="hero-badge">Product preview</span>
+          <h2>See what you get before you buy</h2>
           <p>
-            This is a live demo on sample data. Click tabs, scroll results, and see the same
-            analysis view customers get after upload — no account required.
+            Explore a live sample analysis with the same views customers see after upload — switch
+            tabs to review flags, pay equity, and budget impact.
           </p>
         </div>
         <figure
-          className="landing-preview-frame"
-          aria-label="ShiftWorksHR analysis results showing executive summary, budget impact calculators, and flagged compensation issues"
+          className="product-demo-frame"
+          aria-label="ShiftWorksHR sample analysis with overview, flagged issues, pay equity, and budget tabs"
         >
-          <div className="landing-browser-chrome" aria-hidden="true">
-            <div className="landing-browser-dots">
-              <span />
-              <span />
-              <span />
-            </div>
-            <div className="landing-browser-url">shiftworkshr.com</div>
+          <div className="product-demo-frame__scroll">
+            <ProductDemoShowcase variant="embedded" />
           </div>
-          <div className="landing-preview-image-wrap landing-preview-live">
-            <div className="landing-preview-demo-scroll">
-              <InteractiveDemoPreview variant="embedded" />
-            </div>
-          </div>
-          <figcaption className="landing-preview-caption">
-            Interactive sample analysis — explore tabs above or{" "}
-            <Link to="/sample-preview">open the full-screen demo</Link>.
+          <figcaption className="product-demo-frame__caption">
+            Sample comp file ·{" "}
+            <Link to="/sample-preview">open expanded demo</Link>
           </figcaption>
         </figure>
       </section>
