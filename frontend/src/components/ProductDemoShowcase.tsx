@@ -33,23 +33,16 @@ function formatPercent(value: number | null | undefined) {
 
 export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcaseProps) {
   const [result, setResult] = useState<AnalysisResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<DemoTab>("overview");
 
   useEffect(() => {
-    void fetchDemoAnalysis()
-      .then(setResult)
-      .catch(() => setError("Unable to load the sample analysis. Please refresh and try again."));
+    void fetchDemoAnalysis().then(setResult);
   }, []);
 
   const shellClass = [
     "product-demo",
     variant === "embedded" ? "product-demo--embedded" : "product-demo--full",
   ].join(" ");
-
-  if (error) {
-    return <p className="product-demo__message product-demo__message--error">{error}</p>;
-  }
 
   if (!result) {
     return <p className="product-demo__message">Loading sample analysis…</p>;
@@ -149,7 +142,7 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
 
             <section className="product-demo__metrics" aria-label="Key metrics">
               {metrics.map((metric) => (
-                <article className="product-demo__metric panel" key={metric.title}>
+                <article className="product-demo__metric" key={metric.title}>
                   <h3>{metric.title}</h3>
                   <p className="product-demo__metric-label">{metric.label}</p>
                   <strong className="product-demo__metric-value">{metric.value}</strong>
@@ -175,25 +168,25 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
         {activeTab === "issues" ? (
           <>
             <section className="product-demo__metrics product-demo__metrics--compact" aria-label="Issue highlights">
-              <article className="product-demo__metric panel">
+              <article className="product-demo__metric">
                 <h3>Below minimum</h3>
                 <p className="product-demo__metric-label">Employees under range floor</p>
                 <strong className="product-demo__metric-value">{summary.below_minimum}</strong>
                 <p className="product-demo__metric-meta">Requires merit or adjustment review</p>
               </article>
-              <article className="product-demo__metric panel">
+              <article className="product-demo__metric">
                 <h3>Above maximum</h3>
                 <p className="product-demo__metric-label">Employees over range ceiling</p>
                 <strong className="product-demo__metric-value">{summary.above_maximum}</strong>
                 <p className="product-demo__metric-meta">Check approvals and exceptions</p>
               </article>
-              <article className="product-demo__metric panel">
+              <article className="product-demo__metric">
                 <h3>Compression</h3>
                 <p className="product-demo__metric-label">Same-level pay spread issues</p>
                 <strong className="product-demo__metric-value">{summary.compression_issues}</strong>
                 <p className="product-demo__metric-meta">Structural range or level review</p>
               </article>
-              <article className="product-demo__metric panel">
+              <article className="product-demo__metric">
                 <h3>Manager inversions</h3>
                 <p className="product-demo__metric-label">Managers paid below reports</p>
                 <strong className="product-demo__metric-value">{summary.managers_below_reports}</strong>
@@ -250,7 +243,7 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
               {payGaps.length > 0 ? (
                 payGaps.map((gap) => (
                   <article
-                    className="product-demo__metric panel"
+                    className="product-demo__metric"
                     key={`${gap.dimension}-${gap.higher_paid_group}-${gap.lower_paid_group}-${gap.scope}`}
                   >
                     <h3>
@@ -268,7 +261,7 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
                   </article>
                 ))
               ) : (
-                <article className="product-demo__metric panel product-demo__metric--wide">
+                <article className="product-demo__metric product-demo__metric--wide">
                   <h3>No gaps in sample</h3>
                   <p className="product-demo__metric-label">
                     Upload data with gender and race columns to populate this view.
@@ -282,14 +275,14 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
         {activeTab === "budget" ? (
           <section className="product-demo__metrics" aria-label="Budget impact">
             {metrics.map((metric) => (
-              <article className="product-demo__metric panel" key={`budget-${metric.title}`}>
+              <article className="product-demo__metric" key={`budget-${metric.title}`}>
                 <h3>{metric.title}</h3>
                 <p className="product-demo__metric-label">{metric.label}</p>
                 <strong className="product-demo__metric-value">{metric.value}</strong>
                 <p className="product-demo__metric-meta">{metric.meta}</p>
               </article>
             ))}
-            <article className="product-demo__metric panel product-demo__metric--wide">
+            <article className="product-demo__metric product-demo__metric--wide">
               <h3>Planning note</h3>
               <p className="product-demo__metric-label">{insights.budget_impact.note}</p>
               <strong className="product-demo__metric-value">

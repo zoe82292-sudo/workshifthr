@@ -114,8 +114,11 @@ p {
 .landing-feature-grid > *,
 .landing-audience-grid > *,
 .landing-step-grid > *,
-.landing-pricing-grid > * {
+.landing-pricing-grid > *,
+.product-demo__metrics > *,
+.product-demo__stats > * {
   margin: 0;
+  min-height: 100%;
 }
 
 .panel-header {
@@ -1337,51 +1340,66 @@ tr:last-child td {
 .product-demo__metrics {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(1, 204px);
   gap: 14px;
   align-items: stretch;
 }
 
 .product-demo__metrics--equity {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: none;
+  grid-auto-rows: 204px;
 }
 
 .product-demo__metric {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: 2.5em 2.75em 1fr auto;
+  align-content: start;
   height: 100%;
-  min-height: 176px;
-  padding: 18px 16px;
+  min-height: 0;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(26, 77, 58, 0.06);
+  box-sizing: border-box;
 }
 
 .product-demo__metric--wide {
   grid-column: 1 / -1;
+  grid-template-rows: auto auto 1fr auto;
   min-height: 0;
 }
 
 .product-demo__metric h3 {
-  margin: 0 0 6px;
+  margin: 0;
   font-size: 0.92rem;
+  line-height: 1.25;
+  overflow: hidden;
 }
 
 .product-demo__metric-label {
-  margin: 0 0 10px;
+  margin: 0;
+  padding-top: 6px;
   color: var(--text-muted);
   font-size: 0.8rem;
   line-height: 1.35;
-  min-height: 2.7em;
+  overflow: hidden;
 }
 
 .product-demo__metric-value {
   display: block;
+  align-self: end;
   font-size: 1.5rem;
   line-height: 1.1;
-  margin-bottom: 8px;
+  margin: 0;
+  padding-bottom: 6px;
   color: var(--accent);
   letter-spacing: -0.02em;
 }
 
 .product-demo__metric-meta {
-  margin: auto 0 0;
+  margin: 0;
   color: var(--text-muted);
   font-size: 0.78rem;
   line-height: 1.4;
@@ -1389,22 +1407,25 @@ tr:last-child td {
 
 .product-demo__stats {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-rows: repeat(1, 92px);
   gap: 12px;
   align-items: stretch;
 }
 
 .product-demo__stat {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 96px;
-  padding: 12px 10px;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  align-content: center;
+  justify-items: center;
+  height: 100%;
+  min-height: 0;
+  padding: 10px 8px;
   border-radius: 14px;
   border: 1px solid var(--border);
   background: var(--surface-muted);
   text-align: center;
+  box-sizing: border-box;
 }
 
 .product-demo__stat span {
@@ -1499,10 +1520,16 @@ tr:last-child td {
   .product-demo__metrics,
   .product-demo__metrics--compact {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, 204px);
+  }
+
+  .product-demo__metrics--equity {
+    grid-template-rows: repeat(2, 204px);
   }
 
   .product-demo__stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(2, 92px);
   }
 }
 
@@ -1512,6 +1539,18 @@ tr:last-child td {
   .product-demo__metrics--equity,
   .product-demo__stats {
     grid-template-columns: 1fr;
+    grid-template-rows: none;
+    grid-auto-rows: auto;
+  }
+
+  .product-demo__metric {
+    min-height: 188px;
+    height: auto;
+  }
+
+  .product-demo__stat {
+    min-height: 88px;
+    height: auto;
   }
 
   .product-demo__body {
@@ -1856,7 +1895,7 @@ tr:last-child td {
 .landing-pricing-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-auto-rows: minmax(480px, auto);
+  grid-template-rows: repeat(1, 512px);
   gap: 20px;
   margin-bottom: 20px;
   align-items: stretch;
@@ -1865,9 +1904,16 @@ tr:last-child td {
 @media (max-width: 900px) {
   .landing-pricing-grid {
     grid-template-columns: 1fr;
+    grid-template-rows: none;
+    grid-auto-rows: auto;
     max-width: 420px;
     margin-left: auto;
     margin-right: auto;
+  }
+
+  .landing-price-card {
+    height: auto;
+    min-height: 480px;
   }
 }
 
@@ -1875,9 +1921,34 @@ tr:last-child td {
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 480px;
+  min-height: 0;
   box-sizing: border-box;
   position: relative;
+}
+
+.landing-price-card__badge-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: 28px;
+  flex-shrink: 0;
+  margin-bottom: 4px;
+}
+
+.landing-price-card__head {
+  flex-shrink: 0;
+}
+
+.landing-price-card__features {
+  flex: 1 1 auto;
+  margin: 16px 0 0;
+  min-height: 7.5rem;
+}
+
+.landing-price-card__cta {
+  margin-top: auto;
+  padding-top: 16px;
+  flex-shrink: 0;
 }
 
 .landing-price-card.featured {
@@ -1887,9 +1958,6 @@ tr:last-child td {
 }
 
 .landing-price-badge {
-  position: absolute;
-  top: 16px;
-  right: 16px;
   padding: 4px 10px;
   border-radius: 999px;
   background: linear-gradient(135deg, var(--gold), #e0b85c);
@@ -1899,21 +1967,14 @@ tr:last-child td {
   line-height: 1.2;
 }
 
-.landing-price-badge--spacer {
+.landing-price-badge--placeholder {
   visibility: hidden;
-  pointer-events: none;
 }
 
 .landing-price-card h3 {
-  flex-shrink: 0;
   font-size: 1.1rem;
   margin: 0;
-  padding-right: 88px;
-  height: 1.35em;
   line-height: 1.35;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .landing-price-amount {
@@ -1934,7 +1995,6 @@ tr:last-child td {
 }
 
 .landing-price-description {
-  flex-shrink: 0;
   color: var(--text-muted);
   margin: 12px 0 0;
   line-height: 1.45;
@@ -1942,9 +2002,7 @@ tr:last-child td {
 }
 
 .landing-price-card .landing-checklist {
-  flex: 1;
-  margin: 16px 0 0;
-  min-height: 8.5rem;
+  margin: 0;
 }
 
 .landing-price-button {
@@ -1961,7 +2019,7 @@ tr:last-child td {
 }
 
 .checkout-button-wrap {
-  margin-top: auto;
+  margin-top: 0;
   display: grid;
   gap: 8px;
 }
@@ -2038,7 +2096,7 @@ tr:last-child td {
 .landing-feature-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-auto-rows: minmax(272px, auto);
+  grid-template-rows: repeat(2, 288px);
   gap: 16px;
   align-items: stretch;
 }
@@ -2046,21 +2104,23 @@ tr:last-child td {
 @media (max-width: 900px) {
   .landing-feature-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(3, 272px);
   }
 }
 
 @media (max-width: 560px) {
   .landing-feature-grid {
     grid-template-columns: 1fr;
+    grid-template-rows: none;
+    grid-auto-rows: auto;
   }
 }
 
 .landing-feature {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
   height: 100%;
-  min-height: 272px;
+  min-height: 0;
   box-sizing: border-box;
   position: relative;
   border: 1px solid var(--border);
@@ -2081,7 +2141,8 @@ tr:last-child td {
 
 @media (max-width: 560px) {
   .landing-feature {
-    min-height: 200px;
+    min-height: 240px;
+    height: auto;
   }
 }
 
@@ -2116,23 +2177,23 @@ tr:last-child td {
 }
 
 .landing-feature h3 {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   font-size: 1.05rem;
   line-height: 1.3;
-  min-height: 2.6em;
+  min-height: 2.75em;
 }
 
 .landing-feature p {
   margin: 0;
+  margin-top: auto;
   color: var(--text-muted);
   line-height: 1.45;
-  flex: 1;
 }
 
 .landing-step-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-auto-rows: minmax(212px, auto);
+  grid-template-rows: repeat(1, 240px);
   gap: 20px;
   align-items: stretch;
 }
@@ -2140,12 +2201,15 @@ tr:last-child td {
 @media (max-width: 900px) {
   .landing-step-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, 240px);
   }
 }
 
 @media (max-width: 560px) {
   .landing-step-grid {
     grid-template-columns: 1fr;
+    grid-template-rows: none;
+    grid-auto-rows: auto;
   }
 }
 
@@ -2153,11 +2217,8 @@ tr:last-child td {
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 212px;
-  padding: 20px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  background: var(--surface);
+  min-height: 0;
+  box-sizing: border-box;
 }
 
 .landing-step:nth-child(1) {
@@ -2183,6 +2244,7 @@ tr:last-child td {
 .landing-trust-strip {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(1, 96px);
   gap: 1px;
   background: var(--border);
   border-block: 1px solid var(--border);
@@ -2192,11 +2254,14 @@ tr:last-child td {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   gap: 4px;
-  min-height: 88px;
-  padding: 20px 24px;
+  height: 100%;
+  min-height: 0;
+  padding: 16px 20px;
   background: var(--surface);
   text-align: center;
+  box-sizing: border-box;
 }
 
 .landing-trust-stat {
@@ -2215,7 +2280,7 @@ tr:last-child td {
 .landing-audience-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-auto-rows: minmax(184px, auto);
+  grid-template-rows: repeat(1, 200px);
   gap: 20px;
   align-items: stretch;
 }
@@ -2223,6 +2288,8 @@ tr:last-child td {
 @media (max-width: 768px) {
   .landing-audience-grid {
     grid-template-columns: 1fr;
+    grid-template-rows: none;
+    grid-auto-rows: auto;
   }
 }
 
@@ -2230,16 +2297,21 @@ tr:last-child td {
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 184px;
+  min-height: 0;
+  box-sizing: border-box;
 }
 
 .landing-audience h3 {
-  margin-bottom: 8px;
+  margin: 0 0 10px;
+  min-height: 2.75em;
+  line-height: 1.3;
 }
 
 .landing-audience p {
-  flex: 1;
+  margin: 0;
+  margin-top: auto;
   color: var(--text-muted);
+  line-height: 1.45;
 }
 
 .landing-lead-magnet-card {
@@ -2417,13 +2489,16 @@ tr:last-child td {
 }
 
 .landing-step h3 {
-  margin-bottom: 8px;
+  margin: 0 0 10px;
+  min-height: 1.35em;
+  line-height: 1.3;
 }
 
 .landing-step p {
-  flex: 1;
   margin: 0;
+  margin-top: auto;
   color: var(--text-muted);
+  line-height: 1.45;
 }
 
 .landing-pricing {

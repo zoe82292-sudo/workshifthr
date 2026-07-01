@@ -404,7 +404,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
         </div>
         <div className="landing-step-grid">
           {STEPS.map((step, index) => (
-            <article className="landing-step" key={step.title}>
+            <article className="landing-step panel" key={step.title}>
               <span className="landing-step-number">{index + 1}</span>
               <h3>{step.title}</h3>
               <p>{step.copy}</p>
@@ -431,28 +431,33 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
               className={`landing-price-card panel ${plan.featured ? "featured" : ""}`}
               key={plan.id}
             >
-              <span
-                className={`landing-price-badge ${plan.featured ? "" : "landing-price-badge--spacer"}`}
-                aria-hidden={!plan.featured}
-              >
-                {plan.featured ? "Best value" : "\u00A0"}
-              </span>
-              <h3>{plan.name}</h3>
-              <p className="landing-price-amount">{plan.price}</p>
-              <p className="landing-price-period">{plan.period}</p>
-              <p className="landing-price-description">{plan.description}</p>
-              <ul className="landing-checklist">
+              <div className="landing-price-card__badge-row">
+                {plan.featured ? (
+                  <span className="landing-price-badge">Best value</span>
+                ) : (
+                  <span className="landing-price-badge landing-price-badge--placeholder" aria-hidden="true" />
+                )}
+              </div>
+              <div className="landing-price-card__head">
+                <h3>{plan.name}</h3>
+                <p className="landing-price-amount">{plan.price}</p>
+                <p className="landing-price-period">{plan.period}</p>
+                <p className="landing-price-description">{plan.description}</p>
+              </div>
+              <ul className="landing-checklist landing-price-card__features">
                 {plan.features.map((feature) => (
                   <li key={feature}>{feature}</li>
                 ))}
               </ul>
-              <CheckoutButton
-                planId={plan.id}
-                label={plan.cta}
-                variant={plan.featured ? "primary" : "secondary"}
-                checkoutEnabled={availablePlans.includes(plan.id)}
-                fallbackHref={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(plan.mailSubject)}`}
-              />
+              <div className="landing-price-card__cta">
+                <CheckoutButton
+                  planId={plan.id}
+                  label={plan.cta}
+                  variant={plan.featured ? "primary" : "secondary"}
+                  checkoutEnabled={availablePlans.includes(plan.id)}
+                  fallbackHref={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(plan.mailSubject)}`}
+                />
+              </div>
             </article>
           ))}
         </div>
