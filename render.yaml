@@ -30,3 +30,7 @@ services:
         sync: false
       - key: STRIPE_PRICE_MONTHLY
         sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: SMTP_FROM
+        value: ShiftWorksHR <hello@shiftworkshr.com>

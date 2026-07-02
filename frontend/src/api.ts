@@ -188,6 +188,7 @@ export async function fetchCheckoutSession(sessionId: string): Promise<{
   status: string;
   organization: string | null;
   password: string | null;
+  credentials_emailed: boolean;
 }> {
   const response = await fetch(`${API_BASE}/billing/session/${encodeURIComponent(sessionId)}`);
   if (!response.ok) {
@@ -201,6 +202,7 @@ export async function fetchCheckoutSession(sessionId: string): Promise<{
     status: string;
     organization: string | null;
     password: string | null;
+    credentials_emailed: boolean;
   };
 }
 

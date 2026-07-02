@@ -12,6 +12,7 @@ from typing import Any
 import bcrypt
 
 from app.auth import _OrgCredential, _hash_password, _organization_name
+from app.data_paths import resolve_data_dir
 
 logger = logging.getLogger(__name__)
 
@@ -30,13 +31,7 @@ def auto_provision_enabled() -> bool:
 
 
 def _store_path() -> Path:
-    configured = os.getenv("DATA_DIR", "").strip()
-    if configured:
-        data_dir = Path(configured)
-    else:
-        data_dir = Path(__file__).resolve().parent.parent / "data"
-    data_dir.mkdir(parents=True, exist_ok=True)
-    return data_dir / "provisioned_orgs.json"
+    return resolve_data_dir() / "provisioned_orgs.json"
 
 
 def store_mtime() -> float:
@@ -93,6 +88,7 @@ def _normalize_org(raw: dict[str, Any]) -> dict[str, Any]:
         "stripe_customer_id": str(raw.get("stripe_customer_id", "")),
         "stripe_subscription_id": str(raw.get("stripe_subscription_id", "")),
         "last_renewed_at": str(raw.get("last_renewed_at", "")),
+        "credentials_email_sent": bool(raw.get("credentials_email_sent", False)),
     }
 
 
@@ -232,6 +228,35 @@ def load_credentials() -> tuple[dict[str, _OrgCredential], dict[str, _OrgCredent
     return email_users, domain_users
 
 
+def _maybe_send_credentials_email(org: dict[str, Any]) -> bool:
+    password = org.get("initial_password")
+    email = org.get("authorized_emails", [None])[0]
+    if not password or not email or org.get("credentials_email_sent"):
+        return False
+
+    from app.email_delivery import send_credentials_email
+
+    sent = send_credentials_email(
+        organization=str(org.get("organization", "")),
+        email=str(email),
+        password=str(password),
+        plan_id=str(org.get("plan_id", "")),
+    )
+    if not sent:
+        return False
+
+    with _file_lock:
+        store = _read_store()
+        session_id = str(org.get("stripe_session_id", ""))
+        updated = _find_org(store, session_id=session_id) if session_id else None
+        if updated is None:
+            updated = _find_org(store, email=str(email))
+        if updated is not None:
+            updated["credentials_email_sent"] = True
+            _write_store(store)
+    return True
+
+
 def credentials_for_session(session_id: str) -> dict[str, str] | None:
     with _file_lock:
         store = _read_store()
@@ -241,8 +266,18 @@ def credentials_for_session(session_id: str) -> dict[str, str] | None:
 
         password = org.get("initial_password")
         email = org.get("authorized_emails", [None])[0]
-        if not password or not email:
+        if not email:
             return None
+
+        credentials_emailed = bool(org.get("credentials_email_sent"))
+        if not password:
+            return {
+                "email": email,
+                "organization": org.get("organization", ""),
+                "password": None,
+                "plan_id": org.get("plan_id", ""),
+                "credentials_emailed": credentials_emailed,
+            }
 
         org["initial_password"] = None
         _write_store(store)
@@ -252,6 +287,7 @@ def credentials_for_session(session_id: str) -> dict[str, str] | None:
             "organization": org.get("organization", ""),
             "password": password,
             "plan_id": org.get("plan_id", ""),
+            "credentials_emailed": credentials_emailed,
         }
 
 
@@ -331,6 +367,7 @@ def provision_from_stripe_session(session: Any) -> dict[str, Any] | None:
             if subscription_id:
                 existing["stripe_subscription_id"] = subscription_id
             _write_store(store)
+            _maybe_send_credentials_email(existing)
             logger.info(
                 "Stripe checkout %s matched existing org %s for %s",
                 session_id,
@@ -366,6 +403,7 @@ def provision_from_stripe_session(session: Any) -> dict[str, Any] | None:
     from app.auth import invalidate_credentials_cache
 
     invalidate_credentials_cache()
+    _maybe_send_credentials_email(org)
 
     logger.info(
         "Provisioned organization %s for %s from Stripe session %s",

@@ -56,6 +56,7 @@ class CheckoutSessionResponse(BaseModel):
     status: str
     organization: str | None = None
     password: str | None = None
+    credentials_emailed: bool = False
 
 
 def _env(name: str) -> str:
@@ -204,6 +205,7 @@ def get_checkout_session(session_id: str) -> CheckoutSessionResponse:
 
     organization = None
     password = None
+    credentials_emailed = False
     if session.status in {"complete", "paid"}:
         provision_from_stripe_session(session)
         creds = credentials_for_session(session_id)
@@ -211,6 +213,7 @@ def get_checkout_session(session_id: str) -> CheckoutSessionResponse:
             email = creds.get("email") or email
             organization = creds.get("organization")
             password = creds.get("password")
+            credentials_emailed = bool(creds.get("credentials_emailed"))
 
     return CheckoutSessionResponse(
         email=email,
@@ -219,6 +222,7 @@ def get_checkout_session(session_id: str) -> CheckoutSessionResponse:
         status=session.status or "unknown",
         organization=organization,
         password=password,
+        credentials_emailed=credentials_emailed,
     )
 
 

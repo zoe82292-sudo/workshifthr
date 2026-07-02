@@ -15,6 +15,7 @@ export function CheckoutSuccessPage() {
   const [email, setEmail] = useState<string | null>(null);
   const [organization, setOrganization] = useState<string | null>(null);
   const [password, setPassword] = useState<string | null>(null);
+  const [credentialsEmailed, setCredentialsEmailed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(Boolean(sessionId));
   const [copied, setCopied] = useState(false);
@@ -37,6 +38,7 @@ export function CheckoutSuccessPage() {
         setPlanName(session.plan_name);
         setEmail(session.email);
         setOrganization(session.organization);
+        setCredentialsEmailed(Boolean(session.credentials_emailed));
         if (session.password) {
           setPassword(session.password);
           setLoading(false);
@@ -98,6 +100,12 @@ export function CheckoutSuccessPage() {
       <div className="alert alert-warning checkout-credentials-warning">
         <strong>Save these credentials now.</strong> For security, your shared password is shown
         only once and cannot be retrieved from this page after you leave.
+        {credentialsEmailed ? (
+          <>
+            {" "}
+            We also emailed them to <strong>{email}</strong>.
+          </>
+        ) : null}
       </div>
       <div className="checkout-credentials panel">
         <h2>Your login credentials</h2>
@@ -177,9 +185,19 @@ export function CheckoutSuccessPage() {
 
             {!loading && !password ? (
               <p className="checkout-copy">
-                Credentials are still provisioning. Wait a moment, refresh this page, or email{" "}
-                <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> with your checkout email.
-                We respond within one business day.
+                {credentialsEmailed && email ? (
+                  <>
+                    Login details were emailed to <strong>{email}</strong>. Check spam if you
+                    don&apos;t see it within a few minutes, or email{" "}
+                    <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+                  </>
+                ) : (
+                  <>
+                    Credentials are still provisioning. Wait a moment, refresh this page, or email{" "}
+                    <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> with your checkout email.
+                    We respond within one business day.
+                  </>
+                )}
               </p>
             ) : null}
           </>

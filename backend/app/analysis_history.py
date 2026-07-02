@@ -39,14 +39,11 @@ class AnalysisHistoryDetail(AnalysisHistorySummary):
     result: AnalysisResult
 
 
+from app.data_paths import resolve_data_dir
+
+
 def _data_dir() -> Path:
-    configured = os.getenv("DATA_DIR", "").strip()
-    if configured:
-        path = Path(configured)
-    else:
-        path = Path(__file__).resolve().parent.parent / "data"
-    path.mkdir(parents=True, exist_ok=True)
-    return path
+    return resolve_data_dir()
 
 
 def _max_per_org() -> int:

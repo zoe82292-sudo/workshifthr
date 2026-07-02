@@ -145,6 +145,8 @@ Open [http://localhost:8080](http://localhost:8080).
 
 ### Deploy to Render (recommended)
 
+See **[docs/RENDER_SETUP.md](docs/RENDER_SETUP.md)** for persistent disk, credential email, and smoke-test steps.
+
 1. Push this project to a GitHub repository.
 2. In [Render](https://render.com), create a **New Blueprint** or **Web Service** from the repo.
 3. Render reads `render.yaml`:

@@ -45,6 +45,7 @@ from app.billing import (
 from app.models import AnalysisResult, ColumnMapping, PreviewResponse
 from app.rate_limit import enforce_rate_limit
 from app.uploads import max_upload_bytes, read_upload_bytes
+from app.email_delivery import email_delivery_configured
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +63,15 @@ async def lifespan(_: FastAPI):
         raise RuntimeError(
             "JWT_SECRET is required when authentication is enabled. "
             "Set JWT_SECRET in your environment before starting the server."
+        )
+    status = data_dir_status()
+    logger.info("ShiftWorksHR data directory: %s", status)
+    if status.get("warning"):
+        logger.warning("%s", status["warning"])
+    if not email_delivery_configured():
+        logger.warning(
+            "Credential email is not configured — set RESEND_API_KEY or SMTP_HOST/SMTP_FROM "
+            "so customers receive login details after checkout."
         )
     yield
 
@@ -95,40 +105,7 @@ app.add_middleware(
 )
 
 
-PERSISTENT_DATA_DIR = "/var/data/shiftworkshr"
-
-
-def _data_dir_status() -> dict[str, object]:
-    configured = os.getenv("DATA_DIR", "").strip()
-    if configured:
-        path = Path(configured)
-    else:
-        path = Path(__file__).resolve().parent.parent / "data"
-    writable = False
-    try:
-        path.mkdir(parents=True, exist_ok=True)
-        probe = path / ".write_probe"
-        probe.write_text("ok", encoding="utf-8")
-        probe.unlink(missing_ok=True)
-        writable = True
-    except OSError:
-        writable = False
-
-    on_render = bool(os.getenv("RENDER", "").strip() or os.getenv("RENDER_GIT_COMMIT", "").strip())
-    using_persistent_disk = str(path) == PERSISTENT_DATA_DIR and writable
-    warning = None
-    if on_render and not using_persistent_disk:
-        warning = (
-            f"DATA_DIR is {path}; set DATA_DIR={PERSISTENT_DATA_DIR} in Render and attach the "
-            "persistent disk so saved history and Stripe provisioning survive redeploys."
-        )
-
-    return {
-        "path": str(path),
-        "writable": writable,
-        "using_persistent_disk": using_persistent_disk,
-        "warning": warning,
-    }
+from app.data_paths import data_dir_status, resolve_data_dir
 
 
 @app.get("/api/health")
@@ -142,7 +119,8 @@ def health() -> dict[str, object]:
         "billing_enabled": billing_enabled(),
         "billing_missing": billing_missing_config() if not billing_enabled() else [],
         "max_upload_mb": max_upload_bytes() // (1024 * 1024),
-        "data_dir": _data_dir_status(),
+        "data_dir": data_dir_status(),
+        "credential_email_configured": email_delivery_configured(),
         "git_commit": os.getenv("RENDER_GIT_COMMIT", "local"),
         "frontend_bundle": _frontend_bundle_name(),
         "favicon_ico_exists": favicon_path.is_file(),
