@@ -6,6 +6,7 @@ import { CheckoutButton } from "./CheckoutButton";
 import { ProductDemoShowcase } from "./ProductDemoShowcase";
 import { LegalConsentLinks } from "./LegalConsentLinks";
 import { LegalFooter } from "./LegalFooter";
+import { MARKETING_DEMO_DATA } from "../data/marketingDemoData";
 import { LoginForm } from "./LoginForm";
 
 const CONTACT_EMAIL = "hello@shiftworkshr.com";
@@ -60,10 +61,12 @@ const AUDIENCES = [
 
 const TRUST_POINTS = [
   { stat: "< 30 sec", label: "Typical time to first insights" },
+  { stat: "Merit season", label: "Built for annual & merit review QA" },
   { stat: "$249", label: "Cycle pass vs. $10k+ platforms" },
-  { stat: "Opt-in", label: "Server storage only when you save" },
   { stat: "HR-built", label: "Designed by a comp practitioner" },
 ];
+
+const SAMPLE_REVIEW = MARKETING_DEMO_DATA;
 
 const STEPS = [
   {
@@ -233,6 +236,9 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
             </div>
           </div>
           <nav className="landing-links">
+            <button type="button" onClick={() => scrollTo("example-review")}>
+              Example review
+            </button>
             <button type="button" onClick={() => scrollTo("features")}>
               Features
             </button>
@@ -257,15 +263,16 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
       <section className="landing-hero">
         <div className="landing-hero-copy">
           <BrandLogo size="hero" className="landing-hero-logo" />
-          <span className="hero-badge">Compensation intelligence</span>
+          <span className="hero-badge">Built for merit season</span>
           <p className="hero-positioning">
-            Upload your compensation spreadsheet and get an instant comp review in under
-            30 seconds.
+            Compensation spreadsheet QA for HR teams — upload Excel or CSV and get a
+            first-pass merit review in under 30 seconds.
           </p>
-          <h1>Find pay equity issues before review season.</h1>
+          <h1>Find pay issues before your merit meetings.</h1>
           <p>
-            ShiftWorksHR helps HR teams spot out-of-range pay, compression, manager
-            inversions, and budget gaps — without weeks of manual spreadsheet review.
+            ShiftWorksHR flags below-minimum pay, compression, manager inversions, and
+            budget gaps — then exports leadership-ready summaries. Skip the week in Excel
+            before review season.
           </p>
           <div className="landing-hero-actions">
             <button
@@ -311,6 +318,72 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
             <span className="landing-trust-label">{point.label}</span>
           </div>
         ))}
+      </section>
+
+      <section className="landing-section landing-case-study" id="example-review">
+        <div className="landing-section-header">
+          <span className="hero-badge">Example merit-season review</span>
+          <h2>What a first-pass comp QA looks like</h2>
+          <p>
+            Real output from our bundled sample file ({SAMPLE_REVIEW.summary.valid_rows}{" "}
+            employees). Upload your own export after purchase — same analysis in minutes.
+          </p>
+        </div>
+        <div className="landing-case-study-grid">
+          <article className="landing-case-study-card panel">
+            <span className="landing-case-study-label">Below range minimum</span>
+            <strong className="landing-case-study-value">
+              {SAMPLE_REVIEW.summary.below_minimum}
+            </strong>
+            <p>
+              ${SAMPLE_REVIEW.insights.cost_metrics.total_gap_to_minimum.toLocaleString()} to
+              bring flagged employees to range floor
+            </p>
+          </article>
+          <article className="landing-case-study-card panel">
+            <span className="landing-case-study-label">Structural issues</span>
+            <strong className="landing-case-study-value">
+              {SAMPLE_REVIEW.summary.compression_issues + SAMPLE_REVIEW.summary.managers_below_reports}
+            </strong>
+            <p>
+              {SAMPLE_REVIEW.summary.compression_issues} compression patterns ·{" "}
+              {SAMPLE_REVIEW.summary.managers_below_reports} manager inversions
+            </p>
+          </article>
+          <article className="landing-case-study-card panel">
+            <span className="landing-case-study-label">Budget exposure</span>
+            <strong className="landing-case-study-value">
+              ${Math.round(SAMPLE_REVIEW.insights.budget_impact.total_budget_impact / 1000)}k
+            </strong>
+            <p>
+              Cost to minimum plus projected merit pool from file data — before you change a
+              single row
+            </p>
+          </article>
+          <article className="landing-case-study-card panel landing-case-study-card--summary">
+            <span className="landing-case-study-label">Executive summary</span>
+            <p className="landing-case-study-headline">
+              {SAMPLE_REVIEW.insights.executive_summary.headline}
+            </p>
+            <ul className="landing-case-study-bullets">
+              {SAMPLE_REVIEW.insights.executive_summary.bullets.slice(0, 2).map((bullet) => (
+                <li key={bullet}>{bullet}</li>
+              ))}
+            </ul>
+          </article>
+        </div>
+        <div className="landing-case-study-actions">
+          <Link className="button button-primary" to="/sample-preview">
+            Explore this sample analysis
+          </Link>
+          <button className="button button-secondary" type="button" onClick={() => scrollTo("pricing")}>
+            See merit-season pricing
+          </button>
+        </div>
+        <p className="landing-case-study-note">
+          Sample file only — not a customer case study. Early customer stories coming as teams
+          complete their first merit cycles with ShiftWorksHR.
+        </p>
       </section>
 
       <section className="landing-section landing-preview" id="see-it-in-action">

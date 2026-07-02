@@ -27,6 +27,19 @@ PRICE_ENV_VARS: dict[PlanId, str] = {
 
 class CheckoutRequest(BaseModel):
     plan_id: PlanId
+    utm_source: str | None = None
+    utm_medium: str | None = None
+    utm_campaign: str | None = None
+    utm_content: str | None = None
+
+
+def _checkout_metadata(payload: CheckoutRequest) -> dict[str, str]:
+    metadata: dict[str, str] = {"plan_id": payload.plan_id}
+    for key in ("utm_source", "utm_medium", "utm_campaign", "utm_content"):
+        value = getattr(payload, key)
+        if value:
+            metadata[key] = value[:120]
+    return metadata
 
 
 class CheckoutResponse(BaseModel):
@@ -145,7 +158,8 @@ def _configure_stripe() -> None:
     stripe.api_key = secret
 
 
-def create_checkout_session(plan_id: PlanId) -> CheckoutResponse:
+def create_checkout_session(payload: CheckoutRequest) -> CheckoutResponse:
+    plan_id = payload.plan_id
     _configure_stripe()
     price_id = _plan_price_id(plan_id)
     if not price_id:
@@ -164,7 +178,7 @@ def create_checkout_session(plan_id: PlanId) -> CheckoutResponse:
             line_items=[{"price": price_id, "quantity": 1}],
             success_url=f"{base_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{base_url}/checkout/canceled",
-            metadata={"plan_id": plan_id},
+            metadata=_checkout_metadata(payload),
             allow_promotion_codes=True,
             billing_address_collection="auto",
         )
@@ -261,14 +275,20 @@ async def handle_stripe_webhook(request: Request) -> dict[str, bool]:
 
         session = event.data.object
         plan_id = session.get("metadata", {}).get("plan_id", "unknown")
+        utm_source = session.get("metadata", {}).get("utm_source", "")
+        utm_medium = session.get("metadata", {}).get("utm_medium", "")
+        utm_campaign = session.get("metadata", {}).get("utm_campaign", "")
         customer_email = session.get("customer_details", {}).get("email", "unknown")
         provisioned = provision_from_stripe_session(session)
         logger.info(
-            "Stripe checkout completed: plan=%s email=%s session=%s provisioned=%s",
+            "Stripe checkout completed: plan=%s email=%s session=%s provisioned=%s utm=%s/%s/%s",
             plan_id,
             customer_email,
             session.get("id"),
             bool(provisioned),
+            utm_source or "-",
+            utm_medium or "-",
+            utm_campaign or "-",
         )
 
     if event.type == "invoice.paid":

@@ -12,6 +12,7 @@ import { SamplePreviewPage } from "./components/SamplePreviewPage";
 import { MeritChecklistPage } from "./components/MeritChecklistPage";
 import { SecurityPage } from "./components/SecurityPage";
 import { TermsOfService } from "./components/TermsOfService";
+import { captureAttributionFromUrl } from "./marketingAttribution";
 
 function MainApp() {
   const [authRequired, setAuthRequired] = useState<boolean | null>(null);
@@ -20,6 +21,7 @@ function MainApp() {
   const [devPreview, setDevPreview] = useState(false);
 
   useEffect(() => {
+    captureAttributionFromUrl();
     void Promise.all([checkBackendHealth(), checkAuthStatus()]).then(([, requiresAuth]) => {
       setAuthRequired(requiresAuth);
       if (!requiresAuth) {

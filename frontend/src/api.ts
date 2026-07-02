@@ -9,6 +9,7 @@ import type {
 } from "./types";
 import { getBundledDemoAnalysis } from "./data/bundledDemoAnalysis";
 import { authHeaders, clearSession } from "./auth";
+import { getStoredAttribution } from "./marketingAttribution";
 
 const API_BASE = "/api";
 const ALLOWED_EXTENSIONS = /\.(xlsx|xls|csv)$/i;
@@ -168,10 +169,11 @@ export async function checkBillingStatus(): Promise<{
 }
 
 export async function startCheckout(planId: PlanId): Promise<{ url: string }> {
+  const attribution = getStoredAttribution();
   const response = await fetch(`${API_BASE}/billing/checkout`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ plan_id: planId }),
+    body: JSON.stringify({ plan_id: planId, ...attribution }),
   });
 
   if (!response.ok) {

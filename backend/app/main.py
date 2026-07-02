@@ -188,7 +188,7 @@ def billing_status() -> BillingStatusResponse:
 
 @app.post("/api/billing/checkout", response_model=CheckoutResponse)
 def billing_checkout(payload: CheckoutRequest) -> CheckoutResponse:
-    return create_checkout_session(payload.plan_id)
+    return create_checkout_session(payload)
 
 
 @app.get("/api/billing/session/{session_id}", response_model=CheckoutSessionResponse)
