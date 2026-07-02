@@ -68,14 +68,14 @@ export function SecurityPage() {
       </ul>
       <p>
         Refreshing the page or signing out ends the visible session output unless you saved
-        the analysis to your organization history or exported a report to your device.
+        the analysis to your account history or exported a report to your device.
       </p>
 
       <h2>3a. Optional saved analysis history</h2>
       <p>
         Signed-in customers can click <strong>Save to history</strong> to store a JSON
-        snapshot of analysis results for their organization on the server (up to 25 runs per
-        org by default). This lets comp teams reopen prior review outputs without
+        snapshot of analysis results for your signed-in account on the server (up to 25 runs per
+        user by default). This lets comp teams reopen prior review outputs without
         re-uploading. Saved history can be deleted from the analyzer at any time.
       </p>
 

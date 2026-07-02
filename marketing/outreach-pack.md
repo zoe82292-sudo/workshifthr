@@ -113,8 +113,8 @@ Free merit-season checklist: shiftworkshr.com/checklist
 HR teams ask the right question first: “Where does our salary data go?”
 
 With ShiftWorksHR:
-• Processed in memory during analysis  
-• Not stored on our servers after the request  
+• Processed in memory during analysis — not kept after the request by default  
+• Optional Save to history stores a JSON snapshot for your account only (up to 25 runs, deletable)  
 • HTTPS in transit  
 • Authorized users only per organization  
 

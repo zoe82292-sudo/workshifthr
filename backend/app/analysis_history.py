@@ -50,6 +50,7 @@ def _data_dir() -> Path:
 
 
 def _max_per_org() -> int:
+    """Retention cap per signed-in user (env name kept for backward compatibility)."""
     raw = os.getenv("ANALYSIS_HISTORY_MAX_PER_ORG", "25").strip()
     try:
         return max(1, int(raw))

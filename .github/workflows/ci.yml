@@ -36,3 +36,26 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         run: npm run build
+
+      - name: Install Playwright Chromium
+        working-directory: frontend
+        run: npx playwright install chromium --with-deps
+
+      - name: Start production server
+        working-directory: backend
+        env:
+          JWT_SECRET: ci-test-jwt-secret-with-enough-length-32chars
+          AUTH_USERS: '[{"email":"ci@shiftworkshr.com","password":"CiTestPass123!","organization":"CI Org"}]'
+        run: |
+          export PYTHONPATH=$PWD
+          uvicorn app.main:app --host 127.0.0.1 --port 8080 &
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8080/api/health && break
+            sleep 2
+          done
+
+      - name: Run Playwright smoke tests
+        working-directory: frontend
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:8080
+        run: npx playwright test

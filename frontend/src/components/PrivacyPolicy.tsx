@@ -129,8 +129,8 @@ export function PrivacyPolicy() {
       <h3>5a. Optional saved analysis history</h3>
       <p>
         Signed-in customers may click <strong>Save to history</strong> to store a JSON snapshot of
-        a completed analysis on our servers. Saved runs are scoped to your account, limited to 25 per
-        organization, and can be deleted from the analyzer at any time. Saved history may include
+        a completed analysis on our servers. Saved runs are scoped to your signed-in account, limited to 25 per
+        user, and can be deleted from the analyzer at any time. Saved history may include
         employee names, salaries, and demographic fields from your upload.
       </p>
 
@@ -188,7 +188,7 @@ export function PrivacyPolicy() {
         </li>
         <li>
           <strong>Saved analysis history:</strong> retained until you delete it or until older runs
-          are removed after the 25-run limit per organization
+          are removed after the 25-run limit per user account
         </li>
         <li>
           <strong>Login sessions:</strong> until token expiry or sign-out (typically up to

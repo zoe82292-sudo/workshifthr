@@ -14,3 +14,8 @@ export async function exportExecutiveSummaryPdf(result: AnalysisResult, filename
   const { downloadExecutiveSummaryPdf } = await import("./exportAnalysis");
   downloadExecutiveSummaryPdf(result, filename);
 }
+
+export async function exportExecutiveSummaryExcel(result: AnalysisResult, filename?: string) {
+  const { downloadExecutiveSummaryExcel } = await import("./exportAnalysis");
+  downloadExecutiveSummaryExcel(result, filename);
+}

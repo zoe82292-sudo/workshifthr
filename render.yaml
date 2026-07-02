@@ -1,13 +1,32 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
 services:
   - type: web
     name: shiftworkshr
     runtime: docker
-    plan: free
+    plan: starter
     healthCheckPath: /api/health
+    disk:
+      name: shiftworkshr-data
+      mountPath: /var/data/shiftworkshr
+      sizeGB: 1
     envVars:
+      - key: DATA_DIR
+        value: /var/data/shiftworkshr
+      - key: PUBLIC_APP_URL
+        value: https://shiftworkshr.com
       - key: ALLOWED_ORIGINS
         value: https://shiftworkshr.com,https://www.shiftworkshr.com
       - key: JWT_SECRET
         sync: false
       - key: AUTH_USERS
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRICE_CYCLE
+        sync: false
+      - key: STRIPE_PRICE_ANNUAL
+        sync: false
+      - key: STRIPE_PRICE_MONTHLY
         sync: false

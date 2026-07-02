@@ -1,7 +1,7 @@
 import type { AnalysisResult, AnalysisTab } from "../types";
 import { PENETRATION_BAND_LABELS } from "../types";
 import { useSortableRows } from "../useSortableRows";
-import { exportAnalysisExcel, exportAnalysisPdf, exportExecutiveSummaryPdf } from "../exportActions";
+import { exportAnalysisExcel, exportAnalysisPdf, exportExecutiveSummaryExcel, exportExecutiveSummaryPdf } from "../exportActions";
 import { saveAnalysisHistory } from "../api";
 import { ColumnMappingSummary } from "./ColumnMappingSummary";
 import { InsightsPanel } from "./InsightsPanel";
@@ -399,6 +399,17 @@ export function ResultsDashboard({
             }}
           >
             {exporting === "exec-pdf" ? "Preparing…" : "Executive PDF"}
+          </button>
+          <button
+            className="button button-secondary"
+            type="button"
+            disabled={exporting === "exec-xlsx"}
+            onClick={() => {
+              setExporting("exec-xlsx");
+              void exportExecutiveSummaryExcel(result).finally(() => setExporting(null));
+            }}
+          >
+            {exporting === "exec-xlsx" ? "Preparing…" : "Executive Excel"}
           </button>
         </div>
       </div>

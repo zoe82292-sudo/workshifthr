@@ -97,7 +97,7 @@ export function TermsOfService() {
       </p>
       <p>
         Optional saved analysis history stores a JSON snapshot of results (including employee rows
-        from your file) on our servers for your account, up to 25 runs per organization, deletable
+        from your file) on our servers for your account, up to 25 runs per signed-in user, deletable
         at any time. We do not maintain a general library of your uploads beyond what you choose
         to save.
       </p>

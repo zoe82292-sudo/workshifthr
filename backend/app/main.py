@@ -44,6 +44,7 @@ from app.billing import (
 )
 from app.models import AnalysisResult, ColumnMapping, PreviewResponse
 from app.rate_limit import enforce_rate_limit
+from app.uploads import max_upload_bytes, read_upload_bytes
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +70,16 @@ app = FastAPI(title="ShiftWorksHR Compensation Analyzer", lifespan=lifespan)
 
 
 @app.middleware("http")
+async def security_headers_middleware(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    return response
+
+
+@app.middleware("http")
 async def rate_limit_middleware(request: Request, call_next):
     if request.url.path.startswith("/api/"):
         enforce_rate_limit(request)
@@ -84,6 +95,24 @@ app.add_middleware(
 )
 
 
+def _data_dir_status() -> dict[str, object]:
+    configured = os.getenv("DATA_DIR", "").strip()
+    if configured:
+        path = Path(configured)
+    else:
+        path = Path(__file__).resolve().parent.parent / "data"
+    writable = False
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+        probe = path / ".write_probe"
+        probe.write_text("ok", encoding="utf-8")
+        probe.unlink(missing_ok=True)
+        writable = True
+    except OSError:
+        writable = False
+    return {"path": str(path), "writable": writable}
+
+
 @app.get("/api/health")
 def health() -> dict[str, object]:
     favicon_path = STATIC_DIR / "favicon.ico"
@@ -94,6 +123,8 @@ def health() -> dict[str, object]:
         "auth_enabled": auth_enabled(),
         "billing_enabled": billing_enabled(),
         "billing_missing": billing_missing_config() if not billing_enabled() else [],
+        "max_upload_mb": max_upload_bytes() // (1024 * 1024),
+        "data_dir": _data_dir_status(),
         "git_commit": os.getenv("RENDER_GIT_COMMIT", "local"),
         "frontend_bundle": _frontend_bundle_name(),
         "favicon_ico_exists": favicon_path.is_file(),
@@ -200,7 +231,7 @@ async def preview(
     sheet_name: str | None = Form(default=None),
     _: str = Depends(require_auth),
 ) -> PreviewResponse:
-    content = await file.read()
+    content = await read_upload_bytes(file)
     return preview_file(content, file.filename or "upload.xlsx", sheet_name)
 
 
@@ -211,7 +242,7 @@ async def analyze(
     column_mapping: str | None = Form(default=None),
     _: str = Depends(require_auth),
 ) -> AnalysisResult:
-    content = await file.read()
+    content = await read_upload_bytes(file)
     if not content:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -329,6 +360,7 @@ if STATIC_DIR.exists():
         "favicon-32.png": "image/png",
         "apple-touch-icon.png": "image/png",
         "logo.png": "image/png",
+        "og-image.png": "image/png",
     }
 
     for icon_name, media_type in _ICON_FILES.items():

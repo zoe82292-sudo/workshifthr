@@ -8,6 +8,8 @@ interface State {
   error: Error | null;
 }
 
+const IS_DEV = import.meta.env.DEV;
+
 export class ErrorBoundary extends Component<Props, State> {
   state: State = { error: null };
 
@@ -29,10 +31,16 @@ export class ErrorBoundary extends Component<Props, State> {
               {this.state.error.message}
             </p>
             <p className="file-meta" style={{ marginTop: 12 }}>
-              Try a hard refresh (Cmd+Shift+R). If the page is still blank, restart the
-              app with <code>./start.sh</code> from the ShiftWorksHR folder and open{" "}
-              <a href="http://localhost:8080">http://localhost:8080</a>.
+              Try a hard refresh (Cmd+Shift+R or Ctrl+Shift+R). If the problem continues, email{" "}
+              <a href="mailto:hello@shiftworkshr.com">hello@shiftworkshr.com</a> with what you were
+              doing when this appeared.
             </p>
+            {IS_DEV ? (
+              <p className="file-meta" style={{ marginTop: 12 }}>
+                Local dev: restart with <code>./start.sh</code> and open{" "}
+                <a href="http://localhost:8080">http://localhost:8080</a>.
+              </p>
+            ) : null}
             <button
               className="button button-primary"
               style={{ marginTop: 16 }}

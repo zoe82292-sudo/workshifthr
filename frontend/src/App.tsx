@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { checkAuthStatus, checkBackendHealth } from "./api";
 import { clearSession, getStoredEmail, getStoredOrganization, getStoredToken } from "./auth";
 import { AnalyzerApp } from "./components/AnalyzerApp";
@@ -8,7 +8,6 @@ import { CheckoutCancelPage } from "./components/CheckoutCancelPage";
 import { CheckoutSuccessPage } from "./components/CheckoutSuccessPage";
 import { LandingPage } from "./components/LandingPage";
 import { PrivacyPolicy } from "./components/PrivacyPolicy";
-import { MarketingPreviewPage } from "./components/MarketingPreviewPage";
 import { SamplePreviewPage } from "./components/SamplePreviewPage";
 import { MeritChecklistPage } from "./components/MeritChecklistPage";
 import { SecurityPage } from "./components/SecurityPage";
@@ -80,7 +79,7 @@ export default function App() {
       <Route path="/security" element={<SecurityPage />} />
       <Route path="/checklist" element={<MeritChecklistPage />} />
       <Route path="/sample-preview" element={<SamplePreviewPage />} />
-      <Route path="/marketing-preview" element={<MarketingPreviewPage />} />
+      <Route path="/marketing-preview" element={<Navigate to="/sample-preview" replace />} />
       <Route path="*" element={<MainApp />} />
     </Routes>
   );

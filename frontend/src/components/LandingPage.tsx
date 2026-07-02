@@ -87,7 +87,7 @@ const STEPS = [
 const FAQ_BASE: Array<{ q: string; a: string }> = [
   {
     q: "What file format do I need?",
-    a: "Excel (.xlsx) or CSV. Include employee ID, salary, and range min/mid/max when possible. Gender and race columns unlock pay equity views.",
+    a: "Excel (.xlsx) or CSV up to 25 MB. Include employee ID, salary, and range min/mid/max when possible. Gender and race columns unlock pay equity views.",
   },
   {
     q: "Is my compensation data stored?",
@@ -351,6 +351,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
             <article className="landing-feature" key={feature.title}>
               <h3>{feature.title}</h3>
               <p>{feature.copy}</p>
+              <div className="landing-feature__spacer" aria-hidden="true" />
             </article>
           ))}
         </div>
@@ -366,6 +367,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
             <article className="landing-audience panel" key={audience.title}>
               <h3>{audience.title}</h3>
               <p>{audience.copy}</p>
+              <div className="landing-audience__spacer" aria-hidden="true" />
             </article>
           ))}
         </div>
@@ -415,6 +417,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
               <span className="landing-step-number">{index + 1}</span>
               <h3>{step.title}</h3>
               <p>{step.copy}</p>
+              <div className="landing-step__spacer" aria-hidden="true" />
             </article>
           ))}
         </div>
@@ -457,6 +460,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
                   <li key={feature}>{feature}</li>
                 ))}
               </ul>
+              <div className="landing-price-card__grow" aria-hidden="true" />
               <div className="landing-price-card__cta">
                 <CheckoutButton
                   planId={plan.id}
@@ -478,8 +482,9 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
             <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Add authorized users")}`}>
               {CONTACT_EMAIL}
             </a>{" "}
-            to add people. Payments are processed securely by Stripe. Uploads are processed in
-            memory by default. Optional Save to history stores a JSON snapshot for your account only.
+            to add people. Payments are processed securely by Stripe and are non-refundable once
+            access credentials are delivered (see Terms). Uploads are processed in memory by default.
+            Optional Save to history stores a JSON snapshot for your account only.
           </p>
         </div>
       </section>

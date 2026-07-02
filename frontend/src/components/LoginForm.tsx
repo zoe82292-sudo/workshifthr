@@ -43,7 +43,11 @@ export function LoginForm({ onLogin, compact = false }: LoginFormProps) {
     >
       <p className="login-shared-note">
         Your organization shares one password. Each teammate can sign in with their own work
-        email and that shared password.
+        email and that shared password. Forgot the password? Email{" "}
+        <a href="mailto:hello@shiftworkshr.com?subject=Password%20reset%20request">
+          hello@shiftworkshr.com
+        </a>{" "}
+        from your work address — we respond within one business day.
       </p>
 
       <label className="field">
