@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { fetchDemoAnalysis } from "../api";
 import {
   downloadAnalysisExcel,
@@ -435,14 +434,6 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
           </>
         ) : null}
       </div>
-
-      {variant === "embedded" ? (
-        <footer className="product-demo__footer">
-          <Link to="/sample-preview">See full analyzer</Link>
-          <span aria-hidden="true"> · </span>
-          <Link to="/#pricing">Get full access</Link>
-        </footer>
-      ) : null}
     </div>
   );
 }

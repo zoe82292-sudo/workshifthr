@@ -351,7 +351,6 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
             <article className="landing-feature" key={feature.title}>
               <h3>{feature.title}</h3>
               <p>{feature.copy}</p>
-              <div className="landing-feature__spacer" aria-hidden="true" />
             </article>
           ))}
         </div>
@@ -367,7 +366,6 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
             <article className="landing-audience panel" key={audience.title}>
               <h3>{audience.title}</h3>
               <p>{audience.copy}</p>
-              <div className="landing-audience__spacer" aria-hidden="true" />
             </article>
           ))}
         </div>
@@ -417,7 +415,6 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
               <span className="landing-step-number">{index + 1}</span>
               <h3>{step.title}</h3>
               <p>{step.copy}</p>
-              <div className="landing-step__spacer" aria-hidden="true" />
             </article>
           ))}
         </div>

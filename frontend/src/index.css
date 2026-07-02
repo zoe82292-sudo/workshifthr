@@ -1832,8 +1832,14 @@ a:focus-visible {
   line-height: 1.45;
 }
 
-.product-demo__metrics {
-  /* layout via .card-grid */
+.product-demo__metrics,
+.product-demo__stats {
+  overflow: hidden;
+}
+
+.product-demo__metric,
+.product-demo__stat {
+  overflow: hidden;
 }
 
 .product-demo__metrics--compact,
@@ -2494,6 +2500,7 @@ a:focus-visible {
 
 .landing-pricing-footnote {
   color: var(--text-muted);
+  margin-top: 20px;
 }
 
 .landing-pricing-footnote a {
@@ -2559,8 +2566,6 @@ a:focus-visible {
 .landing-feature {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 240px;
   box-sizing: border-box;
   position: relative;
   border: 1px solid var(--border);
@@ -2569,6 +2574,7 @@ a:focus-visible {
   background: linear-gradient(160deg, #fffdf9 0%, #f0f7f2 100%);
   box-shadow: 0 2px 12px rgba(26, 77, 58, 0.06);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
 }
 
 .landing-feature::before {
@@ -2621,31 +2627,20 @@ a:focus-visible {
 
 .landing-feature h3 {
   margin: 0 0 10px;
-  height: 44px;
   font-size: 1.05rem;
   line-height: 1.3;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
   flex-shrink: 0;
 }
 
 .landing-feature p {
   margin: 0;
-  height: 66px;
   color: var(--text-muted);
   line-height: 1.45;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
   flex-shrink: 0;
 }
 
 .landing-feature__spacer {
-  flex: 1 1 8px;
-  min-height: 8px;
+  display: none;
 }
 
 .landing-step-grid {
@@ -2696,10 +2691,9 @@ a:focus-visible {
 .landing-step {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 248px;
   box-sizing: border-box;
   border-radius: 20px;
+  overflow: hidden;
 }
 
 .landing-step:nth-child(1) {
@@ -2739,7 +2733,7 @@ a:focus-visible {
   gap: 6px;
   flex: 1 1 0;
   min-width: 0;
-  min-height: 100px;
+  min-height: 88px;
   padding: 18px 16px;
   background: var(--surface);
   text-align: center;
@@ -2751,10 +2745,6 @@ a:focus-visible {
   font-size: 1.5rem;
   color: var(--accent);
   line-height: 1.1;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   flex-shrink: 0;
 }
 
@@ -2762,13 +2752,6 @@ a:focus-visible {
   font-size: 0.85rem;
   color: var(--text-muted);
   line-height: 1.35;
-  height: 40px;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  align-items: center;
-  justify-content: center;
   flex-shrink: 0;
 }
 
@@ -2807,38 +2790,26 @@ a:focus-visible {
 .landing-audience {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 220px;
   box-sizing: border-box;
   border-radius: 20px;
+  overflow: hidden;
 }
 
 .landing-audience h3 {
   margin: 0 0 10px;
-  height: 44px;
   line-height: 1.3;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
   flex-shrink: 0;
 }
 
 .landing-audience p {
   margin: 0;
-  height: 88px;
   color: var(--text-muted);
   line-height: 1.45;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
   flex-shrink: 0;
 }
 
 .landing-audience__spacer {
-  flex: 1 1 8px;
-  min-height: 8px;
+  display: none;
 }
 
 .landing-lead-magnet-card {
@@ -3022,30 +2993,19 @@ a:focus-visible {
 
 .landing-step h3 {
   margin: 0 0 10px;
-  height: 44px;
   line-height: 1.3;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
   flex-shrink: 0;
 }
 
 .landing-step p {
   margin: 0;
-  height: 88px;
   color: var(--text-muted);
   line-height: 1.45;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
   flex-shrink: 0;
 }
 
 .landing-step__spacer {
-  flex: 1 1 8px;
-  min-height: 8px;
+  display: none;
 }
 
 .landing-pricing {

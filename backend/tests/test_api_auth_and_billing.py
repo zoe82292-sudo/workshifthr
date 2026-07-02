@@ -32,6 +32,8 @@ def auth_client(monkeypatch) -> TestClient:
 
 def test_health_reports_writable_data_dir(monkeypatch, tmp_path) -> None:
     monkeypatch.setenv("DATA_DIR", str(tmp_path))
+    monkeypatch.delenv("RENDER", raising=False)
+    monkeypatch.delenv("RENDER_GIT_COMMIT", raising=False)
     from app.main import app
 
     client = TestClient(app)
@@ -40,7 +42,23 @@ def test_health_reports_writable_data_dir(monkeypatch, tmp_path) -> None:
     payload = response.json()
     assert payload["status"] == "ok"
     assert payload["data_dir"]["writable"] is True
+    assert payload["data_dir"]["using_persistent_disk"] is False
+    assert payload["data_dir"]["warning"] is None
     assert payload["max_upload_mb"] == 25
+
+
+def test_health_warns_when_render_without_persistent_disk(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("DATA_DIR", str(tmp_path / "ephemeral"))
+    monkeypatch.setenv("RENDER", "true")
+    from app.main import app
+
+    client = TestClient(app)
+    response = client.get("/api/health")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["data_dir"]["using_persistent_disk"] is False
+    assert payload["data_dir"]["warning"] is not None
+    assert "/var/data/shiftworkshr" in payload["data_dir"]["warning"]
 
 
 def test_auth_status_without_users(monkeypatch) -> None:

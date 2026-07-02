@@ -22,6 +22,7 @@ COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 
 ENV PYTHONPATH=/app/backend
 ENV PORT=8000
+ENV DATA_DIR=/var/data/shiftworkshr
 
 WORKDIR /app/backend
 CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT}

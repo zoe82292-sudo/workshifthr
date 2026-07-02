@@ -95,6 +95,9 @@ app.add_middleware(
 )
 
 
+PERSISTENT_DATA_DIR = "/var/data/shiftworkshr"
+
+
 def _data_dir_status() -> dict[str, object]:
     configured = os.getenv("DATA_DIR", "").strip()
     if configured:
@@ -110,7 +113,22 @@ def _data_dir_status() -> dict[str, object]:
         writable = True
     except OSError:
         writable = False
-    return {"path": str(path), "writable": writable}
+
+    on_render = bool(os.getenv("RENDER", "").strip() or os.getenv("RENDER_GIT_COMMIT", "").strip())
+    using_persistent_disk = str(path) == PERSISTENT_DATA_DIR and writable
+    warning = None
+    if on_render and not using_persistent_disk:
+        warning = (
+            f"DATA_DIR is {path}; set DATA_DIR={PERSISTENT_DATA_DIR} in Render and attach the "
+            "persistent disk so saved history and Stripe provisioning survive redeploys."
+        )
+
+    return {
+        "path": str(path),
+        "writable": writable,
+        "using_persistent_disk": using_persistent_disk,
+        "warning": warning,
+    }
 
 
 @app.get("/api/health")
