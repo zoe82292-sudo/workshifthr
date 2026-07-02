@@ -52,27 +52,27 @@ export function InsightsPanel({ result }: InsightsPanelProps) {
         <article className="insight-card metric-card">
           <h3 className="metric-card__title">Cost to minimum</h3>
           <p className="metric-card__label">Dollars to bring employees to range floor</p>
-          <div className="metric-card__controls" aria-hidden="true" />
-          <div className="metric-card__grow" aria-hidden="true" />
-          <strong className="metric-card__value">
-            {formatCurrency(insights.cost_metrics.total_gap_to_minimum)}
-          </strong>
-          <p className="metric-card__meta">
-            {insights.cost_metrics.employees_below_minimum} employees affected · average gap{" "}
-            {formatCurrency(insights.cost_metrics.average_gap_to_minimum)}
-          </p>
+          <div className="metric-card__footer">
+            <strong className="metric-card__value">
+              {formatCurrency(insights.cost_metrics.total_gap_to_minimum)}
+            </strong>
+            <p className="metric-card__meta">
+              {insights.cost_metrics.employees_below_minimum} employees affected · average gap{" "}
+              {formatCurrency(insights.cost_metrics.average_gap_to_minimum)}
+            </p>
+          </div>
         </article>
 
         <article className="insight-card metric-card">
           <h3 className="metric-card__title">Budget impact</h3>
           <p className="metric-card__label">Remediation plus merit pool exposure</p>
-          <div className="metric-card__controls" aria-hidden="true" />
-          <div className="metric-card__grow" aria-hidden="true" />
-          <strong className="metric-card__value">{formatCurrency(combinedBudget)}</strong>
-          <p className="metric-card__meta">
-            Minimum adjustments {formatCurrency(insights.budget_impact.cost_to_minimum)} · merit
-            pool {formatCurrency(projectedMeritPool)}
-          </p>
+          <div className="metric-card__footer">
+            <strong className="metric-card__value">{formatCurrency(combinedBudget)}</strong>
+            <p className="metric-card__meta">
+              Minimum adjustments {formatCurrency(insights.budget_impact.cost_to_minimum)} · merit
+              pool {formatCurrency(projectedMeritPool)}
+            </p>
+          </div>
         </article>
 
         <article className="insight-card metric-card metric-card--input">
@@ -91,31 +91,32 @@ export function InsightsPanel({ result }: InsightsPanelProps) {
               onChange={(event) => setTargetMerit(event.target.value)}
             />
           </div>
-          <div className="metric-card__grow" aria-hidden="true" />
-          <strong className="metric-card__value">{formatCurrency(projectedMeritPool)}</strong>
-          <p className="metric-card__meta">
-            Based on {formatCurrency(insights.merit_calculator.payroll_base)} eligible payroll
-            {insights.merit_calculator.average_merit_percent != null
-              ? ` · file average ${insights.merit_calculator.average_merit_percent}%`
-              : ""}
-          </p>
+          <div className="metric-card__footer">
+            <strong className="metric-card__value">{formatCurrency(projectedMeritPool)}</strong>
+            <p className="metric-card__meta">
+              Based on {formatCurrency(insights.merit_calculator.payroll_base)} eligible payroll
+              {insights.merit_calculator.average_merit_percent != null
+                ? ` · file average ${insights.merit_calculator.average_merit_percent}%`
+                : ""}
+            </p>
+          </div>
         </article>
 
         <article className="insight-card metric-card">
           <h3 className="metric-card__title">Compa-ratio</h3>
           <p className="metric-card__label">Average vs. range midpoint</p>
-          <div className="metric-card__controls" aria-hidden="true" />
-          <div className="metric-card__grow" aria-hidden="true" />
-          <strong className="metric-card__value">
-            {insights.compa_ratio.average_compa_ratio != null
-              ? `${insights.compa_ratio.average_compa_ratio}%`
-              : "—"}
-          </strong>
-          <p className="metric-card__meta">
-            Below 90%: {insights.compa_ratio.below_90_percent} · 90–110%:{" "}
-            {insights.compa_ratio.between_90_and_110} · Above 110%:{" "}
-            {insights.compa_ratio.above_110_percent}
-          </p>
+          <div className="metric-card__footer">
+            <strong className="metric-card__value">
+              {insights.compa_ratio.average_compa_ratio != null
+                ? `${insights.compa_ratio.average_compa_ratio}%`
+                : "—"}
+            </strong>
+            <p className="metric-card__meta">
+              Below 90%: {insights.compa_ratio.below_90_percent} · 90–110%:{" "}
+              {insights.compa_ratio.between_90_and_110} · Above 110%:{" "}
+              {insights.compa_ratio.above_110_percent}
+            </p>
+          </div>
         </article>
       </section>
     </>

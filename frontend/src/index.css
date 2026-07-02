@@ -139,6 +139,12 @@ p {
   align-items: stretch;
 }
 
+.card-grid > .metric-card,
+.card-grid > .stat-card,
+.card-grid > .summary-card {
+  height: auto;
+}
+
 .card-grid--2 > * {
   flex: 1 1 calc(50% - 7px);
   min-width: min(100%, 220px);
@@ -159,12 +165,11 @@ p {
   min-width: min(100%, 140px);
 }
 
-/* Metric & stat cards: flex columns with fixed-height slots (no subgrid) */
+/* Metric & stat cards: flex columns; footer group aligns values in stretched rows */
 .metric-card {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 236px;
+  min-height: 0;
   padding: 16px;
   border-radius: 16px;
   border: 1px solid var(--border);
@@ -174,40 +179,41 @@ p {
 
 .metric-card__title {
   margin: 0;
-  height: 40px;
+  min-height: 40px;
   font-size: 0.92rem;
   line-height: 1.25;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
   flex-shrink: 0;
 }
 
 .metric-card__label {
   margin: 4px 0 0;
-  height: 40px;
+  min-height: 40px;
   color: var(--text-muted);
   font-size: 0.8rem;
   line-height: 1.35;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
   flex-shrink: 0;
 }
 
 .metric-card__controls {
-  height: 44px;
+  min-height: 44px;
   margin-top: 4px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
 }
 
+.metric-card__controls:empty {
+  display: none;
+}
+
 .metric-card__grow {
-  flex: 1 1 8px;
-  min-height: 8px;
+  display: none;
+}
+
+.metric-card__footer {
+  margin-top: auto;
+  padding-top: 8px;
+  flex-shrink: 0;
 }
 
 .metric-card__input {
@@ -219,9 +225,7 @@ p {
 }
 
 .metric-card__value {
-  display: flex;
-  align-items: flex-end;
-  height: 34px;
+  display: block;
   font-size: 1.5rem;
   line-height: 1.1;
   margin: 0;
@@ -233,21 +237,18 @@ p {
 
 .metric-card__meta {
   margin: 6px 0 0;
-  height: 48px;
+  min-height: 0;
   color: var(--text-muted);
   font-size: 0.78rem;
   line-height: 1.4;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
   flex-shrink: 0;
 }
 
 .stat-card {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  justify-content: center;
+  gap: 8px;
   min-height: 96px;
   padding: 14px 10px 12px;
   border-radius: 14px;
@@ -258,28 +259,20 @@ p {
 }
 
 .stat-card__label {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
+  display: block;
   margin: 0;
-  height: 40px;
   color: var(--text-muted);
   font-size: 0.74rem;
   line-height: 1.25;
-  overflow: hidden;
   flex-shrink: 0;
 }
 
 .stat-card__grow {
-  flex: 1 1 4px;
-  min-height: 4px;
+  display: none;
 }
 
 .stat-card__value {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  height: 28px;
+  display: block;
   font-size: 1.35rem;
   line-height: 1;
   flex-shrink: 0;
@@ -1648,8 +1641,15 @@ a:focus-visible {
   background: linear-gradient(180deg, #fbfaf7 0%, #f6f3ed 100%);
 }
 
+.product-demo--embedded {
+  display: flex;
+  flex-direction: column;
+}
+
 .product-demo--embedded .product-demo__body {
   padding: 18px 18px 8px;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .product-demo--full {
@@ -1844,7 +1844,7 @@ a:focus-visible {
 }
 
 .product-demo__merit {
-  min-height: 192px;
+  min-height: 0;
 }
 
 .product-demo__metric {
@@ -1907,6 +1907,7 @@ a:focus-visible {
   border-top: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.9);
   font-size: 0.9rem;
+  flex-shrink: 0;
 }
 
 .product-demo__footer a {

@@ -53,10 +53,10 @@ function DemoMetricCard({
     <article className="product-demo__metric metric-card">
       <h3 className="metric-card__title">{title}</h3>
       <p className="metric-card__label">{label}</p>
-      <div className="metric-card__controls" aria-hidden="true" />
-      <div className="metric-card__grow" aria-hidden="true" />
-      <strong className="metric-card__value">{value}</strong>
-      <p className="metric-card__meta">{meta ?? "\u00a0"}</p>
+      <div className="metric-card__footer">
+        <strong className="metric-card__value">{value}</strong>
+        {meta ? <p className="metric-card__meta">{meta}</p> : null}
+      </div>
     </article>
   );
 }
@@ -73,7 +73,6 @@ function DemoStatCard({
   return (
     <div className={`product-demo__stat stat-card ${tone ? `stat-card--${tone}` : ""}`}>
       <span className="stat-card__label">{label}</span>
-      <div className="stat-card__grow" aria-hidden="true" />
       <strong className="stat-card__value">{value}</strong>
     </div>
   );
@@ -409,17 +408,18 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
                   onChange={(event) => setTargetMerit(event.target.value)}
                 />
               </div>
-              <div className="metric-card__grow" aria-hidden="true" />
-              <strong className="metric-card__value">
-                {formatCurrency(projectedMeritPool)}
-              </strong>
-              <p className="metric-card__meta">
-                Based on {formatCurrency(insights.merit_calculator.payroll_base)} eligible
-                payroll
-                {insights.merit_calculator.average_merit_percent != null
-                  ? ` · file average ${insights.merit_calculator.average_merit_percent}%`
-                  : ""}
-              </p>
+              <div className="metric-card__footer">
+                <strong className="metric-card__value">
+                  {formatCurrency(projectedMeritPool)}
+                </strong>
+                <p className="metric-card__meta">
+                  Based on {formatCurrency(insights.merit_calculator.payroll_base)} eligible
+                  payroll
+                  {insights.merit_calculator.average_merit_percent != null
+                    ? ` · file average ${insights.merit_calculator.average_merit_percent}%`
+                    : ""}
+                </p>
+              </div>
             </section>
 
             <section className="product-demo__summary">
