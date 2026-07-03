@@ -329,47 +329,53 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
             employees). Upload your own export after purchase — same analysis in minutes.
           </p>
         </div>
-        <div className="landing-case-study-grid">
-          <article className="landing-case-study-card panel">
-            <span className="landing-case-study-label">Below range minimum</span>
-            <strong className="landing-case-study-value">
-              {SAMPLE_REVIEW.summary.below_minimum}
-            </strong>
-            <p>
-              ${SAMPLE_REVIEW.insights.cost_metrics.total_gap_to_minimum.toLocaleString()} to
-              bring flagged employees to range floor
-            </p>
-          </article>
-          <article className="landing-case-study-card panel">
-            <span className="landing-case-study-label">Structural issues</span>
-            <strong className="landing-case-study-value">
-              {SAMPLE_REVIEW.summary.compression_issues + SAMPLE_REVIEW.summary.managers_below_reports}
-            </strong>
-            <p>
-              {SAMPLE_REVIEW.summary.compression_issues} compression patterns ·{" "}
-              {SAMPLE_REVIEW.summary.managers_below_reports} manager inversions
-            </p>
-          </article>
-          <article className="landing-case-study-card panel">
-            <span className="landing-case-study-label">Budget exposure</span>
-            <strong className="landing-case-study-value">
-              ${Math.round(SAMPLE_REVIEW.insights.budget_impact.total_budget_impact / 1000)}k
-            </strong>
-            <p>
-              Cost to minimum plus projected merit pool from file data — before you change a
-              single row
-            </p>
-          </article>
-          <article className="landing-case-study-card panel landing-case-study-card--summary">
-            <span className="landing-case-study-label">Executive summary</span>
-            <p className="landing-case-study-headline">
-              {SAMPLE_REVIEW.insights.executive_summary.headline}
-            </p>
-            <ul className="landing-case-study-bullets">
-              {SAMPLE_REVIEW.insights.executive_summary.bullets.slice(0, 2).map((bullet) => (
-                <li key={bullet}>{bullet}</li>
-              ))}
-            </ul>
+        <div className="landing-case-study-board">
+          <div className="landing-case-study-metrics">
+            <article className="landing-case-study-card panel">
+              <span className="landing-case-study-label">Below range minimum</span>
+              <strong className="landing-case-study-value">
+                {SAMPLE_REVIEW.summary.below_minimum}
+              </strong>
+              <p className="landing-case-study-detail">
+                ${SAMPLE_REVIEW.insights.cost_metrics.total_gap_to_minimum.toLocaleString()} to
+                bring flagged employees to range floor
+              </p>
+            </article>
+            <article className="landing-case-study-card panel">
+              <span className="landing-case-study-label">Structural issues</span>
+              <strong className="landing-case-study-value">
+                {SAMPLE_REVIEW.summary.compression_issues + SAMPLE_REVIEW.summary.managers_below_reports}
+              </strong>
+              <p className="landing-case-study-detail">
+                {SAMPLE_REVIEW.summary.compression_issues} compression patterns ·{" "}
+                {SAMPLE_REVIEW.summary.managers_below_reports} manager inversions
+              </p>
+            </article>
+            <article className="landing-case-study-card panel">
+              <span className="landing-case-study-label">Budget exposure</span>
+              <strong className="landing-case-study-value">
+                ${Math.round(SAMPLE_REVIEW.insights.budget_impact.total_budget_impact / 1000)}k
+              </strong>
+              <p className="landing-case-study-detail">
+                Cost to minimum plus projected merit pool from file data — before you change a
+                single row
+              </p>
+            </article>
+          </div>
+          <article className="landing-case-study-summary panel">
+            <div className="landing-case-study-summary__inner">
+              <div className="landing-case-study-summary__lead">
+                <span className="landing-case-study-label">Executive summary</span>
+                <p className="landing-case-study-headline">
+                  {SAMPLE_REVIEW.insights.executive_summary.headline}
+                </p>
+              </div>
+              <ul className="landing-case-study-bullets">
+                {SAMPLE_REVIEW.insights.executive_summary.bullets.slice(0, 2).map((bullet) => (
+                  <li key={bullet}>{bullet}</li>
+                ))}
+              </ul>
+            </div>
           </article>
         </div>
         <div className="landing-case-study-actions">
