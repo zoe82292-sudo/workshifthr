@@ -122,8 +122,8 @@ function buildFaq(scrollTo: (id: string) => void): Array<{ q: string; a: ReactNo
             View the sample analysis
           </button>{" "}
           on this page, or open the{" "}
-          <Link to="/sample-preview">full analyzer preview</Link> for the complete post-upload
-          experience — both use our demo comp file and do not require an account. To upload your
+          <Link to="/sample-preview">full-screen preview</Link> for tabs, filters, and exports —
+          both use our demo comp file and do not require an account. To upload your own
           own spreadsheet, choose a plan (login is instant after checkout). Prefer a walkthrough
           first? Email{" "}
           <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Sample walkthrough request")}`}>
@@ -236,8 +236,8 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
             </div>
           </div>
           <nav className="landing-links">
-            <button type="button" onClick={() => scrollTo("example-review")}>
-              Example review
+            <button type="button" onClick={() => scrollTo("see-it-in-action")}>
+              Sample analysis
             </button>
             <button type="button" onClick={() => scrollTo("features")}>
               Features
@@ -320,93 +320,46 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
         ))}
       </section>
 
-      <section className="landing-section landing-case-study" id="example-review">
-        <div className="landing-section-header">
-          <span className="hero-badge">Example merit-season review</span>
-          <h2>What a first-pass comp QA looks like</h2>
-          <p>
-            Real output from our bundled sample file ({SAMPLE_REVIEW.summary.valid_rows}{" "}
-            employees). Upload your own export after purchase — same analysis in minutes.
-          </p>
-        </div>
-        <div className="landing-case-study-board">
-          <div className="landing-case-study-metrics">
-            <article className="landing-case-study-card panel">
-              <span className="landing-case-study-label">Below range minimum</span>
-              <strong className="landing-case-study-value">
-                {SAMPLE_REVIEW.summary.below_minimum}
-              </strong>
-              <p className="landing-case-study-detail">
-                ${SAMPLE_REVIEW.insights.cost_metrics.total_gap_to_minimum.toLocaleString()} to
-                bring flagged employees to range floor
-              </p>
-            </article>
-            <article className="landing-case-study-card panel">
-              <span className="landing-case-study-label">Structural issues</span>
-              <strong className="landing-case-study-value">
-                {SAMPLE_REVIEW.summary.compression_issues + SAMPLE_REVIEW.summary.managers_below_reports}
-              </strong>
-              <p className="landing-case-study-detail">
-                {SAMPLE_REVIEW.summary.compression_issues} compression patterns ·{" "}
-                {SAMPLE_REVIEW.summary.managers_below_reports} manager inversions
-              </p>
-            </article>
-            <article className="landing-case-study-card panel">
-              <span className="landing-case-study-label">Budget exposure</span>
-              <strong className="landing-case-study-value">
-                ${Math.round(SAMPLE_REVIEW.insights.budget_impact.total_budget_impact / 1000)}k
-              </strong>
-              <p className="landing-case-study-detail">
-                Cost to minimum plus projected merit pool from file data — before you change a
-                single row
-              </p>
-            </article>
-          </div>
-          <article className="landing-case-study-summary panel">
-            <div className="landing-case-study-summary__inner">
-              <div className="landing-case-study-summary__lead">
-                <span className="landing-case-study-label">Executive summary</span>
-                <p className="landing-case-study-headline">
-                  {SAMPLE_REVIEW.insights.executive_summary.headline}
-                </p>
-              </div>
-              <ul className="landing-case-study-bullets">
-                {SAMPLE_REVIEW.insights.executive_summary.bullets.slice(0, 2).map((bullet) => (
-                  <li key={bullet}>{bullet}</li>
-                ))}
-              </ul>
-            </div>
-          </article>
-        </div>
-        <div className="landing-case-study-actions">
-          <Link className="button button-primary" to="/sample-preview">
-            Explore this sample analysis
-          </Link>
-          <button className="button button-secondary" type="button" onClick={() => scrollTo("pricing")}>
-            See merit-season pricing
-          </button>
-        </div>
-        <p className="landing-case-study-note">
-          Sample file only — not a customer case study. Early customer stories coming as teams
-          complete their first merit cycles with ShiftWorksHR.
-        </p>
-      </section>
-
       <section className="landing-section landing-preview" id="see-it-in-action">
         <div className="landing-section-header landing-preview-header">
-          <span className="hero-badge">Product preview</span>
+          <span className="hero-badge">Sample analysis</span>
           <h2>See what you get before you buy</h2>
           <p>
-            Explore a curated sample below, or open the{" "}
-            <Link to="/sample-preview">full analyzer preview</Link> for the complete post-upload
-            experience with all issue tabs, filters, and exports.
+            Real output from our bundled sample file ({SAMPLE_REVIEW.summary.valid_rows}{" "}
+            employees). Scroll the preview below or open the full analyzer for every tab and
+            export.
           </p>
-          <div className="landing-preview-actions">
-            <Link className="button button-primary" to="/sample-preview">
-              Open full sample analysis
-            </Link>
-          </div>
         </div>
+
+        <div className="landing-preview-stats" aria-label="Sample analysis highlights">
+          <article className="landing-preview-stat">
+            <strong className="landing-preview-stat__value">
+              {SAMPLE_REVIEW.summary.below_minimum}
+            </strong>
+            <span className="landing-preview-stat__label">Below range minimum</span>
+            <span className="landing-preview-stat__meta">
+              ${SAMPLE_REVIEW.insights.cost_metrics.total_gap_to_minimum.toLocaleString()} to floor
+            </span>
+          </article>
+          <article className="landing-preview-stat">
+            <strong className="landing-preview-stat__value">
+              {SAMPLE_REVIEW.summary.compression_issues + SAMPLE_REVIEW.summary.managers_below_reports}
+            </strong>
+            <span className="landing-preview-stat__label">Structural issues</span>
+            <span className="landing-preview-stat__meta">
+              {SAMPLE_REVIEW.summary.compression_issues} compression ·{" "}
+              {SAMPLE_REVIEW.summary.managers_below_reports} inversions
+            </span>
+          </article>
+          <article className="landing-preview-stat">
+            <strong className="landing-preview-stat__value">
+              ${Math.round(SAMPLE_REVIEW.insights.budget_impact.total_budget_impact / 1000)}k
+            </strong>
+            <span className="landing-preview-stat__label">Budget exposure</span>
+            <span className="landing-preview-stat__meta">Adjustments + projected merit pool</span>
+          </article>
+        </div>
+
         <figure
           className="product-demo-frame"
           aria-label="ShiftWorksHR sample analysis with overview, flagged issues, pay equity, and budget tabs"
@@ -414,10 +367,20 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
           <div className="product-demo-frame__scroll">
             <ProductDemoShowcase variant="embedded" />
           </div>
-          <figcaption className="product-demo-frame__caption">
-            Sample comp file · <Link to="/sample-preview">see full analyzer</Link>
-          </figcaption>
         </figure>
+
+        <div className="landing-preview-actions">
+          <Link className="button button-primary" to="/sample-preview">
+            Open full sample analysis
+          </Link>
+          <button className="button button-secondary" type="button" onClick={() => scrollTo("pricing")}>
+            See pricing
+          </button>
+        </div>
+        <p className="landing-preview-note">
+          Sample file only — not a customer case study. Upload your own export after purchase for
+          the same analysis on your data.
+        </p>
       </section>
 
       <section className="landing-section" id="features">
