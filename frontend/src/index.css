@@ -114,7 +114,8 @@ p {
 .landing-feature-grid > .panel + .panel,
 .landing-audience-grid > .panel + .panel,
 .landing-step-grid > .panel + .panel,
-.landing-pricing-grid > .panel + .panel {
+.landing-pricing-grid > .panel + .panel,
+.landing-case-study-grid > .panel + .panel {
   margin-top: 0;
 }
 
@@ -122,6 +123,7 @@ p {
 .landing-audience-grid > *,
 .landing-step-grid > *,
 .landing-pricing-grid > *,
+.landing-case-study-grid > *,
 .insights-grid > *,
 .summary-grid > *,
 .card-grid > *,
@@ -2756,9 +2758,15 @@ a:focus-visible {
 }
 
 .landing-case-study-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: flex;
+  flex-direction: row;
   gap: 20px;
+  align-items: stretch;
+}
+
+.landing-case-study-grid > .landing-case-study-card {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .landing-case-study-card {
@@ -2767,6 +2775,16 @@ a:focus-visible {
   gap: 8px;
   padding: 22px;
   min-height: 0;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.landing-case-study-card > p:not(.landing-case-study-headline) {
+  flex: 1 1 auto;
+}
+
+.landing-case-study-card--summary .landing-case-study-bullets {
+  flex: 1 1 auto;
 }
 
 .landing-case-study-label {
@@ -2828,13 +2846,22 @@ a:focus-visible {
 
 @media (max-width: 960px) {
   .landing-case-study-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    flex-wrap: wrap;
+  }
+
+  .landing-case-study-grid > .landing-case-study-card {
+    flex: 1 1 calc(50% - 10px);
+    min-width: min(100%, 240px);
   }
 }
 
 @media (max-width: 560px) {
   .landing-case-study-grid {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+
+  .landing-case-study-grid > .landing-case-study-card {
+    flex: 1 1 auto;
   }
 }
 
