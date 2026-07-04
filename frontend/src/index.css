@@ -759,6 +759,12 @@ tr:last-child td {
   border: 1px solid #b2ddff;
 }
 
+.alert-success {
+  background: #ecfdf3;
+  color: #027a48;
+  border: 1px solid #abefc6;
+}
+
 .pill {
   display: inline-flex;
   align-items: center;
@@ -1084,6 +1090,49 @@ a:focus-visible {
 
 .login-form-compact {
   max-width: 360px;
+}
+
+.recover-access-form,
+.team-add-form {
+  display: grid;
+  gap: 16px;
+  max-width: 420px;
+  margin-top: 16px;
+}
+
+.team-panel-copy {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+  max-width: 720px;
+}
+
+.team-panel-body {
+  display: grid;
+  gap: 16px;
+}
+
+.team-member-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.team-member-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.team-member-you {
+  font-size: 0.85rem;
+  color: var(--text-muted);
 }
 
 .landing-page {

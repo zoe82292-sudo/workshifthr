@@ -12,6 +12,7 @@ import { AnalysisHistoryPanel } from "./AnalysisHistoryPanel";
 import { ResultsDashboard } from "./ResultsDashboard";
 import { BrandLogo } from "./BrandLogo";
 import { LegalConsentLinks } from "./LegalConsentLinks";
+import { TeamPanel } from "./TeamPanel";
 import { LegalFooter } from "./LegalFooter";
 import type { AnalysisResult, AnalysisTab, ColumnMapping, PreviewResponse } from "../types";
 
@@ -241,6 +242,10 @@ export function AnalyzerApp({
             </button>
           </div>
         </div>
+      ) : null}
+
+      {authRequired ? (
+        <TeamPanel userEmail={userEmail ?? ""} />
       ) : null}
 
       {authRequired ? (

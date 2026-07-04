@@ -98,7 +98,7 @@ const FAQ_BASE: Array<{ q: string; a: string }> = [
   },
   {
     q: "How do teammates get access?",
-    a: "One organization, one shared password. After purchase, each authorized person signs in with their work email and that password. Email us to add teammates.",
+    a: "One organization, one shared password. After purchase, each authorized person signs in with their work email and that password. Add teammates anytime from Team access in the analyzer.",
   },
   {
     q: "How is this different from a full comp platform?",
@@ -517,11 +517,8 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
           <p>
             <strong>One organization, one shared password.</strong> Pricing is per organization
             (not per employee row). Teammates sign in with their own work email and the same
-            password — email{" "}
-            <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Add authorized users")}`}>
-              {CONTACT_EMAIL}
-            </a>{" "}
-            to add people. Payments are processed securely by Stripe and are non-refundable once
+            password — add teammates anytime from <strong>Team access</strong> after you sign in.
+            Payments are processed securely by Stripe and are non-refundable once
             access credentials are delivered (see Terms). Uploads are processed in memory by default.
             Optional Save to history stores a JSON snapshot for your account only.
           </p>

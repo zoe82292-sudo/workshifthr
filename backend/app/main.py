@@ -16,6 +16,8 @@ from app.auth import (
     AuthContext,
     LoginRequest,
     LoginResponse,
+    RecoverAccessRequest,
+    RecoverAccessResponse,
     auth_enabled,
     authenticate_user,
     create_access_token,
@@ -45,7 +47,17 @@ from app.billing import (
 from app.models import AnalysisResult, ColumnMapping, PreviewResponse
 from app.rate_limit import enforce_rate_limit
 from app.uploads import max_upload_bytes, read_upload_bytes
-from app.email_delivery import email_delivery_configured
+from app.email_delivery import email_delivery_configured, send_credentials_email
+from app.login_activity import has_logged_in_before, record_login
+from app.org_members import (
+    AddOrgMemberRequest,
+    AddOrgMemberResponse,
+    OrgMembersResponse,
+    add_org_member,
+    org_members_for_user,
+    remove_org_member,
+)
+from app.provisioning import reset_password_for_email
 
 logger = logging.getLogger(__name__)
 
@@ -172,11 +184,89 @@ def login(payload: LoginRequest) -> LoginResponse:
             detail="Invalid email or password.",
         )
 
+    record_login(user.email)
+
     return LoginResponse(
         token=create_access_token(user.email, user.organization),
         email=user.email,
         organization=user.organization,
     )
+
+
+RECOVER_ACCESS_MESSAGE = (
+    "If this work email has signed in before, we sent your organization login details."
+)
+
+
+@app.post("/api/auth/recover-access", response_model=RecoverAccessResponse)
+def recover_access(payload: RecoverAccessRequest) -> RecoverAccessResponse:
+    if not auth_enabled():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authentication is not configured on this server.",
+        )
+
+    email = payload.email.strip().lower()
+    if has_logged_in_before(email):
+        reset = reset_password_for_email(email)
+        if reset is not None and email_delivery_configured():
+            send_credentials_email(
+                organization=reset["organization"],
+                email=reset["email"],
+                password=reset["password"],
+                plan_id=reset.get("plan_id", ""),
+                recovery=True,
+            )
+
+    return RecoverAccessResponse(message=RECOVER_ACCESS_MESSAGE)
+
+
+@app.get("/api/org/members", response_model=OrgMembersResponse)
+def org_members(user: AuthContext = Depends(require_auth_user)) -> OrgMembersResponse:
+    if user.email == "anonymous":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Sign in required.")
+
+    payload = org_members_for_user(user.email)
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Team management is available for provisioned organization accounts.",
+        )
+    return payload
+
+
+@app.post("/api/org/members", response_model=AddOrgMemberResponse)
+def org_members_add(
+    payload: AddOrgMemberRequest,
+    user: AuthContext = Depends(require_auth_user),
+) -> AddOrgMemberResponse:
+    if user.email == "anonymous":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Sign in required.")
+
+    try:
+        return add_org_member(user.email, str(payload.email))
+    except PermissionError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+
+@app.delete("/api/org/members/{member_email}")
+def org_members_remove(
+    member_email: str,
+    user: AuthContext = Depends(require_auth_user),
+) -> dict[str, list[str]]:
+    if user.email == "anonymous":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Sign in required.")
+
+    try:
+        members = remove_org_member(user.email, member_email)
+    except PermissionError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+    return {"members": members}
 
 
 @app.get("/api/billing/status", response_model=BillingStatusResponse)

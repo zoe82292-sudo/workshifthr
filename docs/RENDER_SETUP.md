@@ -49,7 +49,28 @@ Customers receive login details by email automatically after Stripe checkout (in
    - `RESEND_API_KEY` = `re_...`
    - `SMTP_FROM` = `ShiftWorksHR <hello@shiftworkshr.com>`
 
-### Option B — SMTP (Google Workspace, etc.)
+### Option B — Namecheap Private Email (you already have this domain)
+
+If `hello@shiftworkshr.com` is on Namecheap Private Email:
+
+```
+SMTP_HOST=mail.privateemail.com
+SMTP_PORT=587
+SMTP_USER=hello@shiftworkshr.com
+SMTP_PASSWORD=<mailbox password from Namecheap>
+SMTP_FROM=ShiftWorksHR <hello@shiftworkshr.com>
+SMTP_USE_TLS=true
+```
+
+Test locally before Render:
+
+```bash
+SMTP_HOST=mail.privateemail.com SMTP_PORT=587 SMTP_USER=hello@shiftworkshr.com \
+SMTP_PASSWORD='your-password' SMTP_FROM='ShiftWorksHR <hello@shiftworkshr.com>' \
+python3 scripts/test_credential_email.py your-personal@gmail.com
+```
+
+### Option C — Other SMTP (Google Workspace, etc.)
 
 ```
 SMTP_HOST=smtp.gmail.com

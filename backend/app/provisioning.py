@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import secrets
+import string
 import threading
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -70,7 +71,43 @@ def _company_domain(email: str) -> str:
 
 
 def _generate_password() -> str:
-    return f"Shift-{secrets.token_urlsafe(9)}"
+    """Generate a cryptographically secure 16-character shared org password."""
+    alphabet = string.ascii_letters + string.digits + "!@#$%&*-_"
+    while True:
+        password = "".join(secrets.choice(alphabet) for _ in range(16))
+        if (
+            any(char.islower() for char in password)
+            and any(char.isupper() for char in password)
+            and any(char.isdigit() for char in password)
+        ):
+            return password
+
+
+def reset_password_for_email(email: str) -> dict[str, str] | None:
+    """Issue a new shared org password for a provisioned customer email."""
+    normalized = email.strip().lower()
+    with _file_lock:
+        store = _read_store()
+        org = _find_org_by_email(store, normalized)
+        if org is None:
+            return None
+
+        password = _generate_password()
+        org["password_hash"] = _hash_password(password).decode("utf-8")
+        org["initial_password"] = None
+        _write_store(store)
+        organization = str(org.get("organization", ""))
+        plan_id = str(org.get("plan_id", ""))
+
+    from app.auth import invalidate_credentials_cache
+
+    invalidate_credentials_cache()
+    return {
+        "email": normalized,
+        "organization": organization,
+        "password": password,
+        "plan_id": plan_id,
+    }
 
 
 def _normalize_org(raw: dict[str, Any]) -> dict[str, Any]:
@@ -105,13 +142,23 @@ def _plan_expires_at(plan_id: str, created_at: str) -> str:
     return (start + timedelta(days=days)).isoformat()
 
 
+def find_org_for_authorized_email(email: str) -> dict[str, Any] | None:
+    normalized = email.strip().lower()
+    with _file_lock:
+        org = _find_org_by_email(_read_store(), normalized)
+    if org is None:
+        return None
+    authorized = [str(value).lower() for value in org.get("authorized_emails", []) if str(value).strip()]
+    if normalized not in authorized:
+        return None
+    return org
+
+
 def _find_org_by_email(store: dict[str, Any], email: str) -> dict[str, Any] | None:
     normalized = email.strip().lower()
     for org in store.get("orgs", []):
-        if normalized in org.get("authorized_emails", []):
-            return org
-        company_domain = str(org.get("company_domain", "")).lower()
-        if company_domain and normalized.endswith(f"@{company_domain}"):
+        authorized = [str(value).lower() for value in org.get("authorized_emails", []) if str(value).strip()]
+        if normalized in authorized:
             return org
     return None
 
@@ -220,10 +267,6 @@ def load_credentials() -> tuple[dict[str, _OrgCredential], dict[str, _OrgCredent
         )
         for authorized_email in org["authorized_emails"]:
             email_users[authorized_email] = credential
-
-        company_domain = org["company_domain"]
-        if company_domain:
-            domain_users[company_domain.lower()] = credential
 
     return email_users, domain_users
 

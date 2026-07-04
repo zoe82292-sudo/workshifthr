@@ -110,8 +110,8 @@ export function CheckoutSuccessPage() {
       <div className="checkout-credentials panel">
         <h2>Your login credentials</h2>
         <p className="checkout-copy">
-          Your organization shares one password. Teammates with an authorized work email on the
-          same domain can sign in with this password.
+          Your organization shares one password. After sign-in, add authorized teammates from{" "}
+          <strong>Team access</strong> in the analyzer.
         </p>
         <dl className="checkout-credentials__list">
           {organization ? (

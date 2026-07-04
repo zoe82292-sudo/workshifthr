@@ -9,6 +9,7 @@ from fastapi import HTTPException, Request, status
 _WINDOW_SECONDS = 60
 _LIMITS: dict[str, int] = {
     "/api/auth/login": 20,
+    "/api/auth/recover-access": 8,
     "/api/analyze": 30,
     "/api/preview": 60,
     "/api/billing/checkout": 20,

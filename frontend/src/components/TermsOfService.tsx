@@ -63,7 +63,8 @@ export function TermsOfService() {
         Your organization receives one shared password that you may share with authorized HR
         and compensation teammates. Each person signs in with their own work email and that
         shared password. You must be at least 18 years old and authorized to bind your
-        organization to these Terms.
+        organization to these Terms. After sign-in, authorized users can add or remove
+        teammates from Team access in the analyzer.
       </p>
       <p>
         You are responsible for sharing credentials only with authorized teammates and for

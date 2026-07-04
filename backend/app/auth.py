@@ -30,6 +30,14 @@ class LoginResponse(BaseModel):
     organization: str
 
 
+class RecoverAccessRequest(BaseModel):
+    email: EmailStr
+
+
+class RecoverAccessResponse(BaseModel):
+    message: str
+
+
 class AuthContext(BaseModel):
     email: str
     organization: str

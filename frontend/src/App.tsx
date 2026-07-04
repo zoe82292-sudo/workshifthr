@@ -11,6 +11,7 @@ import { PrivacyPolicy } from "./components/PrivacyPolicy";
 import { SamplePreviewPage } from "./components/SamplePreviewPage";
 import { MeritChecklistPage } from "./components/MeritChecklistPage";
 import { SecurityPage } from "./components/SecurityPage";
+import { RecoverAccessPage } from "./components/RecoverAccessPage";
 import { TermsOfService } from "./components/TermsOfService";
 import { captureAttributionFromUrl } from "./marketingAttribution";
 
@@ -76,6 +77,7 @@ export default function App() {
     <Routes>
       <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
       <Route path="/checkout/canceled" element={<CheckoutCancelPage />} />
+      <Route path="/recover-access" element={<RecoverAccessPage />} />
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/security" element={<SecurityPage />} />

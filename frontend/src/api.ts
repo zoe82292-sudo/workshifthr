@@ -146,6 +146,78 @@ export async function login(
   return (await response.json()) as { token: string; email: string; organization: string };
 }
 
+export async function recoverAccess(email: string): Promise<{ message: string }> {
+  const response = await fetch(`${API_BASE}/auth/recover-access`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+
+  return (await response.json()) as { message: string };
+}
+
+export type OrgMember = {
+  email: string;
+  is_self: boolean;
+};
+
+export async function fetchOrgMembers(): Promise<{
+  organization: string;
+  company_domain: string;
+  members: OrgMember[];
+  can_manage: boolean;
+}> {
+  const response = await fetch(`${API_BASE}/org/members`, {
+    headers: authHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+
+  return (await response.json()) as {
+    organization: string;
+    company_domain: string;
+    members: OrgMember[];
+    can_manage: boolean;
+  };
+}
+
+export async function addOrgMember(email: string): Promise<{
+  email: string;
+  members: string[];
+  invited: boolean;
+}> {
+  const response = await fetch(`${API_BASE}/org/members`, {
+    method: "POST",
+    headers: { ...authHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+
+  return (await response.json()) as { email: string; members: string[]; invited: boolean };
+}
+
+export async function removeOrgMember(email: string): Promise<{ members: string[] }> {
+  const response = await fetch(`${API_BASE}/org/members/${encodeURIComponent(email)}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+
+  return (await response.json()) as { members: string[] };
+}
+
 export type PlanId = "cycle" | "annual" | "monthly";
 
 export async function checkBillingStatus(): Promise<{
