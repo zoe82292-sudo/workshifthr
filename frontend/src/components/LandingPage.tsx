@@ -61,7 +61,7 @@ const AUDIENCES = [
 
 const TRUST_POINTS = [
   { stat: "< 30 sec", label: "Typical time to first insights" },
-  { stat: "Merit season", label: "Built for annual & merit review QA" },
+  { stat: "HR teams", label: "Built for comp spreadsheet QA" },
   { stat: "$249", label: "Cycle pass vs. $10k+ platforms" },
   { stat: "HR-built", label: "Designed by a comp practitioner" },
 ];
@@ -263,16 +263,16 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
       <section className="landing-hero">
         <div className="landing-hero-copy">
           <BrandLogo size="hero" className="landing-hero-logo" />
-          <span className="hero-badge">Built for merit season</span>
+          <span className="hero-badge">Compensation spreadsheet QA</span>
           <p className="hero-positioning">
-            Compensation spreadsheet QA for HR teams — upload Excel or CSV and get a
-            first-pass merit review in under 30 seconds.
+            Built for HR and total rewards teams — upload Excel or CSV and get a
+            first-pass comp analysis in under 30 seconds.
           </p>
-          <h1>Find pay issues before your merit meetings.</h1>
+          <h1>Find pay issues before leadership review.</h1>
           <p>
             ShiftWorksHR flags below-minimum pay, compression, manager inversions, and
             budget gaps — then exports leadership-ready summaries. Skip the week in Excel
-            before review season.
+            before your next comp cycle.
           </p>
           <div className="landing-hero-actions">
             <button
