@@ -47,7 +47,7 @@ const FEATURES = [
 const AUDIENCES = [
   {
     title: "In-house HR & total rewards",
-    copy: "Run a first-pass comp QA before merit meetings — without living in Excel for a week.",
+    copy: "Run a first-pass comp QA before merit meetings — spot range and compression issues without rebuilding formulas every cycle.",
   },
   {
     title: "Comp analysts & HRBPs",
@@ -63,7 +63,7 @@ const TRUST_POINTS = [
   { stat: "< 30 sec", label: "Typical time to first insights" },
   { stat: "HR teams", label: "Built for comp spreadsheet QA" },
   { stat: "$249", label: "Cycle pass vs. $10k+ platforms" },
-  { stat: "HR-built", label: "Designed by a comp practitioner" },
+  { stat: "Same day", label: "Upload and analyze — no rollout" },
 ];
 
 const SAMPLE_REVIEW = MARKETING_DEMO_DATA;
@@ -265,14 +265,13 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
           <BrandLogo size="hero" className="landing-hero-logo" />
           <span className="hero-badge">Compensation spreadsheet QA</span>
           <p className="hero-positioning">
-            Built for HR and total rewards teams — upload Excel or CSV and get a
-            first-pass comp analysis in under 30 seconds.
+            Built for HR and total rewards teams — upload Excel or CSV for a
+            first-pass comp analysis.
           </p>
           <h1>Find pay issues before leadership review.</h1>
           <p>
             ShiftWorksHR flags below-minimum pay, compression, manager inversions, and
-            budget gaps — then exports leadership-ready summaries. Skip the week in Excel
-            before your next comp cycle.
+            budget gaps — then exports leadership-ready summaries your team can act on.
           </p>
           <div className="landing-hero-actions">
             <button
@@ -415,17 +414,17 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
 
       <section className="landing-section landing-about" id="about">
         <div className="landing-about-card panel">
-          <span className="hero-badge">Built by an HR practitioner</span>
-          <h2>Designed by someone who has done the comp work</h2>
+          <span className="hero-badge">Built by a comp analyst</span>
+          <h2>The tool I wished I had every merit season</h2>
           <p>
-            ShiftWorksHR was built by an HR professional with hands-on experience in
-            compensation — range reviews, pay equity analysis, merit planning, and
-            the spreadsheet-heavy work that comes with every comp cycle.
+            I&apos;m a compensation analyst. Before every merit cycle, I used to spend days
+            in Excel — range checks, compression flags, manager inversions — before I could
+            walk into leadership with confidence. ShiftWorksHR runs that first pass in under
+            30 seconds.
           </p>
           <p>
-            This tool reflects what compensation teams actually need: fast flags,
-            clear budget impact, and exports you can share with leadership — not
-            another generic HR dashboard.
+            Same rigor I applied by hand, without the formula archaeology — flags, budget
+            impact, and exports ready for the room where decisions get made.
           </p>
         </div>
       </section>
@@ -565,7 +564,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
         <div className="landing-footer-copy">
           <p className="landing-footer-brand">ShiftWorksHR</p>
           <p className="landing-footer-domain">shiftworkshr.com</p>
-          <p>Compensation analysis for HR teams — built by an HR professional.</p>
+          <p>Compensation spreadsheet QA for HR and total rewards teams.</p>
           <p className="landing-footer-contact">
             <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
             {" · "}
