@@ -22,6 +22,8 @@ export const MARKETING_DEMO_DATA: MarketingPreviewData = {
     missing_salary_ranges: 1,
     invalid_effective_dates: 2,
     outlier_merit_increases: 1,
+    new_hire_merit_flags: 0,
+    unusual_comp_changes: 0,
     pay_equity_gaps: 2,
   },
   below_minimum: [

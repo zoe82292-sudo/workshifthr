@@ -11,6 +11,7 @@ _LIMITS: dict[str, int] = {
     "/api/auth/login": 20,
     "/api/auth/recover-access": 8,
     "/api/analytics/event": 60,
+    "/api/org/column-mapping": 20,
     "/api/billing/portal": 10,
     "/api/analyze": 30,
     "/api/preview": 60,

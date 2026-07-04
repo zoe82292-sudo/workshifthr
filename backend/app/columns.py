@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from datetime import datetime
 from typing import Any
 
 import pandas as pd
@@ -72,6 +73,18 @@ COLUMN_ALIASES: dict[str, list[str]] = {
         "compmax",
         "grademax",
     ],
+    "range_midpoint": [
+        "range midpoint",
+        "range mid",
+        "salary range midpoint",
+        "comp midpoint",
+        "pay midpoint",
+        "midpoint",
+        "range middle",
+        "salary midpoint",
+        "rangemidpoint",
+        "rangemid",
+    ],
     "job_level": [
         "job level",
         "grade",
@@ -142,6 +155,17 @@ COLUMN_ALIASES: dict[str, list[str]] = {
         "effectivedate",
         "salaryeffectivedate",
     ],
+    "hire_date": [
+        "hire date",
+        "start date",
+        "original hire date",
+        "date of hire",
+        "employment start",
+        "service date",
+        "tenure start",
+        "hiredate",
+        "startdate",
+    ],
     "merit_increase": [
         "merit increase",
         "merit increase %",
@@ -155,6 +179,25 @@ COLUMN_ALIASES: dict[str, list[str]] = {
         "merit amount",
         "meritincrease",
         "meritpercent",
+    ],
+    "promotion_increase": [
+        "promotion increase",
+        "promotion increase %",
+        "promotion %",
+        "promo increase",
+        "promo %",
+        "promotion percent",
+        "promotionincrease",
+    ],
+    "equity_grant": [
+        "equity grant",
+        "equity grant %",
+        "equity %",
+        "lti grant",
+        "stock grant",
+        "equity award",
+        "equity percent",
+        "equitygrant",
     ],
     "gender": [
         "gender",
@@ -177,7 +220,13 @@ COLUMN_ALIASES: dict[str, list[str]] = {
 }
 
 REQUIRED_FIELDS = ["employee_id", "salary", "range_min", "range_max"]
-NUMERIC_OPTIONAL_FIELDS = ["bonus_target", "merit_increase"]
+NUMERIC_OPTIONAL_FIELDS = [
+    "bonus_target",
+    "merit_increase",
+    "range_midpoint",
+    "promotion_increase",
+    "equity_grant",
+]
 
 GENDER_VALUES = {
     "male",
@@ -281,8 +330,11 @@ def _infer_column_mapping(
         ("job_level", lambda cols: _infer_job_level_column(df, cols)),
         ("department", lambda cols: _infer_department_column(df, cols)),
         ("merit_increase", lambda cols: _infer_merit_column(df, cols)),
+        ("promotion_increase", lambda cols: _infer_percent_column(df, cols, "promotion")),
+        ("equity_grant", lambda cols: _infer_percent_column(df, cols, "equity")),
         ("bonus_target", lambda cols: _infer_bonus_column(df, cols)),
         ("effective_date", lambda cols: _infer_date_column(df, cols)),
+        ("hire_date", lambda cols: _infer_hire_date_column(df, cols)),
         (
             "manager_id",
             lambda cols: _infer_manager_id_column(df, cols, employee_id_col),
@@ -606,6 +658,62 @@ def _infer_date_column(df: pd.DataFrame, columns: list[Any]) -> str | None:
             best_col = str(col)
 
     return best_col if best_score >= 0.6 else None
+
+
+def _infer_percent_column(df: pd.DataFrame, columns: list[Any], kind: str) -> str | None:
+    """Infer promotion or equity percent columns (similar shape to merit)."""
+    max_q95 = 50 if kind == "promotion" else 80
+    best_col: str | None = None
+    best_score = 0.0
+
+    for col in columns:
+        series = coerce_numeric(df[col]).dropna()
+        if len(series) < max(3, len(df) * 0.2):
+            continue
+
+        as_percent = series.copy()
+        if as_percent.quantile(0.9) <= 1:
+            as_percent = as_percent * 100
+
+        if as_percent.median() < 0 or as_percent.quantile(0.95) > max_q95:
+            continue
+
+        in_band = ((as_percent >= 0) & (as_percent <= max_q95)).mean()
+        if in_band < 0.5:
+            continue
+
+        if in_band > best_score:
+            best_score = in_band
+            best_col = str(col)
+
+    return best_col if best_score >= 0.5 else None
+
+
+def _infer_hire_date_column(df: pd.DataFrame, columns: list[Any]) -> str | None:
+    best_col: str | None = None
+    best_score = 0.0
+
+    for col in columns:
+        parsed = pd.to_datetime(df[col], errors="coerce", format="mixed")
+        valid_ratio = parsed.notna().mean()
+        if valid_ratio < 0.5:
+            continue
+
+        years = parsed.dt.year.dropna()
+        if years.empty:
+            continue
+        if years.min() < 1970 or years.max() > 2100:
+            continue
+
+        # Hire dates skew older than effective dates (more past dates).
+        today = pd.Timestamp(datetime.now().date())
+        past_ratio = (parsed <= today).mean()
+        score = valid_ratio * (0.5 + past_ratio * 0.5)
+        if score > best_score:
+            best_score = score
+            best_col = str(col)
+
+    return best_col if best_score >= 0.55 else None
 
 
 def _infer_manager_id_column(

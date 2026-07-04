@@ -3649,3 +3649,29 @@ a:focus-visible {
   border-top: 1px solid var(--border);
   text-align: center;
 }
+
+.analyzer-options-panel {
+  margin-top: 16px;
+}
+
+.analyzer-options-panel__field {
+  max-width: 520px;
+}
+
+.cycle-comparison-panel {
+  margin-bottom: 20px;
+}
+
+.cycle-comparison-panel__copy,
+.cycle-comparison-panel__select {
+  margin-bottom: 12px;
+}
+
+.cycle-comparison-changes {
+  margin-top: 20px;
+}
+
+.export-anonymize-toggle {
+  margin-right: 12px;
+  white-space: nowrap;
+}

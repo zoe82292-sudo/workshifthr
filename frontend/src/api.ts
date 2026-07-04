@@ -67,6 +67,8 @@ function normalizeSummary(raw: Partial<AnalysisSummary> | undefined): AnalysisSu
     missing_salary_ranges: raw?.missing_salary_ranges ?? 0,
     invalid_effective_dates: raw?.invalid_effective_dates ?? 0,
     outlier_merit_increases: raw?.outlier_merit_increases ?? 0,
+    new_hire_merit_flags: raw?.new_hire_merit_flags ?? 0,
+    unusual_comp_changes: raw?.unusual_comp_changes ?? 0,
     pay_equity_gaps: raw?.pay_equity_gaps ?? 0,
   };
 }
@@ -102,6 +104,8 @@ function normalizeResult(raw: AnalysisResult): AnalysisResult {
     missing_salary_ranges: raw.missing_salary_ranges ?? [],
     invalid_effective_dates: raw.invalid_effective_dates ?? [],
     outlier_merit_increases: raw.outlier_merit_increases ?? [],
+    new_hire_merit_flags: raw.new_hire_merit_flags ?? [],
+    unusual_comp_changes: raw.unusual_comp_changes ?? [],
     detected_columns: raw.detected_columns ?? [],
     missing_required_columns: raw.missing_required_columns ?? [],
   };
@@ -185,6 +189,33 @@ export async function fetchOrgMembers(): Promise<{
     members: OrgMember[];
     can_manage: boolean;
   };
+}
+
+export async function fetchSavedColumnMapping(): Promise<ColumnMapping | null> {
+  try {
+    const response = await fetch(`${API_BASE}/org/column-mapping`, {
+      headers: authHeaders(),
+    });
+    if (!response.ok) {
+      return null;
+    }
+    const payload = (await response.json()) as { mapping: ColumnMapping | null };
+    return payload.mapping;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveSavedColumnMapping(mapping: ColumnMapping): Promise<void> {
+  const response = await fetch(`${API_BASE}/org/column-mapping`, {
+    method: "PUT",
+    headers: { ...authHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify(mapping),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
 }
 
 export async function addOrgMember(email: string): Promise<{
@@ -324,7 +355,11 @@ export async function previewFile(file: File, sheetName?: string | null): Promis
 
 export async function analyzeFile(
   file: File,
-  options?: { columnMapping?: ColumnMapping; sheetName?: string | null },
+  options?: {
+    columnMapping?: ColumnMapping;
+    sheetName?: string | null;
+    meritIqrMultiplier?: number;
+  },
 ): Promise<AnalysisResult> {
   if (!isAllowedUpload(file)) {
     throw new Error("Please upload an .xlsx, .xls, or .csv file.");
@@ -337,6 +372,9 @@ export async function analyzeFile(
   }
   if (options?.columnMapping) {
     formData.append("column_mapping", JSON.stringify(options.columnMapping));
+  }
+  if (options?.meritIqrMultiplier != null) {
+    formData.append("merit_iqr_multiplier", String(options.meritIqrMultiplier));
   }
 
   const response = await fetch(`${API_BASE}/analyze`, {

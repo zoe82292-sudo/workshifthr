@@ -7,7 +7,19 @@ const BASE_FILENAME = "shiftworkshr-analysis";
 
 export type ExportOptions = {
   targetMeritPercent?: number | null;
+  anonymize?: boolean;
 };
+
+function displayEmployeeName(
+  employeeId: string | null | undefined,
+  employeeName: string | null | undefined,
+  options?: ExportOptions,
+): string {
+  if (options?.anonymize) {
+    return employeeId ? `Employee ${employeeId}` : "Employee";
+  }
+  return employeeName ?? employeeId ?? "";
+}
 
 function triggerDownload(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -61,6 +73,8 @@ function summaryRows(result: AnalysisResult, options?: ExportOptions): Array<Arr
     ["Missing Salary Ranges", summary.missing_salary_ranges],
     ["Invalid Effective Dates", summary.invalid_effective_dates],
     ["Outlier Merit Increases", summary.outlier_merit_increases],
+    ["New-Hire Merit Flags", summary.new_hire_merit_flags ?? 0],
+    ["Unusual Comp Changes", summary.unusual_comp_changes ?? 0],
     ["Pay Equity Gaps", summary.pay_equity_gaps],
     [],
     ["Compa-Ratio Summary"],
@@ -71,11 +85,11 @@ function summaryRows(result: AnalysisResult, options?: ExportOptions): Array<Arr
   ];
 }
 
-function employeeRows(result: AnalysisResult): Array<Array<string | number | null>> {
+function employeeRows(result: AnalysisResult, options?: ExportOptions): Array<Array<string | number | null>> {
   return result.range_penetration.map((row) => [
     row.row_number,
     row.employee_id ?? "",
-    row.employee_name ?? "",
+    displayEmployeeName(row.employee_id, row.employee_name, options),
     row.department ?? "",
     row.job_level ?? "",
     row.salary ?? "",
@@ -118,7 +132,7 @@ export function downloadAnalysisExcel(
         "Gap to Minimum",
         "Merit Increase %",
       ],
-      ...employeeRows(result),
+      ...employeeRows(result, options),
     ]),
     "All Employees",
   );
@@ -131,7 +145,7 @@ export function downloadAnalysisExcel(
         ...result.below_minimum.map((row) => [
           row.row_number,
           row.employee_id ?? "",
-          row.employee_name ?? "",
+          displayEmployeeName(row.employee_id, row.employee_name, options),
           row.salary ?? "",
           row.range_min ?? "",
           row.gap_to_minimum ?? "",
@@ -149,7 +163,7 @@ export function downloadAnalysisExcel(
         ...result.above_maximum.map((row) => [
           row.row_number,
           row.employee_id ?? "",
-          row.employee_name ?? "",
+          displayEmployeeName(row.employee_id, row.employee_name, options),
           row.salary ?? "",
           row.range_max ?? "",
           row.range_penetration ?? "",
@@ -167,7 +181,7 @@ export function downloadAnalysisExcel(
         ...result.compression.map((issue) => [
           issue.issue_type,
           issue.description,
-          issue.employee_name ?? issue.employee_id ?? "",
+          displayEmployeeName(issue.employee_id, issue.employee_name, options),
           issue.row_number ?? "",
         ]),
       ]),
@@ -190,10 +204,10 @@ export function downloadAnalysisExcel(
         ],
         ...result.managers_below_reports.map((row) => [
           row.manager_id,
-          row.manager_name ?? "",
+          displayEmployeeName(row.manager_id, row.manager_name, options),
           row.manager_salary,
           row.report_id,
-          row.report_name ?? "",
+          displayEmployeeName(row.report_id, row.report_name, options),
           row.report_salary,
           row.pay_gap,
         ]),
@@ -225,7 +239,7 @@ export function downloadAnalysisExcel(
         ...result.missing_data.map((row) => [
           row.row_number,
           row.employee_id ?? "",
-          row.employee_name ?? "",
+          displayEmployeeName(row.employee_id, row.employee_name, options),
           row.missing_fields.join(", "),
         ]),
       ]),
@@ -241,7 +255,7 @@ export function downloadAnalysisExcel(
         ...result.outlier_merit_increases.map((row) => [
           row.row_number,
           row.employee_id ?? "",
-          row.employee_name ?? "",
+          displayEmployeeName(row.employee_id, row.employee_name, options),
           row.merit_increase,
           row.reason,
         ]),
@@ -258,7 +272,7 @@ export function downloadAnalysisExcel(
         ...result.missing_bonus_targets.map((row) => [
           row.row_number,
           row.employee_id ?? "",
-          row.employee_name ?? "",
+          displayEmployeeName(row.employee_id, row.employee_name, options),
         ]),
       ]),
       "Missing Bonus Targets",
@@ -273,7 +287,7 @@ export function downloadAnalysisExcel(
         ...result.missing_salary_ranges.map((row) => [
           row.row_number,
           row.employee_id ?? "",
-          row.employee_name ?? "",
+          displayEmployeeName(row.employee_id, row.employee_name, options),
           row.missing_fields.join(", "),
         ]),
       ]),
@@ -289,7 +303,7 @@ export function downloadAnalysisExcel(
         ...result.invalid_effective_dates.map((row) => [
           row.row_number,
           row.employee_id ?? "",
-          row.employee_name ?? "",
+          displayEmployeeName(row.employee_id, row.employee_name, options),
           row.effective_date ?? "",
           row.reason,
         ]),
@@ -306,7 +320,7 @@ export function downloadAnalysisExcel(
         ...result.compa_ratios.map((row) => [
           row.row_number,
           row.employee_id ?? "",
-          row.employee_name ?? "",
+          displayEmployeeName(row.employee_id, row.employee_name, options),
           row.salary,
           row.range_midpoint,
           row.compa_ratio,
@@ -480,7 +494,7 @@ export function downloadAnalysisPdf(
       body: result.below_minimum.map((row) => [
         String(row.row_number),
         row.employee_id ?? "",
-        row.employee_name ?? "",
+        displayEmployeeName(row.employee_id, row.employee_name, options),
         formatMoney(row.salary),
         formatMoney(row.range_min),
         formatMoney(row.gap_to_minimum),
@@ -496,7 +510,7 @@ export function downloadAnalysisPdf(
       body: result.above_maximum.map((row) => [
         String(row.row_number),
         row.employee_id ?? "",
-        row.employee_name ?? "",
+        displayEmployeeName(row.employee_id, row.employee_name, options),
         formatMoney(row.salary),
         formatMoney(row.range_max),
       ]),
@@ -511,7 +525,7 @@ export function downloadAnalysisPdf(
       body: result.compression.map((issue) => [
         issue.issue_type,
         issue.description,
-        issue.employee_name ?? issue.employee_id ?? "",
+        displayEmployeeName(issue.employee_id, issue.employee_name, options),
         issue.row_number != null ? String(issue.row_number) : "",
       ]),
       color: [120, 90, 20],

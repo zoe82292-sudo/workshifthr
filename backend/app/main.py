@@ -46,7 +46,8 @@ from app.billing import (
     get_checkout_session,
     handle_stripe_webhook,
 )
-from app.models import AnalysisResult, ColumnMapping, PreviewResponse
+from app.models import AnalysisOptions, AnalysisResult, ColumnMapping, PreviewResponse
+from app.saved_mappings import get_saved_mapping, save_saved_mapping
 from app.rate_limit import enforce_rate_limit
 from app.uploads import max_upload_bytes, read_upload_bytes
 from app.email_delivery import email_delivery_configured, send_credentials_email
@@ -287,6 +288,35 @@ def org_members_remove(
     return {"members": members}
 
 
+class SavedMappingResponse(BaseModel):
+    mapping: ColumnMapping | None = None
+
+
+@app.get("/api/org/column-mapping", response_model=SavedMappingResponse)
+def org_column_mapping_get(user: AuthContext = Depends(require_auth_user)) -> SavedMappingResponse:
+    if user.email == "anonymous":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Sign in required.")
+    if not user.organization:
+        return SavedMappingResponse(mapping=None)
+    return SavedMappingResponse(mapping=get_saved_mapping(user.organization, user.email))
+
+
+@app.put("/api/org/column-mapping", response_model=SavedMappingResponse)
+def org_column_mapping_save(
+    payload: ColumnMapping,
+    user: AuthContext = Depends(require_auth_user),
+) -> SavedMappingResponse:
+    if user.email == "anonymous":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Sign in required.")
+    if not user.organization:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Column mapping save is available for provisioned organization accounts.",
+        )
+    saved = save_saved_mapping(user.organization, user.email, payload)
+    return SavedMappingResponse(mapping=saved)
+
+
 class AnalyticsEventRequest(BaseModel):
     name: str = Field(min_length=1, max_length=80)
     properties: dict[str, str | int | float | bool] = Field(default_factory=dict)
@@ -362,6 +392,7 @@ async def analyze(
     file: UploadFile = File(...),
     sheet_name: str | None = Form(default=None),
     column_mapping: str | None = Form(default=None),
+    merit_iqr_multiplier: float | None = Form(default=None),
     _: str = Depends(require_auth),
 ) -> AnalysisResult:
     content = await read_upload_bytes(file)
@@ -382,11 +413,17 @@ async def analyze(
             ) from exc
 
     try:
+        options = AnalysisOptions(
+            merit_iqr_multiplier=merit_iqr_multiplier
+            if merit_iqr_multiplier is not None
+            else 1.5,
+        )
         return analyze_file(
             content,
             file.filename or "upload.xlsx",
             sheet_name,
             mapping_override,
+            options,
         )
     except ValueError as exc:
         raise HTTPException(

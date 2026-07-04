@@ -107,7 +107,13 @@ function GapTable({ gaps, title }: { gaps: PayEquityGap[]; title: string }) {
   );
 }
 
-export function PayEquityPanel({ payEquity }: { payEquity: PayEquityReport }) {
+export function PayEquityPanel({
+  payEquity,
+  departmentFilter = "",
+}: {
+  payEquity: PayEquityReport;
+  departmentFilter?: string;
+}) {
   if (!payEquity.available) {
     return (
       <div className="empty-state">
@@ -121,29 +127,19 @@ export function PayEquityPanel({ payEquity }: { payEquity: PayEquityReport }) {
     <div className="pay-equity-panel">
       <div className="alert alert-warning">{payEquity.disclaimer}</div>
 
-      {payEquity.employees_missing_gender > 0 ? (
-        <p className="file-meta">
-          {payEquity.employees_missing_gender} employees missing gender data.
-        </p>
+      {departmentFilter ? (
+        <div className="alert alert-info">
+          Pay equity summaries are organization-wide. Clear the department filter to review
+          company-level medians, or export a single-department file for a focused slice.
+        </div>
       ) : null}
-      {payEquity.employees_missing_race > 0 ? (
-        <p className="file-meta">
-          {payEquity.employees_missing_race} employees missing race/ethnicity data.
-        </p>
-      ) : null}
-
-      <GroupStatsTable groups={payEquity.gender_groups} title="Pay by gender" />
-      <GapTable gaps={payEquity.gender_gaps} title="Gender median pay gaps" />
-
-      <GroupStatsTable groups={payEquity.race_groups} title="Pay by race/ethnicity" />
-      <GapTable gaps={payEquity.race_gaps} title="Race/ethnicity median pay gaps" />
 
       {payEquity.level_breakdowns.length > 0 ? (
         <div className="equity-section">
-          <h3>By job level (same-level comparisons)</h3>
+          <h3>By job level (recommended — same-level comparisons)</h3>
           <p className="file-meta" style={{ marginBottom: 16 }}>
-            Comparing pay within the same job level reduces some — but not all — legitimate
-            pay differences tied to experience and performance.
+            Start here for the most meaningful read. Comparing pay within the same job level
+            accounts for grade differences but not tenure, location, or performance.
           </p>
           {payEquity.level_breakdowns.map((level) => (
             <div className="panel equity-level-card" key={level.job_level}>
@@ -157,6 +153,23 @@ export function PayEquityPanel({ payEquity }: { payEquity: PayEquityReport }) {
             </div>
           ))}
         </div>
+      ) : null}
+
+      <GroupStatsTable groups={payEquity.gender_groups} title="Pay by gender (all levels)" />
+      <GapTable gaps={payEquity.gender_gaps} title="Gender median pay gaps (all levels)" />
+
+      <GroupStatsTable groups={payEquity.race_groups} title="Pay by race/ethnicity (all levels)" />
+      <GapTable gaps={payEquity.race_gaps} title="Race/ethnicity median pay gaps (all levels)" />
+
+      {payEquity.employees_missing_gender > 0 ? (
+        <p className="file-meta">
+          {payEquity.employees_missing_gender} employees missing gender data.
+        </p>
+      ) : null}
+      {payEquity.employees_missing_race > 0 ? (
+        <p className="file-meta">
+          {payEquity.employees_missing_race} employees missing race/ethnicity data.
+        </p>
       ) : null}
     </div>
   );

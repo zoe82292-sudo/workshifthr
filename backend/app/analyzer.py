@@ -16,6 +16,7 @@ from app.columns import (
 from app.equity import build_pay_equity_report
 from app.insights import build_insights, empty_insights
 from app.models import (
+    AnalysisOptions,
     AnalysisResult,
     AnalysisSummary,
     ColumnMapping,
@@ -27,12 +28,16 @@ from app.models import (
     ManagerBelowReportIssue,
     MissingBonusTargetRecord,
     MissingSalaryRangeRecord,
+    NewHireMeritFlag,
     OutlierMeritIncreaseRecord,
     PayEquityReport,
     PreviewResponse,
+    UnusualCompChangeRecord,
 )
 
 MERIT_OUTLIER_IQR_MULTIPLIER = 1.5
+PLANNED_EFFECTIVE_HORIZON_MONTHS = 18
+NEW_HIRE_TENURE_DAYS = 90
 
 
 def _looks_like_export_file(content: bytes, filename: str) -> bool:
@@ -206,11 +211,32 @@ def _penetration_band(penetration: float | None) -> str | None:
     return "top_quartile"
 
 
-def _calculate_compa_ratio(salary: float, range_min: float, range_max: float) -> float | None:
-    midpoint = (range_min + range_max) / 2
+def _calculate_compa_ratio(
+    salary: float,
+    range_min: float,
+    range_max: float,
+    range_midpoint: float | None = None,
+) -> float | None:
+    if range_midpoint is not None and range_midpoint > 0:
+        midpoint = range_midpoint
+    else:
+        midpoint = (range_min + range_max) / 2
     if midpoint <= 0:
         return None
     return round((salary / midpoint) * 100, 1)
+
+
+def _row_midpoint(row: pd.Series, mapping: dict[str, str | None]) -> float | None:
+    mid_col = mapping.get("range_midpoint")
+    if mid_col and mid_col in row.index:
+        midpoint = _float_value(row.get(mid_col))
+        if midpoint is not None and midpoint > 0:
+            return midpoint
+    range_min = _float_value(_value(row, mapping.get("range_min")))
+    range_max = _float_value(_value(row, mapping.get("range_max")))
+    if range_min is not None and range_max is not None and range_min <= range_max:
+        return round((range_min + range_max) / 2, 2)
+    return None
 
 
 def _employee_record(
@@ -226,7 +252,13 @@ def _employee_record(
     compa_ratio = None
     gap_to_minimum = None
     if salary is not None and range_min is not None and range_max is not None:
-        compa_ratio = _calculate_compa_ratio(salary, range_min, range_max)
+        midpoint_override = _float_value(_value(row, mapping.get("range_midpoint")))
+        compa_ratio = _calculate_compa_ratio(
+            salary,
+            range_min,
+            range_max,
+            midpoint_override,
+        )
         gap_to_minimum = round(max(range_min - salary, 0), 2)
 
     merit_raw = _float_value(_value(row, mapping.get("merit_increase")))
@@ -284,6 +316,8 @@ def _empty_result(
         missing_salary_ranges=[],
         invalid_effective_dates=[],
         outlier_merit_increases=[],
+        new_hire_merit_flags=[],
+        unusual_comp_changes=[],
         compa_ratios=[],
         pay_equity=PayEquityReport(available=False),
         insights=empty_insights(),
@@ -324,6 +358,10 @@ def _prepare_dataframe(
     if date_col and date_col in prepared.columns:
         prepared[date_col] = pd.to_datetime(prepared[date_col], errors="coerce")
 
+    hire_col = detected.get("hire_date")
+    if hire_col and hire_col in prepared.columns:
+        prepared[hire_col] = pd.to_datetime(prepared[hire_col], errors="coerce")
+
     return prepared, detected, []
 
 
@@ -332,7 +370,9 @@ def analyze_file(
     filename: str,
     sheet_name: str | None = None,
     mapping_override: ColumnMapping | None = None,
+    options: AnalysisOptions | None = None,
 ) -> AnalysisResult:
+    analysis_options = options or AnalysisOptions()
     df, _, read_warnings = read_upload(content, filename, sheet_name)
     prepared, mapping, missing_required = _prepare_dataframe(df, mapping_override)
     warnings: list[str] = list(read_warnings)
@@ -425,7 +465,19 @@ def analyze_file(
     missing_salary_ranges = _find_missing_salary_ranges(prepared, mapping)
     missing_bonus_targets = _find_missing_bonus_targets(prepared, mapping, warnings)
     invalid_effective_dates = _find_invalid_effective_dates(prepared, mapping, warnings)
-    outlier_merit_increases = _find_outlier_merit_increases(prepared, mapping, warnings)
+    outlier_merit_increases = _find_outlier_merit_increases(
+        prepared,
+        mapping,
+        warnings,
+        iqr_multiplier=analysis_options.merit_iqr_multiplier,
+    )
+    new_hire_merit_flags = _find_new_hire_merit_flags(prepared, mapping, warnings)
+    unusual_comp_changes = _find_unusual_comp_changes(
+        prepared,
+        mapping,
+        warnings,
+        iqr_multiplier=analysis_options.merit_iqr_multiplier,
+    )
     managers_below_reports = _find_managers_below_reports(prepared, mapping, warnings)
     pay_equity = build_pay_equity_report(prepared, mapping, warnings)
 
@@ -437,6 +489,7 @@ def analyze_file(
     )
 
     compa_ratios: list[CompaRatioRecord] = []
+    row_lookup = {int(index) + 2: row for index, row in prepared.iterrows()}
     for employee in range_penetration:
         if (
             employee.salary is not None
@@ -444,13 +497,19 @@ def analyze_file(
             and employee.range_max is not None
             and employee.compa_ratio is not None
         ):
+            source_row = row_lookup.get(employee.row_number)
+            midpoint = (
+                _row_midpoint(source_row, mapping)
+                if source_row is not None
+                else round((employee.range_min + employee.range_max) / 2, 2)
+            )
             compa_ratios.append(
                 CompaRatioRecord(
                     row_number=employee.row_number,
                     employee_id=employee.employee_id,
                     employee_name=employee.employee_name,
                     salary=employee.salary,
-                    range_midpoint=round((employee.range_min + employee.range_max) / 2, 2),
+                    range_midpoint=midpoint or round((employee.range_min + employee.range_max) / 2, 2),
                     compa_ratio=employee.compa_ratio,
                 )
             )
@@ -472,6 +531,8 @@ def analyze_file(
             missing_salary_ranges=len(missing_salary_ranges),
             invalid_effective_dates=len(invalid_effective_dates),
             outlier_merit_increases=len(outlier_merit_increases),
+            new_hire_merit_flags=len(new_hire_merit_flags),
+            unusual_comp_changes=len(unusual_comp_changes),
             pay_equity_gaps=len(pay_equity.gender_gaps) + len(pay_equity.race_gaps),
         ),
         column_mapping=ColumnMapping(**mapping),
@@ -492,6 +553,8 @@ def analyze_file(
         missing_salary_ranges=missing_salary_ranges,
         invalid_effective_dates=invalid_effective_dates,
         outlier_merit_increases=outlier_merit_increases,
+        new_hire_merit_flags=new_hire_merit_flags,
+        unusual_comp_changes=unusual_comp_changes,
         compa_ratios=compa_ratios,
         pay_equity=pay_equity,
         insights=empty_insights(),
@@ -598,6 +661,7 @@ def _find_invalid_effective_dates(
     id_col = mapping["employee_id"]
     name_col = mapping.get("employee_name")
     today = pd.Timestamp(datetime.now().date())
+    horizon = today + pd.DateOffset(months=PLANNED_EFFECTIVE_HORIZON_MONTHS)
     records: list[InvalidEffectiveDateRecord] = []
 
     for index, row in df.iterrows():
@@ -633,16 +697,22 @@ def _find_invalid_effective_dates(
             )
             continue
 
-        if parsed > today:
+        if parsed > horizon:
             records.append(
                 InvalidEffectiveDateRecord(
                     row_number=int(index) + 2,
                     employee_id=employee_id,
                     employee_name=_string_value(row.get(name_col)) if name_col else None,
                     effective_date=parsed.strftime("%Y-%m-%d"),
-                    reason="Effective date is in the future",
+                    reason=(
+                        f"Effective date is more than {PLANNED_EFFECTIVE_HORIZON_MONTHS} months "
+                        "in the future"
+                    ),
                 )
             )
+            continue
+
+        if parsed > today:
             continue
 
         if parsed.year < 2000:
@@ -669,6 +739,7 @@ def _find_outlier_merit_increases(
     df: pd.DataFrame,
     mapping: dict[str, str | None],
     warnings: list[str],
+    iqr_multiplier: float = MERIT_OUTLIER_IQR_MULTIPLIER,
 ) -> list[OutlierMeritIncreaseRecord]:
     merit_col = mapping.get("merit_increase")
     if not merit_col or merit_col not in df.columns:
@@ -703,8 +774,8 @@ def _find_outlier_merit_increases(
     q1 = float(percents.quantile(0.25))
     q3 = float(percents.quantile(0.75))
     iqr = q3 - q1
-    lower_bound = q1 - MERIT_OUTLIER_IQR_MULTIPLIER * iqr
-    upper_bound = q3 + MERIT_OUTLIER_IQR_MULTIPLIER * iqr
+    lower_bound = q1 - iqr_multiplier * iqr
+    upper_bound = q3 + iqr_multiplier * iqr
 
     records: list[OutlierMeritIncreaseRecord] = []
     for row_number, employee_id, employee_name, merit_percent in merit_values:
@@ -724,6 +795,152 @@ def _find_outlier_merit_increases(
             )
 
     return sorted(records, key=lambda item: abs(item.merit_increase - percents.median()), reverse=True)
+
+
+def _find_new_hire_merit_flags(
+    df: pd.DataFrame,
+    mapping: dict[str, str | None],
+    warnings: list[str],
+) -> list[NewHireMeritFlag]:
+    hire_col = mapping.get("hire_date")
+    merit_col = mapping.get("merit_increase")
+    if not hire_col or hire_col not in df.columns:
+        return []
+    if not merit_col or merit_col not in df.columns:
+        warnings.append("No merit increase column detected. Skipping new-hire merit checks.")
+        return []
+
+    id_col = mapping["employee_id"]
+    name_col = mapping.get("employee_name")
+    today = pd.Timestamp(datetime.now().date())
+    records: list[NewHireMeritFlag] = []
+
+    for index, row in df.iterrows():
+        employee_id = _string_value(row.get(id_col))
+        hire_raw = row.get(hire_col)
+        merit_raw = _float_value(row.get(merit_col))
+        if pd.isna(hire_raw) or merit_raw is None:
+            continue
+
+        parsed = pd.to_datetime(hire_raw, errors="coerce")
+        if pd.isna(parsed):
+            continue
+
+        tenure_days = int((today - parsed).days)
+        if tenure_days < 0 or tenure_days > NEW_HIRE_TENURE_DAYS:
+            continue
+
+        merit_percent = _normalize_merit_percent(merit_raw)
+        if merit_percent <= 0:
+            continue
+
+        records.append(
+            NewHireMeritFlag(
+                row_number=int(index) + 2,
+                employee_id=employee_id,
+                employee_name=_string_value(row.get(name_col)) if name_col else None,
+                hire_date=parsed.strftime("%Y-%m-%d"),
+                tenure_days=tenure_days,
+                merit_increase=merit_percent,
+                reason=(
+                    f"Employee hired within {NEW_HIRE_TENURE_DAYS} days has a "
+                    f"{merit_percent}% merit increase — verify eligibility."
+                ),
+            )
+        )
+
+    return records
+
+
+def _find_percent_outliers(
+    df: pd.DataFrame,
+    mapping: dict[str, str | None],
+    column_key: str,
+    change_type: str,
+    warnings: list[str],
+    iqr_multiplier: float,
+    min_rows: int = 4,
+) -> list[UnusualCompChangeRecord]:
+    column = mapping.get(column_key)
+    if not column or column not in df.columns:
+        return []
+
+    id_col = mapping["employee_id"]
+    name_col = mapping.get("employee_name")
+    values: list[tuple[int, str | None, str | None, float]] = []
+
+    for index, row in df.iterrows():
+        raw = _float_value(row.get(column))
+        if raw is None:
+            continue
+        values.append(
+            (
+                int(index) + 2,
+                _string_value(row.get(id_col)),
+                _string_value(row.get(name_col)) if name_col else None,
+                _normalize_merit_percent(raw),
+            )
+        )
+
+    if len(values) < min_rows:
+        return []
+
+    percents = pd.Series([value[3] for value in values])
+    q1 = float(percents.quantile(0.25))
+    q3 = float(percents.quantile(0.75))
+    iqr = q3 - q1
+    lower_bound = q1 - iqr_multiplier * iqr
+    upper_bound = q3 + iqr_multiplier * iqr
+
+    records: list[UnusualCompChangeRecord] = []
+    for row_number, employee_id, employee_name, percent in values:
+        if percent < lower_bound or percent > upper_bound:
+            direction = "high" if percent > upper_bound else "low"
+            records.append(
+                UnusualCompChangeRecord(
+                    row_number=row_number,
+                    employee_id=employee_id,
+                    employee_name=employee_name,
+                    change_type=change_type,
+                    value_percent=percent,
+                    reason=(
+                        f"Unusually {direction} {change_type} change outside the expected range "
+                        f"({lower_bound:.1f}% to {upper_bound:.1f}%)."
+                    ),
+                )
+            )
+
+    return records
+
+
+def _find_unusual_comp_changes(
+    df: pd.DataFrame,
+    mapping: dict[str, str | None],
+    warnings: list[str],
+    iqr_multiplier: float = MERIT_OUTLIER_IQR_MULTIPLIER,
+) -> list[UnusualCompChangeRecord]:
+    records: list[UnusualCompChangeRecord] = []
+    records.extend(
+        _find_percent_outliers(
+            df,
+            mapping,
+            "promotion_increase",
+            "promotion",
+            warnings,
+            iqr_multiplier,
+        )
+    )
+    records.extend(
+        _find_percent_outliers(
+            df,
+            mapping,
+            "equity_grant",
+            "equity",
+            warnings,
+            iqr_multiplier,
+        )
+    )
+    return sorted(records, key=lambda item: item.value_percent, reverse=True)
 
 
 def _find_managers_below_reports(

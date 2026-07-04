@@ -3,10 +3,14 @@ import {
   analyzeFile,
   checkBackendHealth,
   clearAnalysisSnapshot,
+  fetchAnalysisHistory,
+  fetchSavedColumnMapping,
   loadAnalysisSnapshot,
   openBillingPortal,
   previewFile,
   saveAnalysisSnapshot,
+  saveSavedColumnMapping,
+  loadAnalysisHistory,
 } from "../api";
 import { trackEvent } from "../analytics";
 import { ColumnMappingStep } from "./ColumnMappingStep";
@@ -16,8 +20,10 @@ import { BrandLogo } from "./BrandLogo";
 import { LegalConsentLinks } from "./LegalConsentLinks";
 import { TeamPanel } from "./TeamPanel";
 import { OnboardingPanel } from "./OnboardingPanel";
+import { CycleComparisonPanel } from "./CycleComparisonPanel";
 import { LegalFooter } from "./LegalFooter";
-import type { AnalysisResult, AnalysisTab, ColumnMapping, PreviewResponse } from "../types";
+import { loadLocalColumnMapping, saveLocalColumnMapping } from "../savedMappingStorage";
+import type { AnalysisHistorySummary, AnalysisResult, AnalysisTab, ColumnMapping, PreviewResponse } from "../types";
 
 function pickInitialTab(analysis: AnalysisResult): AnalysisTab {
   if (analysis.pay_equity.available && analysis.summary.pay_equity_gaps > 0) {
@@ -57,6 +63,11 @@ export function AnalyzerApp({
   const [backendReady, setBackendReady] = useState<boolean | null>(null);
   const [uploadAuthorized, setUploadAuthorized] = useState(false);
   const [billingLoading, setBillingLoading] = useState(false);
+  const [meritIqrMultiplier, setMeritIqrMultiplier] = useState(1.5);
+  const [historyItems, setHistoryItems] = useState<AnalysisHistorySummary[]>([]);
+  const [compareHistoryId, setCompareHistoryId] = useState("");
+  const [priorResult, setPriorResult] = useState<AnalysisResult | null>(null);
+  const [priorLoading, setPriorLoading] = useState(false);
   const [savedSnapshot, setSavedSnapshot] = useState<ReturnType<typeof loadAnalysisSnapshot>>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -64,6 +75,36 @@ export function AnalyzerApp({
     void checkBackendHealth().then(setBackendReady);
     setSavedSnapshot(loadAnalysisSnapshot());
   }, []);
+
+  useEffect(() => {
+    if (!authRequired) return;
+    void fetchAnalysisHistory()
+      .then(setHistoryItems)
+      .catch(() => setHistoryItems([]));
+  }, [authRequired, historyRefreshKey]);
+
+  function applySavedMapping(
+    suggested: ColumnMapping,
+    columns: string[],
+    saved: ColumnMapping | null,
+  ): ColumnMapping {
+    if (!saved) return suggested;
+    const columnSet = new Set(columns);
+    const merged = { ...suggested };
+    for (const key of Object.keys(saved) as Array<keyof ColumnMapping>) {
+      const value = saved[key];
+      if (value && columnSet.has(value)) {
+        merged[key] = value;
+      }
+    }
+    return merged;
+  }
+
+  async function resolveSavedMapping(): Promise<ColumnMapping | null> {
+    const saved = authRequired ? await fetchSavedColumnMapping() : loadLocalColumnMapping();
+    if (saved) return saved;
+    return null;
+  }
 
   function resetWorkflow() {
     setFile(null);
@@ -100,8 +141,11 @@ export function AnalyzerApp({
 
     try {
       const previewResponse = await previewFile(selected);
+      const saved = await resolveSavedMapping();
       setPreview(previewResponse);
-      setMapping(previewResponse.suggested_mapping);
+      setMapping(
+        applySavedMapping(previewResponse.suggested_mapping, previewResponse.columns, saved),
+      );
       setSheetName(previewResponse.sheet_names[0] ?? null);
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : "Unable to read file.";
@@ -125,7 +169,11 @@ export function AnalyzerApp({
     setError(null);
 
     try {
-      const analysis = await analyzeFile(file, { columnMapping: mapping, sheetName });
+      const analysis = await analyzeFile(file, {
+        columnMapping: mapping,
+        sheetName,
+        meritIqrMultiplier,
+      });
       setResult(analysis);
       setAnalyzedFileName(file.name);
       setActiveTab(pickInitialTab(analysis));
@@ -151,8 +199,11 @@ export function AnalyzerApp({
     setError(null);
     try {
       const previewResponse = await previewFile(file, nextSheet);
+      const saved = await resolveSavedMapping();
       setPreview(previewResponse);
-      setMapping(previewResponse.suggested_mapping);
+      setMapping(
+        applySavedMapping(previewResponse.suggested_mapping, previewResponse.columns, saved),
+      );
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to read worksheet.");
     } finally {
@@ -198,6 +249,28 @@ export function AnalyzerApp({
       setError(caught instanceof Error ? caught.message : "Unable to open billing portal.");
     } finally {
       setBillingLoading(false);
+    }
+  }
+
+  async function handleSaveMapping() {
+    if (!mapping) return;
+    if (authRequired) {
+      await saveSavedColumnMapping(mapping);
+    } else {
+      saveLocalColumnMapping(mapping);
+    }
+  }
+
+  async function handleLoadPriorHistory(historyId: string) {
+    setPriorLoading(true);
+    setPriorResult(null);
+    try {
+      const detail = await loadAnalysisHistory(historyId);
+      setPriorResult(detail.result);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Unable to load prior analysis.");
+    } finally {
+      setPriorLoading(false);
     }
   }
 
@@ -387,7 +460,29 @@ export function AnalyzerApp({
           onSheetChange={(next) => void handleSheetChange(next)}
           onAnalyze={() => void runAnalysis()}
           onCancel={resetWorkflow}
+          canSaveMapping
+          onSaveMapping={() => handleSaveMapping()}
         />
+      ) : null}
+
+      {preview && mapping ? (
+        <section className="panel analyzer-options-panel">
+          <label className="field analyzer-options-panel__field">
+            <span>Merit outlier sensitivity (IQR multiplier: {meritIqrMultiplier.toFixed(1)})</span>
+            <input
+              type="range"
+              min={0.5}
+              max={3}
+              step={0.1}
+              value={meritIqrMultiplier}
+              onChange={(event) => setMeritIqrMultiplier(Number(event.target.value))}
+            />
+            <span className="field-hint">
+              Lower values flag more merit, promotion, and equity outliers. Applies on the next
+              analysis run.
+            </span>
+          </label>
+        </section>
       ) : null}
 
       {loading && !preview ? (
@@ -406,6 +501,18 @@ export function AnalyzerApp({
               {warning}
             </div>
           ))}
+
+          {authRequired ? (
+            <CycleComparisonPanel
+              current={result}
+              historyItems={historyItems}
+              compareHistoryId={compareHistoryId}
+              onCompareHistoryIdChange={setCompareHistoryId}
+              priorResult={priorResult}
+              priorLoading={priorLoading}
+              onLoadPrior={handleLoadPriorHistory}
+            />
+          ) : null}
 
           {!result.pay_equity.available ? (
             <div className="alert alert-info">

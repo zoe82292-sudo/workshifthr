@@ -4,12 +4,16 @@ export interface ColumnMapping {
   salary: string | null;
   range_min: string | null;
   range_max: string | null;
+  range_midpoint: string | null;
   job_level: string | null;
   department: string | null;
   manager_id: string | null;
   bonus_target: string | null;
   effective_date: string | null;
+  hire_date: string | null;
   merit_increase: string | null;
+  promotion_increase: string | null;
+  equity_grant: string | null;
   gender: string | null;
   race_ethnicity: string | null;
 }
@@ -141,6 +145,25 @@ export interface OutlierMeritIncreaseRecord {
   reason: string;
 }
 
+export interface NewHireMeritFlag {
+  row_number: number;
+  employee_id: string | null;
+  employee_name: string | null;
+  hire_date: string | null;
+  tenure_days: number | null;
+  merit_increase: number | null;
+  reason: string;
+}
+
+export interface UnusualCompChangeRecord {
+  row_number: number;
+  employee_id: string | null;
+  employee_name: string | null;
+  change_type: string;
+  value_percent: number;
+  reason: string;
+}
+
 export interface AnalysisSummary {
   total_rows: number;
   valid_rows: number;
@@ -155,6 +178,8 @@ export interface AnalysisSummary {
   missing_salary_ranges: number;
   invalid_effective_dates: number;
   outlier_merit_increases: number;
+  new_hire_merit_flags: number;
+  unusual_comp_changes: number;
   pay_equity_gaps: number;
 }
 
@@ -217,6 +242,8 @@ export interface AnalysisResult {
   missing_salary_ranges: MissingSalaryRangeRecord[];
   invalid_effective_dates: InvalidEffectiveDateRecord[];
   outlier_merit_increases: OutlierMeritIncreaseRecord[];
+  new_hire_merit_flags: NewHireMeritFlag[];
+  unusual_comp_changes: UnusualCompChangeRecord[];
   compa_ratios: CompaRatioRecord[];
   pay_equity: PayEquityReport;
   insights: AnalysisInsights;
@@ -255,6 +282,8 @@ export type AnalysisTab =
   | "missing_salary_ranges"
   | "invalid_effective_dates"
   | "outlier_merit_increases"
+  | "new_hire_merit_flags"
+  | "unusual_comp_changes"
   | "compa_ratio"
   | "pay_equity"
   | "missing_data";

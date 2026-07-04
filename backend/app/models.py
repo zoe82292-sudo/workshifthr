@@ -11,14 +11,22 @@ class ColumnMapping(BaseModel):
     salary: str | None = None
     range_min: str | None = None
     range_max: str | None = None
+    range_midpoint: str | None = None
     job_level: str | None = None
     department: str | None = None
     manager_id: str | None = None
     bonus_target: str | None = None
     effective_date: str | None = None
+    hire_date: str | None = None
     merit_increase: str | None = None
+    promotion_increase: str | None = None
+    equity_grant: str | None = None
     gender: str | None = None
     race_ethnicity: str | None = None
+
+
+class AnalysisOptions(BaseModel):
+    merit_iqr_multiplier: float = Field(default=1.5, ge=0.5, le=5.0)
 
 
 class EmployeeRecord(BaseModel):
@@ -148,6 +156,25 @@ class OutlierMeritIncreaseRecord(BaseModel):
     reason: str
 
 
+class NewHireMeritFlag(BaseModel):
+    row_number: int
+    employee_id: str | None = None
+    employee_name: str | None = None
+    hire_date: str | None = None
+    tenure_days: int | None = None
+    merit_increase: float | None = None
+    reason: str
+
+
+class UnusualCompChangeRecord(BaseModel):
+    row_number: int
+    employee_id: str | None = None
+    employee_name: str | None = None
+    change_type: str
+    value_percent: float
+    reason: str
+
+
 class DemographicGroupStats(BaseModel):
     dimension: str
     group_name: str
@@ -205,6 +232,8 @@ class AnalysisSummary(BaseModel):
     missing_salary_ranges: int = 0
     invalid_effective_dates: int = 0
     outlier_merit_increases: int = 0
+    new_hire_merit_flags: int = 0
+    unusual_comp_changes: int = 0
     pay_equity_gaps: int = 0
 
 
@@ -224,6 +253,8 @@ class AnalysisResult(BaseModel):
     missing_salary_ranges: list[MissingSalaryRangeRecord]
     invalid_effective_dates: list[InvalidEffectiveDateRecord]
     outlier_merit_increases: list[OutlierMeritIncreaseRecord]
+    new_hire_merit_flags: list[NewHireMeritFlag] = Field(default_factory=list)
+    unusual_comp_changes: list[UnusualCompChangeRecord] = Field(default_factory=list)
     compa_ratios: list[CompaRatioRecord]
     pay_equity: PayEquityReport
     insights: AnalysisInsights

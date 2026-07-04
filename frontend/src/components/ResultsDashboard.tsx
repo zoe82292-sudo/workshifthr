@@ -3,6 +3,7 @@ import { PENETRATION_BAND_LABELS } from "../types";
 import { useSortableRows } from "../useSortableRows";
 import { exportAnalysisExcel, exportAnalysisPdf, exportExecutiveSummaryExcel, exportExecutiveSummaryPdf } from "../exportActions";
 import { saveAnalysisHistory } from "../api";
+import { buildDepartmentLookup, employeeInDepartment, textMatchesSearch } from "../analysisFilters";
 import { ColumnMappingSummary } from "./ColumnMappingSummary";
 import { InsightsPanel } from "./InsightsPanel";
 import { PayEquityPanel, payEquityTabCount } from "./PayEquityPanel";
@@ -79,6 +80,16 @@ const TABS: Array<{ id: AnalysisTab; label: string; count: (result: AnalysisResu
       label: "Outlier Merit Increases",
       count: (r) => r.summary.outlier_merit_increases,
     },
+    {
+      id: "new_hire_merit_flags",
+      label: "New-Hire Merit",
+      count: (r) => r.summary.new_hire_merit_flags ?? r.new_hire_merit_flags.length,
+    },
+    {
+      id: "unusual_comp_changes",
+      label: "Unusual Comp Changes",
+      count: (r) => r.summary.unusual_comp_changes ?? r.unusual_comp_changes.length,
+    },
     { id: "compa_ratio", label: "Compa-Ratio", count: (r) => r.compa_ratios.length },
     { id: "missing_data", label: "Missing Data", count: (r) => r.summary.missing_data },
   ];
@@ -109,6 +120,8 @@ const TAB_GROUPS: Array<{ title: string; ids: AnalysisTab[] }> = [
       "missing_salary_ranges",
       "invalid_effective_dates",
       "outlier_merit_increases",
+      "new_hire_merit_flags",
+      "unusual_comp_changes",
       "missing_data",
     ],
   },
@@ -298,40 +311,84 @@ export function ResultsDashboard({
   const [historyMessage, setHistoryMessage] = useState<string | null>(null);
   const [exporting, setExporting] = useState<string | null>(null);
   const [targetMeritPercent, setTargetMeritPercent] = useState<number | null>(null);
+  const [anonymizeExports, setAnonymizeExports] = useState(false);
+
+  const departmentLookup = useMemo(() => buildDepartmentLookup(result), [result]);
 
   const exportOptions = useMemo(
-    () => ({ targetMeritPercent }),
-    [targetMeritPercent],
+    () => ({ targetMeritPercent, anonymize: anonymizeExports }),
+    [targetMeritPercent, anonymizeExports],
   );
 
   const filteredCompression = useMemo(() => {
     const query = search.trim().toLowerCase();
-    if (!query) return result.compression;
-    return result.compression.filter((issue) =>
-      [issue.issue_type, issue.description, issue.employee_name, issue.employee_id]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase()
-        .includes(query),
-    );
-  }, [result.compression, search]);
+    return result.compression.filter((issue) => {
+      if (
+        departmentFilter &&
+        !employeeInDepartment(issue.employee_id, departmentFilter, departmentLookup)
+      ) {
+        return false;
+      }
+      if (!query) return true;
+      return textMatchesSearch(
+        [issue.issue_type, issue.description, issue.employee_name, issue.employee_id],
+        query,
+      );
+    });
+  }, [departmentFilter, departmentLookup, result.compression, search]);
 
   const filteredManagers = useMemo(() => {
     const query = search.trim().toLowerCase();
-    if (!query) return result.managers_below_reports;
-    return result.managers_below_reports.filter((issue) =>
-      [
-        issue.manager_id,
-        issue.manager_name,
-        issue.report_id,
-        issue.report_name,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase()
-        .includes(query),
+    return result.managers_below_reports.filter((issue) => {
+      if (departmentFilter) {
+        const managerDept = employeeInDepartment(issue.manager_id, departmentFilter, departmentLookup);
+        const reportDept = employeeInDepartment(issue.report_id, departmentFilter, departmentLookup);
+        if (!managerDept && !reportDept) return false;
+      }
+      if (!query) return true;
+      return textMatchesSearch(
+        [issue.manager_id, issue.manager_name, issue.report_id, issue.report_name],
+        query,
+      );
+    });
+  }, [departmentFilter, departmentLookup, result.managers_below_reports, search]);
+
+  const filteredCompaRatios = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return result.compa_ratios.filter((row) => {
+      if (
+        departmentFilter &&
+        !employeeInDepartment(row.employee_id, departmentFilter, departmentLookup)
+      ) {
+        return false;
+      }
+      if (!query) return true;
+      return textMatchesSearch([row.employee_id, row.employee_name], query);
+    });
+  }, [departmentFilter, departmentLookup, result.compa_ratios, search]);
+
+  const filteredDuplicateIds = useMemo(() => {
+    if (!departmentFilter) return result.duplicate_ids;
+    return result.duplicate_ids.filter((group) =>
+      employeeInDepartment(group.employee_id, departmentFilter, departmentLookup),
     );
-  }, [result.managers_below_reports, search]);
+  }, [departmentFilter, departmentLookup, result.duplicate_ids]);
+
+  function filterIssueRows<T extends { employee_id?: string | null; employee_name?: string | null }>(
+    rows: T[],
+  ): T[] {
+    const query = search.trim().toLowerCase();
+    return rows.filter((row) => {
+      if (
+        departmentFilter &&
+        !employeeInDepartment(row.employee_id, departmentFilter, departmentLookup)
+      ) {
+        return false;
+      }
+      if (!query) return true;
+      return textMatchesSearch([row.employee_id, row.employee_name], query);
+    });
+  }
 
   const departments = useMemo(() => {
     const values = new Set<string>();
@@ -363,6 +420,14 @@ export function ResultsDashboard({
       <div className="panel-header" style={{ marginBottom: 16 }}>
         <h2>Analysis results</h2>
         <div className="download-actions">
+          <label className="legal-consent-checkbox export-anonymize-toggle">
+            <input
+              type="checkbox"
+              checked={anonymizeExports}
+              onChange={(event) => setAnonymizeExports(event.target.checked)}
+            />
+            <span>Anonymize names in exports</span>
+          </label>
           {authRequired && fileName ? (
             <button
               className="button button-secondary"
@@ -533,10 +598,10 @@ export function ResultsDashboard({
       ) : null}
 
       {activeTab === "duplicate_ids" ? (
-        result.duplicate_ids.length === 0 ? (
-          <div className="empty-state">No duplicate employee IDs found.</div>
+        filteredDuplicateIds.length === 0 ? (
+          <div className="empty-state">No duplicate IDs match your filters.</div>
         ) : (
-          <PaginatedSlice items={result.duplicate_ids}>
+          <PaginatedSlice items={filteredDuplicateIds}>
             {(pageItems) => (
               <div className="table-wrap">
                 <table>
@@ -654,10 +719,10 @@ export function ResultsDashboard({
       ) : null}
 
       {activeTab === "missing_bonus_targets" ? (
-        result.missing_bonus_targets.length === 0 ? (
+        filterIssueRows(result.missing_bonus_targets).length === 0 ? (
           <div className="empty-state">All rows include bonus targets.</div>
         ) : (
-          <PaginatedSlice items={result.missing_bonus_targets}>
+          <PaginatedSlice items={filterIssueRows(result.missing_bonus_targets)}>
             {(pageItems) => (
               <div className="table-wrap">
                 <table>
@@ -685,10 +750,10 @@ export function ResultsDashboard({
       ) : null}
 
       {activeTab === "missing_salary_ranges" ? (
-        result.missing_salary_ranges.length === 0 ? (
+        filterIssueRows(result.missing_salary_ranges).length === 0 ? (
           <div className="empty-state">All rows include salary range minimum and maximum.</div>
         ) : (
-          <PaginatedSlice items={result.missing_salary_ranges}>
+          <PaginatedSlice items={filterIssueRows(result.missing_salary_ranges)}>
             {(pageItems) => (
               <div className="table-wrap">
                 <table>
@@ -718,10 +783,10 @@ export function ResultsDashboard({
       ) : null}
 
       {activeTab === "invalid_effective_dates" ? (
-        result.invalid_effective_dates.length === 0 ? (
+        filterIssueRows(result.invalid_effective_dates).length === 0 ? (
           <div className="empty-state">All effective dates are valid.</div>
         ) : (
-          <PaginatedSlice items={result.invalid_effective_dates}>
+          <PaginatedSlice items={filterIssueRows(result.invalid_effective_dates)}>
             {(pageItems) => (
               <div className="table-wrap">
                 <table>
@@ -753,10 +818,10 @@ export function ResultsDashboard({
       ) : null}
 
       {activeTab === "outlier_merit_increases" ? (
-        result.outlier_merit_increases.length === 0 ? (
+        filterIssueRows(result.outlier_merit_increases).length === 0 ? (
           <div className="empty-state">No outlier merit increases detected.</div>
         ) : (
-          <PaginatedSlice items={result.outlier_merit_increases}>
+          <PaginatedSlice items={filterIssueRows(result.outlier_merit_increases)}>
             {(pageItems) => (
               <div className="table-wrap">
                 <table>
@@ -787,11 +852,87 @@ export function ResultsDashboard({
         )
       ) : null}
 
-      {activeTab === "compa_ratio" ? (
-        result.compa_ratios.length === 0 ? (
-          <div className="empty-state">No compa-ratio values available.</div>
+      {activeTab === "new_hire_merit_flags" ? (
+        filterIssueRows(result.new_hire_merit_flags ?? []).length === 0 ? (
+          <div className="empty-state">No new-hire merit flags detected.</div>
         ) : (
-          <PaginatedSlice items={result.compa_ratios}>
+          <PaginatedSlice items={filterIssueRows(result.new_hire_merit_flags ?? [])}>
+            {(pageItems) => (
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Row</th>
+                      <th>Employee ID</th>
+                      <th>Name</th>
+                      <th>Hire Date</th>
+                      <th>Tenure (days)</th>
+                      <th>Merit Increase</th>
+                      <th>Reason</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pageItems.map((row) => (
+                      <tr key={row.row_number}>
+                        <td>{row.row_number}</td>
+                        <td>{row.employee_id ?? "—"}</td>
+                        <td>{row.employee_name ?? "—"}</td>
+                        <td>{row.hire_date ?? "—"}</td>
+                        <td>{row.tenure_days ?? "—"}</td>
+                        <td>{row.merit_increase != null ? `${row.merit_increase}%` : "—"}</td>
+                        <td>{row.reason}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </PaginatedSlice>
+        )
+      ) : null}
+
+      {activeTab === "unusual_comp_changes" ? (
+        filterIssueRows(result.unusual_comp_changes ?? []).length === 0 ? (
+          <div className="empty-state">No unusual promotion or equity changes detected.</div>
+        ) : (
+          <PaginatedSlice items={filterIssueRows(result.unusual_comp_changes ?? [])}>
+            {(pageItems) => (
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Row</th>
+                      <th>Employee ID</th>
+                      <th>Name</th>
+                      <th>Type</th>
+                      <th>Value</th>
+                      <th>Reason</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pageItems.map((row) => (
+                      <tr key={`${row.row_number}-${row.change_type}`}>
+                        <td>{row.row_number}</td>
+                        <td>{row.employee_id ?? "—"}</td>
+                        <td>{row.employee_name ?? "—"}</td>
+                        <td>{row.change_type}</td>
+                        <td>{row.value_percent}%</td>
+                        <td>{row.reason}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </PaginatedSlice>
+        )
+      ) : null}
+
+      {activeTab === "compa_ratio" ? (
+        filteredCompaRatios.length === 0 ? (
+          <div className="empty-state">No compa-ratio values match your filters.</div>
+        ) : (
+          <PaginatedSlice items={filteredCompaRatios}>
             {(pageItems) => (
               <div className="table-wrap">
                 <table>
@@ -824,13 +965,15 @@ export function ResultsDashboard({
         )
       ) : null}
 
-      {activeTab === "pay_equity" ? <PayEquityPanel payEquity={result.pay_equity} /> : null}
+      {activeTab === "pay_equity" ? (
+        <PayEquityPanel payEquity={result.pay_equity} departmentFilter={departmentFilter} />
+      ) : null}
 
       {activeTab === "missing_data" ? (
-        result.missing_data.length === 0 ? (
+        filterIssueRows(result.missing_data).length === 0 ? (
           <div className="empty-state">All required compensation fields are present.</div>
         ) : (
-          <PaginatedSlice items={result.missing_data}>
+          <PaginatedSlice items={filterIssueRows(result.missing_data)}>
             {(pageItems) => (
               <div className="table-wrap">
                 <table>
