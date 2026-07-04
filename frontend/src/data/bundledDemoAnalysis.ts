@@ -19,10 +19,10 @@ export function getBundledDemoAnalysis(): AnalysisResult {
       manager_id: "Manager ID",
       bonus_target: "Bonus Target",
       effective_date: "Effective Date",
-      hire_date: null,
+      hire_date: "Hire Date",
       merit_increase: "Merit Increase %",
-      promotion_increase: null,
-      equity_grant: null,
+      promotion_increase: "Promotion Increase %",
+      equity_grant: "Equity Grant %",
       gender: "Gender",
       race_ethnicity: "Race/Ethnicity",
     },
@@ -39,8 +39,38 @@ export function getBundledDemoAnalysis(): AnalysisResult {
     missing_salary_ranges: [],
     invalid_effective_dates: [],
     outlier_merit_increases: [],
-    new_hire_merit_flags: [],
-    unusual_comp_changes: [],
+    new_hire_merit_flags: [
+      {
+        row_number: 10,
+        employee_id: "E009",
+        employee_name: "Hugo Silva",
+        hire_date: "2026-05-01",
+        tenure_days: 63,
+        merit_increase: 18,
+        reason:
+          "Employee hired within 90 days has a 18% merit increase — verify eligibility.",
+      },
+    ],
+    unusual_comp_changes: [
+      {
+        row_number: 12,
+        employee_id: "E011",
+        employee_name: "Jack Reed",
+        change_type: "equity",
+        value_percent: 75,
+        reason:
+          "Unusually high equity change outside the expected range (-10.0% to 30.0%).",
+      },
+      {
+        row_number: 10,
+        employee_id: "E009",
+        employee_name: "Hugo Silva",
+        change_type: "promotion",
+        value_percent: 35,
+        reason:
+          "Unusually high promotion change outside the expected range (4.5% to 16.5%).",
+      },
+    ],
     compa_ratios: [],
     pay_equity: {
       available: true,

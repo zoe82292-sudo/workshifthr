@@ -13,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.analyzer import analyze_file, preview_file
 from app.auth import (
+    AccountInfoResponse,
     AuthContext,
     LoginRequest,
     LoginResponse,
@@ -206,6 +207,23 @@ def login(payload: LoginRequest) -> LoginResponse:
         token=create_access_token(user.email, user.organization),
         email=user.email,
         organization=user.organization,
+    )
+
+
+@app.get("/api/auth/me", response_model=AccountInfoResponse)
+def auth_me(user: AuthContext = Depends(require_auth_user)) -> AccountInfoResponse:
+    from app.provisioning import account_info_for_email
+
+    if user.email == "anonymous":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Sign in required.")
+
+    account = account_info_for_email(user.email)
+    return AccountInfoResponse(
+        email=user.email,
+        organization=user.organization,
+        plan_id=account["plan_id"],
+        plan_name=account["plan_name"],
+        expires_at=account["expires_at"],
     )
 
 

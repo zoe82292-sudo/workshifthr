@@ -3,6 +3,7 @@ import {
   analyzeFile,
   checkBackendHealth,
   clearAnalysisSnapshot,
+  fetchAccountInfo,
   fetchAnalysisHistory,
   fetchSavedColumnMapping,
   loadAnalysisSnapshot,
@@ -11,6 +12,7 @@ import {
   saveAnalysisSnapshot,
   saveSavedColumnMapping,
   loadAnalysisHistory,
+  type AccountInfo,
 } from "../api";
 import { trackEvent } from "../analytics";
 import { ColumnMappingStep } from "./ColumnMappingStep";
@@ -34,6 +36,21 @@ function pickInitialTab(analysis: AnalysisResult): AnalysisTab {
   if (analysis.summary.duplicate_ids > 0) return "duplicate_ids";
   if (analysis.summary.managers_below_reports > 0) return "managers_below_reports";
   return "range_penetration";
+}
+
+function formatPlanExpiry(account: AccountInfo | null): string | null {
+  if (!account?.expires_at) return null;
+  const expiry = new Date(account.expires_at);
+  if (Number.isNaN(expiry.getTime())) return null;
+  const dateLabel = expiry.toLocaleDateString(undefined, {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+  if (account.plan_name) {
+    return `${account.plan_name} · expires ${dateLabel}`;
+  }
+  return `Access expires ${dateLabel}`;
 }
 
 type AnalyzerAppProps = {
@@ -68,6 +85,7 @@ export function AnalyzerApp({
   const [compareHistoryId, setCompareHistoryId] = useState("");
   const [priorResult, setPriorResult] = useState<AnalysisResult | null>(null);
   const [priorLoading, setPriorLoading] = useState(false);
+  const [accountInfo, setAccountInfo] = useState<AccountInfo | null>(null);
   const [savedSnapshot, setSavedSnapshot] = useState<ReturnType<typeof loadAnalysisSnapshot>>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -75,6 +93,13 @@ export function AnalyzerApp({
     void checkBackendHealth().then(setBackendReady);
     setSavedSnapshot(loadAnalysisSnapshot());
   }, []);
+
+  useEffect(() => {
+    if (!authRequired || !userEmail) return;
+    void fetchAccountInfo()
+      .then(setAccountInfo)
+      .catch(() => setAccountInfo(null));
+  }, [authRequired, userEmail]);
 
   useEffect(() => {
     if (!authRequired) return;
@@ -274,6 +299,8 @@ export function AnalyzerApp({
     }
   }
 
+  const planExpiryLabel = formatPlanExpiry(accountInfo);
+
   return (
     <div className="app-shell">
       <header className="hero">
@@ -290,6 +317,9 @@ export function AnalyzerApp({
               <div className="session-user">
                 {userOrganization ? (
                   <span className="session-org">{userOrganization}</span>
+                ) : null}
+                {planExpiryLabel ? (
+                  <span className="session-plan-expiry">{planExpiryLabel}</span>
                 ) : null}
                 <span className="session-email">{userEmail}</span>
               </div>

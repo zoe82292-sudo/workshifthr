@@ -20,10 +20,10 @@ export const MARKETING_DEMO_DATA: MarketingPreviewData = {
     managers_below_reports: 2,
     missing_bonus_targets: 1,
     missing_salary_ranges: 1,
-    invalid_effective_dates: 2,
+    invalid_effective_dates: 1,
     outlier_merit_increases: 1,
-    new_hire_merit_flags: 0,
-    unusual_comp_changes: 0,
+    new_hire_merit_flags: 1,
+    unusual_comp_changes: 2,
     pay_equity_gaps: 2,
   },
   below_minimum: [
@@ -78,10 +78,11 @@ export const MARKETING_DEMO_DATA: MarketingPreviewData = {
   ],
   insights: {
     executive_summary: {
-      headline: "11 compensation issues flagged for review.",
+      headline: "13 compensation issues flagged for review.",
       bullets: [
         "This analysis covers 18 employees. 2 rows were excluded due to incomplete data.",
         "3 employees are below range minimum, requiring $11,000 to reach the range floor.",
+        "1 new hire received a merit increase within 90 days of hire — verify eligibility.",
         "4 salary compression patterns may create internal equity risk.",
         "Gender median pay gap: Male median is 8.9% above Female ($8,500 difference).",
       ],

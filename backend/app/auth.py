@@ -43,6 +43,14 @@ class AuthContext(BaseModel):
     organization: str
 
 
+class AccountInfoResponse(BaseModel):
+    email: str
+    organization: str
+    plan_id: str | None = None
+    plan_name: str | None = None
+    expires_at: str | None = None
+
+
 class AuthUser(BaseModel):
     email: str
     password_hash: bytes

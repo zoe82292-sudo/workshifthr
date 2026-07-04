@@ -99,3 +99,21 @@ def test_generate_password_is_strong() -> None:
     assert any(char.islower() for char in password)
     assert any(char.isupper() for char in password)
     assert any(char.isdigit() for char in password)
+
+
+def test_auth_me_returns_plan_expiry(provisioned_client: TestClient) -> None:
+    login = provisioned_client.post(
+        "/api/auth/login",
+        json={"email": "buyer@acme.com", "password": "SharedPass123!"},
+    )
+    assert login.status_code == 200
+    token = login.json()["token"]
+
+    me = provisioned_client.get("/api/auth/me", headers={"Authorization": f"Bearer {token}"})
+    assert me.status_code == 200
+    payload = me.json()
+    assert payload["plan_id"] == "cycle"
+    assert payload["plan_name"] == "Cycle Pass"
+    assert payload["expires_at"] == "2027-01-01T00:00:00+00:00"
+    assert payload["organization"] == "Acme Corp"
+

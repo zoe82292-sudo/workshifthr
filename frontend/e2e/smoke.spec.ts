@@ -2,7 +2,7 @@ import { expect, test } from "playwright/test";
 
 test("landing page loads with pricing", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: /find pay equity issues/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /find pay issues before leadership review/i })).toBeVisible();
   await page.locator("#pricing").scrollIntoViewIfNeeded();
   await expect(page.getByText("Cycle Pass")).toBeVisible();
 });

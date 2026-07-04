@@ -169,6 +169,26 @@ export type OrgMember = {
   is_self: boolean;
 };
 
+export type AccountInfo = {
+  email: string;
+  organization: string;
+  plan_id: string | null;
+  plan_name: string | null;
+  expires_at: string | null;
+};
+
+export async function fetchAccountInfo(): Promise<AccountInfo> {
+  const response = await fetch(`${API_BASE}/auth/me`, {
+    headers: authHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+
+  return (await response.json()) as AccountInfo;
+}
+
 export async function fetchOrgMembers(): Promise<{
   organization: string;
   company_domain: string;

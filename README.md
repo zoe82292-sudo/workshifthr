@@ -14,9 +14,24 @@ Compensation analysis web app for HR teams. Upload an Excel or CSV file and auto
 | Managers below direct reports | Manager base pay lower than a direct report's pay |
 | Missing bonus targets | Rows with no bonus target value |
 | Missing salary ranges | Rows missing range minimum and/or maximum |
-| Invalid effective dates | Unparseable, missing, future, or unusually old dates |
-| Outlier merit increases | Merit % values outside the IQR-based expected range |
+| Invalid effective dates | Unparseable, missing, beyond an 18-month planning horizon, or unusually old dates |
+| Outlier merit increases | Merit % values outside the IQR-based expected range (adjustable multiplier) |
+| New-hire merit flags | Merit increases for employees hired within the last 90 days |
+| Unusual comp changes | Outlier promotion % or equity grant % values |
 | Missing compensation data | Missing employee ID, salary, or range values |
+
+## App features
+
+| Feature | Description |
+| --- | --- |
+| Column mapping | Auto-detect columns; manually map any field before analysis |
+| Saved column mappings | Save and reuse mappings per organization (signed-in) or in localStorage (demo) |
+| Department filter | Filter all result tabs by department |
+| Cycle comparison | Compare current run to a saved history entry (metric deltas + below-min changes) |
+| Merit IQR slider | Adjust outlier sensitivity for merit, promotion, and equity checks |
+| Anonymized export | Optional Excel/PDF export that masks employee names |
+| Analysis history | Save up to 25 runs per organization (shared across org members) |
+| Plan expiry | Signed-in customers see plan name and access expiry date in the header |
 
 ## Project structure
 
@@ -66,11 +81,16 @@ Use `sample-data/compensation-sample.csv` to verify all analysis categories.
 **Optional (enables extended checks)**
 
 - Employee name
+- Department (filter results by department)
 - Job level / grade (salary compression)
-- Manager ID (managers paid below reports)
+- Manager ID (managers paid below reports; manager name fallback when ID is missing)
 - Bonus target (missing bonus target checks)
-- Effective date (date validation)
-- Merit increase % (outlier detection)
+- Effective date (date validation; planned dates up to 18 months ahead are allowed)
+- Merit increase % (outlier detection and new-hire merit checks)
+- Hire date (flags merit increases within 90 days of hire)
+- Range midpoint (optional compa-ratio input when min/max are present)
+- Promotion increase % (unusual promotion change detection)
+- Equity grant % (unusual equity grant detection)
 - Gender (pay equity by gender)
 - Race/ethnicity (pay equity by demographic group)
 
@@ -78,12 +98,17 @@ Use `sample-data/compensation-sample.csv` to verify all analysis categories.
 
 - Pay equity analysis compares median pay by gender and race/ethnicity. Groups with fewer than five employees are hidden. Same job level breakdowns are included when a job level column is present. This is decision support only — not a legal pay equity audit.
 
+- Effective dates within the next **18 months** are treated as planned merit cycles (not flagged). Dates beyond that horizon are flagged as invalid.
+- Range midpoint can be supplied as a column or derived from `(min + max) / 2` for compa-ratio.
+- New-hire merit checks require both hire date and merit increase columns; tenure window is 90 days.
+- Promotion and equity outlier checks use the same IQR multiplier as merit (default 1.5×, adjustable in the UI).
 - Range penetration requires a valid range spread (`max > min`).
 - Salary compression is strongest when a job level or grade column is present.
-- Manager vs. report checks require manager IDs that match employee IDs in the same file.
+- Manager vs. report checks require manager IDs that match employee IDs in the same file (manager name matching is used as a fallback).
 - Outlier merit detection uses the interquartile range (IQR) and needs at least 4 populated merit values.
 - Upload size limit is **25 MB** by default (`MAX_UPLOAD_BYTES`).
-- Analysis results are returned in the browser. Uploads are not persisted server-side by default. Signed-in users may optionally **Save to history** (JSON snapshot, up to 25 runs **per user account**, deletable).
+- Analysis results are returned in the browser. Uploads are not persisted server-side by default. Signed-in users may optionally **Save to history** (JSON snapshot, up to 25 runs **per organization**, shared across org members, deletable).
+- Saved column mappings are stored per organization on the server (`DATA_DIR/saved_mappings/`) or in localStorage for unauthenticated demo use.
 
 ## Authentication
 

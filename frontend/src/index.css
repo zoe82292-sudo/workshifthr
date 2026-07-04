@@ -1022,6 +1022,12 @@ a:focus-visible {
   font-size: 0.92rem;
 }
 
+.session-plan-expiry {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.2;
+}
+
 .login-shared-note {
   margin: 0;
   padding: 12px 14px;

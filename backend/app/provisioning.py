@@ -154,6 +154,28 @@ def find_org_for_authorized_email(email: str) -> dict[str, Any] | None:
     return org
 
 
+def account_info_for_email(email: str) -> dict[str, str | None]:
+    """Return plan and expiry metadata for provisioned org accounts."""
+    from app.billing import PLAN_LABELS
+
+    org = find_org_for_authorized_email(email)
+    if org is None:
+        return {
+            "plan_id": None,
+            "plan_name": None,
+            "expires_at": None,
+        }
+
+    plan_id = str(org.get("plan_id") or "").strip() or None
+    expires_at = str(org.get("expires_at") or "").strip() or None
+    plan_name = PLAN_LABELS.get(plan_id, plan_id) if plan_id else None
+    return {
+        "plan_id": plan_id,
+        "plan_name": plan_name,
+        "expires_at": expires_at,
+    }
+
+
 def stripe_customer_id_for_email(email: str) -> str:
     org = find_org_for_authorized_email(email)
     if org is None:

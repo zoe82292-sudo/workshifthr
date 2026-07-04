@@ -16,3 +16,4 @@ frontend/playwright-report/
 *.egg-info/
 backend/data/analysis_history/
 backend/data/provisioned_orgs.json
+frontend/tsconfig.tsbuildinfo
