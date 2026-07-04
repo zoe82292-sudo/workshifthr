@@ -4,15 +4,18 @@ import {
   checkBackendHealth,
   clearAnalysisSnapshot,
   loadAnalysisSnapshot,
+  openBillingPortal,
   previewFile,
   saveAnalysisSnapshot,
 } from "../api";
+import { trackEvent } from "../analytics";
 import { ColumnMappingStep } from "./ColumnMappingStep";
 import { AnalysisHistoryPanel } from "./AnalysisHistoryPanel";
 import { ResultsDashboard } from "./ResultsDashboard";
 import { BrandLogo } from "./BrandLogo";
 import { LegalConsentLinks } from "./LegalConsentLinks";
 import { TeamPanel } from "./TeamPanel";
+import { OnboardingPanel } from "./OnboardingPanel";
 import { LegalFooter } from "./LegalFooter";
 import type { AnalysisResult, AnalysisTab, ColumnMapping, PreviewResponse } from "../types";
 
@@ -53,6 +56,7 @@ export function AnalyzerApp({
   const [error, setError] = useState<string | null>(null);
   const [backendReady, setBackendReady] = useState<boolean | null>(null);
   const [uploadAuthorized, setUploadAuthorized] = useState(false);
+  const [billingLoading, setBillingLoading] = useState(false);
   const [savedSnapshot, setSavedSnapshot] = useState<ReturnType<typeof loadAnalysisSnapshot>>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -128,6 +132,7 @@ export function AnalyzerApp({
       setPreview(null);
       saveAnalysisSnapshot(file.name, analysis);
       setSavedSnapshot(loadAnalysisSnapshot());
+      trackEvent("analysis_completed", { rows: analysis.summary.total_rows });
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : "Unable to analyze file.";
       setError(message);
@@ -183,6 +188,19 @@ export function AnalyzerApp({
     setSavedSnapshot(loadAnalysisSnapshot());
   }
 
+  async function handleBillingPortal() {
+    setBillingLoading(true);
+    setError(null);
+    try {
+      const { url } = await openBillingPortal();
+      window.location.href = url;
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Unable to open billing portal.");
+    } finally {
+      setBillingLoading(false);
+    }
+  }
+
   return (
     <div className="app-shell">
       <header className="hero">
@@ -202,6 +220,14 @@ export function AnalyzerApp({
                 ) : null}
                 <span className="session-email">{userEmail}</span>
               </div>
+              <button
+                className="button button-secondary button-small"
+                disabled={billingLoading}
+                onClick={() => void handleBillingPortal()}
+                type="button"
+              >
+                {billingLoading ? "Opening…" : "Billing"}
+              </button>
               <button className="button button-secondary button-small" onClick={onLogout}>
                 Sign out
               </button>
@@ -242,6 +268,10 @@ export function AnalyzerApp({
             </button>
           </div>
         </div>
+      ) : null}
+
+      {authRequired ? (
+        <OnboardingPanel hasResult={Boolean(result)} />
       ) : null}
 
       {authRequired ? (

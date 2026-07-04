@@ -12,9 +12,10 @@ function formatCurrency(value: number | null | undefined) {
 
 interface InsightsPanelProps {
   result: AnalysisResult;
+  onTargetMeritChange?: (percent: number) => void;
 }
 
-export function InsightsPanel({ result }: InsightsPanelProps) {
+export function InsightsPanel({ result, onTargetMeritChange }: InsightsPanelProps) {
   const { insights } = result;
   const defaultMerit =
     insights.merit_calculator.average_merit_percent?.toString() ?? "3.5";
@@ -88,7 +89,13 @@ export function InsightsPanel({ result }: InsightsPanelProps) {
               min="0"
               step="0.1"
               value={targetMerit}
-              onChange={(event) => setTargetMerit(event.target.value)}
+              onChange={(event) => {
+                setTargetMerit(event.target.value);
+                const parsed = Number(event.target.value);
+                if (Number.isFinite(parsed)) {
+                  onTargetMeritChange?.(parsed);
+                }
+              }}
             />
           </div>
           <div className="metric-card__footer">

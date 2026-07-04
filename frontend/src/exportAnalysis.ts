@@ -5,6 +5,10 @@ import type { AnalysisResult } from "./types";
 
 const BASE_FILENAME = "shiftworkshr-analysis";
 
+export type ExportOptions = {
+  targetMeritPercent?: number | null;
+};
+
 function triggerDownload(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -23,9 +27,15 @@ function formatMoney(value: number | null | undefined): string {
   }).format(value);
 }
 
-function summaryRows(result: AnalysisResult): Array<Array<string | number>> {
+function summaryRows(result: AnalysisResult, options?: ExportOptions): Array<Array<string | number>> {
   const { insights, summary } = result;
   const generatedAt = new Date().toLocaleString();
+  const meritPercent = options?.targetMeritPercent;
+  const projectedMeritPool =
+    meritPercent != null && Number.isFinite(meritPercent)
+      ? (insights.merit_calculator.payroll_base * meritPercent) / 100
+      : insights.budget_impact.projected_merit_pool;
+  const totalBudgetImpact = insights.budget_impact.cost_to_minimum + projectedMeritPool;
   return [
     ["ShiftWorksHR Compensation Analysis"],
     ["Generated", generatedAt],
@@ -37,8 +47,8 @@ function summaryRows(result: AnalysisResult): Array<Array<string | number>> {
     [],
     ["Budget Impact"],
     ["Cost to Minimum", insights.budget_impact.cost_to_minimum],
-    ["Projected Merit Pool", insights.budget_impact.projected_merit_pool],
-    ["Total Budget Impact", insights.budget_impact.total_budget_impact],
+    ["Projected Merit Pool", projectedMeritPool],
+    ["Total Budget Impact", totalBudgetImpact],
     [],
     ["Issue Counts"],
     ["Total Rows", summary.total_rows],
@@ -78,12 +88,16 @@ function employeeRows(result: AnalysisResult): Array<Array<string | number | nul
   ]);
 }
 
-export function downloadAnalysisExcel(result: AnalysisResult, filename = `${BASE_FILENAME}.xlsx`) {
+export function downloadAnalysisExcel(
+  result: AnalysisResult,
+  filename = `${BASE_FILENAME}.xlsx`,
+  options?: ExportOptions,
+) {
   const workbook = XLSX.utils.book_new();
 
   XLSX.utils.book_append_sheet(
     workbook,
-    XLSX.utils.aoa_to_sheet(summaryRows(result)),
+    XLSX.utils.aoa_to_sheet(summaryRows(result, options)),
     "Executive Summary",
   );
 
@@ -236,6 +250,54 @@ export function downloadAnalysisExcel(result: AnalysisResult, filename = `${BASE
     );
   }
 
+  if (result.missing_bonus_targets.length > 0) {
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.aoa_to_sheet([
+        ["Row", "Employee ID", "Name"],
+        ...result.missing_bonus_targets.map((row) => [
+          row.row_number,
+          row.employee_id ?? "",
+          row.employee_name ?? "",
+        ]),
+      ]),
+      "Missing Bonus Targets",
+    );
+  }
+
+  if (result.missing_salary_ranges.length > 0) {
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.aoa_to_sheet([
+        ["Row", "Employee ID", "Name", "Missing Fields"],
+        ...result.missing_salary_ranges.map((row) => [
+          row.row_number,
+          row.employee_id ?? "",
+          row.employee_name ?? "",
+          row.missing_fields.join(", "),
+        ]),
+      ]),
+      "Missing Salary Ranges",
+    );
+  }
+
+  if (result.invalid_effective_dates.length > 0) {
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.aoa_to_sheet([
+        ["Row", "Employee ID", "Name", "Effective Date", "Issue"],
+        ...result.invalid_effective_dates.map((row) => [
+          row.row_number,
+          row.employee_id ?? "",
+          row.employee_name ?? "",
+          row.effective_date ?? "",
+          row.reason,
+        ]),
+      ]),
+      "Invalid Effective Dates",
+    );
+  }
+
   if (result.compa_ratios.length > 0) {
     XLSX.utils.book_append_sheet(
       workbook,
@@ -315,9 +377,19 @@ export function downloadAnalysisExcel(result: AnalysisResult, filename = `${BASE
   XLSX.writeFile(workbook, filename);
 }
 
-export function downloadAnalysisPdf(result: AnalysisResult, filename = `${BASE_FILENAME}.pdf`) {
+export function downloadAnalysisPdf(
+  result: AnalysisResult,
+  filename = `${BASE_FILENAME}.pdf`,
+  options?: ExportOptions,
+) {
   const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "letter" });
   const { insights, summary, pay_equity: payEquity } = result;
+  const meritPercent = options?.targetMeritPercent;
+  const projectedMeritPool =
+    meritPercent != null && Number.isFinite(meritPercent)
+      ? (insights.merit_calculator.payroll_base * meritPercent) / 100
+      : insights.budget_impact.projected_merit_pool;
+  const totalBudgetImpact = insights.budget_impact.cost_to_minimum + projectedMeritPool;
   const margin = 48;
   let y = margin;
 
@@ -370,8 +442,8 @@ export function downloadAnalysisPdf(result: AnalysisResult, filename = `${BASE_F
     body: [
       ["Risk Level", insights.executive_summary.risk_level],
       ["Cost to Minimum", formatMoney(insights.budget_impact.cost_to_minimum)],
-      ["Projected Merit Pool", formatMoney(insights.budget_impact.projected_merit_pool)],
-      ["Total Budget Impact", formatMoney(insights.budget_impact.total_budget_impact)],
+      ["Projected Merit Pool", formatMoney(projectedMeritPool)],
+      ["Total Budget Impact", formatMoney(totalBudgetImpact)],
       [
         "Average Compa-Ratio",
         insights.compa_ratio.average_compa_ratio != null
@@ -530,9 +602,16 @@ export function downloadAnalysisPdf(result: AnalysisResult, filename = `${BASE_F
 export function downloadExecutiveSummaryPdf(
   result: AnalysisResult,
   filename = "shiftworkshr-executive-summary.pdf",
+  options?: ExportOptions,
 ) {
   const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "letter" });
   const { insights, summary } = result;
+  const meritPercent = options?.targetMeritPercent;
+  const projectedMeritPool =
+    meritPercent != null && Number.isFinite(meritPercent)
+      ? (insights.merit_calculator.payroll_base * meritPercent) / 100
+      : insights.budget_impact.projected_merit_pool;
+  const totalBudgetImpact = insights.budget_impact.cost_to_minimum + projectedMeritPool;
   const margin = 48;
   let y = margin;
 
@@ -569,8 +648,8 @@ export function downloadExecutiveSummaryPdf(
     body: [
       ["Risk Level", insights.executive_summary.risk_level],
       ["Cost to Minimum", formatMoney(insights.budget_impact.cost_to_minimum)],
-      ["Projected Merit Pool", formatMoney(insights.budget_impact.projected_merit_pool)],
-      ["Total Budget Impact", formatMoney(insights.budget_impact.total_budget_impact)],
+      ["Projected Merit Pool", formatMoney(projectedMeritPool)],
+      ["Total Budget Impact", formatMoney(totalBudgetImpact)],
       [
         "Average Compa-Ratio",
         insights.compa_ratio.average_compa_ratio != null
@@ -595,11 +674,12 @@ export function downloadExecutiveSummaryPdf(
 export function downloadExecutiveSummaryExcel(
   result: AnalysisResult,
   filename = "shiftworkshr-executive-summary.xlsx",
+  options?: ExportOptions,
 ) {
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(
     workbook,
-    XLSX.utils.aoa_to_sheet(summaryRows(result)),
+    XLSX.utils.aoa_to_sheet(summaryRows(result, options)),
     "Executive Summary",
   );
   XLSX.writeFile(workbook, filename);

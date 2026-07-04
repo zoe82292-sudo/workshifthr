@@ -51,7 +51,7 @@ const AUDIENCES = [
   },
   {
     title: "Comp analysts & HRBPs",
-    copy: "Validate exports from your HRIS, spot range and compression issues, and export summaries for leadership.",
+    copy: "Upload your HRIS or comp spreadsheet export, spot range and compression issues, and export summaries for leadership.",
   },
   {
     title: "HR & comp consultants",

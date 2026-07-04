@@ -218,6 +218,19 @@ export async function removeOrgMember(email: string): Promise<{ members: string[
   return (await response.json()) as { members: string[] };
 }
 
+export async function openBillingPortal(): Promise<{ url: string }> {
+  const response = await fetch(`${API_BASE}/billing/portal`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+
+  return (await response.json()) as { url: string };
+}
+
 export type PlanId = "cycle" | "annual" | "monthly";
 
 export async function checkBillingStatus(): Promise<{

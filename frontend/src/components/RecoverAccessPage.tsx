@@ -29,9 +29,8 @@ export function RecoverAccessPage() {
   return (
     <LegalLayout title="Recover access">
       <p>
-        Enter the work email you use to sign in. If that email has signed in before, we&apos;ll
-        email your organization login details, including your sign-in email and a new shared
-        password.
+        Enter the work email you use to sign in. If that email is authorized for your
+        organization, we&apos;ll email your login details, including a new shared password.
       </p>
 
       <form className="recover-access-form" onSubmit={(event) => void handleSubmit(event)}>

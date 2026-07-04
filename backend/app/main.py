@@ -34,12 +34,14 @@ from app.analysis_history import (
     save_history,
 )
 from app.billing import (
+    BillingPortalResponse,
     BillingStatusResponse,
     CheckoutRequest,
     CheckoutResponse,
     CheckoutSessionResponse,
     billing_enabled,
     billing_missing_config,
+    create_billing_portal_session,
     create_checkout_session,
     get_checkout_session,
     handle_stripe_webhook,
@@ -57,7 +59,9 @@ from app.org_members import (
     org_members_for_user,
     remove_org_member,
 )
+from app.analytics import AnalyticsEvent, record_event
 from app.provisioning import reset_password_for_email
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +80,15 @@ async def lifespan(_: FastAPI):
             "JWT_SECRET is required when authentication is enabled. "
             "Set JWT_SECRET in your environment before starting the server."
         )
+    sentry_dsn = os.getenv("SENTRY_DSN", "").strip()
+    if sentry_dsn:
+        try:
+            import sentry_sdk
+
+            sentry_sdk.init(dsn=sentry_dsn, traces_sample_rate=0.1)
+            logger.info("Sentry error monitoring enabled.")
+        except ImportError:
+            logger.warning("SENTRY_DSN is set but sentry-sdk is not installed.")
     status = data_dir_status()
     logger.info("ShiftWorksHR data directory: %s", status)
     if status.get("warning"):
@@ -98,6 +111,8 @@ async def security_headers_middleware(request: Request, call_next):
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    if os.getenv("PUBLIC_APP_URL", "").startswith("https://"):
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     return response
 
 
@@ -177,7 +192,7 @@ def login(payload: LoginRequest) -> LoginResponse:
         if org_access_expired(payload.email):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Your plan has expired. Renew at shiftworkshr.com/#pricing or email hello@shiftworkshr.com.",
+                detail="Your plan has expired. Renew at https://shiftworkshr.com/#pricing or use Recover access if you still have team authorization.",
             )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -194,7 +209,7 @@ def login(payload: LoginRequest) -> LoginResponse:
 
 
 RECOVER_ACCESS_MESSAGE = (
-    "If this work email has signed in before, we sent your organization login details."
+    "If this work email is authorized for your organization, we sent your login details."
 )
 
 
@@ -206,8 +221,11 @@ def recover_access(payload: RecoverAccessRequest) -> RecoverAccessResponse:
             detail="Authentication is not configured on this server.",
         )
 
+    from app.provisioning import find_org_for_authorized_email
+
     email = payload.email.strip().lower()
-    if has_logged_in_before(email):
+    is_provisioned = find_org_for_authorized_email(email) is not None
+    if is_provisioned or has_logged_in_before(email):
         reset = reset_password_for_email(email)
         if reset is not None and email_delivery_configured():
             send_credentials_email(
@@ -269,6 +287,17 @@ def org_members_remove(
     return {"members": members}
 
 
+class AnalyticsEventRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+    properties: dict[str, str | int | float | bool] = Field(default_factory=dict)
+
+
+@app.post("/api/analytics/event")
+def analytics_event(payload: AnalyticsEventRequest) -> dict[str, bool]:
+    record_event(AnalyticsEvent(name=payload.name, properties=payload.properties))
+    return {"ok": True}
+
+
 @app.get("/api/billing/status", response_model=BillingStatusResponse)
 def billing_status() -> BillingStatusResponse:
     from app.billing import billing_status_response
@@ -279,6 +308,13 @@ def billing_status() -> BillingStatusResponse:
 @app.post("/api/billing/checkout", response_model=CheckoutResponse)
 def billing_checkout(payload: CheckoutRequest) -> CheckoutResponse:
     return create_checkout_session(payload)
+
+
+@app.post("/api/billing/portal", response_model=BillingPortalResponse)
+def billing_portal(user: AuthContext = Depends(require_auth_user)) -> BillingPortalResponse:
+    if user.email == "anonymous":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Sign in required.")
+    return create_billing_portal_session(user.email)
 
 
 @app.get("/api/billing/session/{session_id}", response_model=CheckoutSessionResponse)

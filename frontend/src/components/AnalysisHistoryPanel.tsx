@@ -67,8 +67,8 @@ export function AnalysisHistoryPanel({ authRequired, onLoad }: AnalysisHistoryPa
         <span className="pill">{items.length} saved</span>
       </div>
       <p className="analysis-history__intro">
-        Saved runs are stored on the server for your account when you click Save to history. Only you
-        can view or delete your saved analyses.
+        Saved runs are stored on the server for your organization when anyone on your team clicks
+        Save to history. Teammates with access can open or delete shared saved analyses.
       </p>
 
       {loading ? <p className="file-meta">Loading saved analyses…</p> : null}

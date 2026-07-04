@@ -1092,6 +1092,33 @@ a:focus-visible {
   max-width: 360px;
 }
 
+.onboarding-panel__copy {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+}
+
+.onboarding-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.onboarding-step {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.onboarding-step--done {
+  border-color: #abefc6;
+  background: #ecfdf3;
+}
+
 .recover-access-form,
 .team-add-form {
   display: grid;

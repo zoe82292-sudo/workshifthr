@@ -46,6 +46,10 @@ class CheckoutResponse(BaseModel):
     url: str
 
 
+class BillingPortalResponse(BaseModel):
+    url: str
+
+
 class BillingConfigStatus(BaseModel):
     secret_key: bool
     webhook_secret: bool
@@ -199,6 +203,38 @@ def create_checkout_session(payload: CheckoutRequest) -> CheckoutResponse:
     return CheckoutResponse(url=session.url)
 
 
+def create_billing_portal_session(email: str) -> BillingPortalResponse:
+    from app.provisioning import stripe_customer_id_for_email
+
+    _configure_stripe()
+    customer_id = stripe_customer_id_for_email(email)
+    if not customer_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No billing account found for this email. Renew from shiftworkshr.com/#pricing.",
+        )
+
+    base_url = _public_app_url().rstrip("/")
+    try:
+        session = stripe.billing_portal.Session.create(
+            customer=customer_id,
+            return_url=f"{base_url}/#sign-in",
+        )
+    except stripe.StripeError as exc:
+        logger.exception("Stripe billing portal failed for %s", email)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Unable to open billing portal. Try again or email hello@shiftworkshr.com.",
+        ) from exc
+
+    if not session.url:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Unable to open billing portal.",
+        )
+    return BillingPortalResponse(url=session.url)
+
+
 def get_checkout_session(session_id: str) -> CheckoutSessionResponse:
     from app.provisioning import credentials_for_session, provision_from_stripe_session
 
@@ -269,6 +305,33 @@ async def handle_stripe_webhook(request: Request) -> dict[str, bool]:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid webhook payload.") from exc
     except stripe.SignatureVerificationError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Stripe signature.") from exc
+
+    if event.type == "invoice.payment_failed":
+        from app.provisioning import revoke_org_access
+
+        invoice = event.data.object
+        customer_id = str(invoice.get("customer") or "")
+        subscription_id = str(invoice.get("subscription") or "")
+        if customer_id:
+            revoked = revoke_org_access(
+                stripe_customer_id=customer_id,
+                stripe_subscription_id=subscription_id or None,
+            )
+            logger.info(
+                "Stripe invoice.payment_failed: customer=%s subscription=%s revoked=%s",
+                customer_id,
+                subscription_id,
+                revoked,
+            )
+
+    if event.type == "charge.refunded":
+        from app.provisioning import revoke_org_access
+
+        charge = event.data.object
+        customer_id = str(charge.get("customer") or "")
+        if customer_id:
+            revoked = revoke_org_access(stripe_customer_id=customer_id)
+            logger.info("Stripe charge.refunded: customer=%s revoked=%s", customer_id, revoked)
 
     if event.type == "checkout.session.completed":
         from app.provisioning import provision_from_stripe_session

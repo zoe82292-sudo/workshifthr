@@ -43,7 +43,14 @@ def _looks_like_export_file(content: bytes, filename: str) -> bool:
     return "EXECUTIVE SUMMARY" in preview and "BUDGET IMPACT" in preview
 
 
-def _read_csv(content: bytes, filename: str = "upload.csv") -> pd.DataFrame:
+def _estimate_skipped_csv_rows(text: str, parsed_rows: int) -> int:
+    data_lines = [line for line in text.splitlines() if line.strip()]
+    if len(data_lines) <= 1:
+        return 0
+    return max(0, len(data_lines) - 1 - parsed_rows)
+
+
+def _read_csv(content: bytes, filename: str = "upload.csv") -> tuple[pd.DataFrame, int]:
     if _looks_like_export_file(content, filename):
         raise ValueError(
             "This file looks like a ShiftWorksHR results export, not an employee compensation "
@@ -61,6 +68,8 @@ def _read_csv(content: bytes, filename: str = "upload.csv") -> pd.DataFrame:
         encodings = ["utf-16", "utf-16-le", "utf-16-be"]
     else:
         encodings = ["utf-8-sig", "utf-8", "latin-1", "cp1252"]
+
+    skipped_rows = 0
 
     for encoding in encodings:
         try:
@@ -80,7 +89,8 @@ def _read_csv(content: bytes, filename: str = "upload.csv") -> pd.DataFrame:
                 continue
             if len(df.columns) >= 2:
                 df.columns = [str(col).strip() for col in df.columns]
-                return df
+                skipped_rows = _estimate_skipped_csv_rows(text, len(df))
+                return df, skipped_rows
 
         header_index = _find_compensation_header_row(text)
         if header_index is not None:
@@ -97,7 +107,8 @@ def _read_csv(content: bytes, filename: str = "upload.csv") -> pd.DataFrame:
                     continue
                 if len(df.columns) >= 4:
                     df.columns = [str(col).strip() for col in df.columns]
-                    return df
+                    skipped_rows = _estimate_skipped_csv_rows(subset, len(df))
+                    return df, skipped_rows
 
     raise ValueError(
         "Could not read this CSV. Upload your original employee compensation spreadsheet "
@@ -118,22 +129,27 @@ def _find_compensation_header_row(text: str) -> int | None:
     return None
 
 
-def read_upload(content: bytes, filename: str, sheet_name: str | None = None) -> tuple[pd.DataFrame, list[str]]:
+def read_upload(content: bytes, filename: str, sheet_name: str | None = None) -> tuple[pd.DataFrame, list[str], list[str]]:
+    read_warnings: list[str] = []
     lower_name = filename.lower()
     if lower_name.endswith(".csv"):
-        df = _read_csv(content, filename)
-        return df, ["CSV"]
+        df, skipped_rows = _read_csv(content, filename)
+        if skipped_rows:
+            read_warnings.append(
+                f"Skipped {skipped_rows} malformed CSV row(s) while reading the file."
+            )
+        return df, ["CSV"], read_warnings
 
     workbook = pd.ExcelFile(io.BytesIO(content))
     sheet_names = workbook.sheet_names
     selected = sheet_name if sheet_name in sheet_names else sheet_names[0]
     df = pd.read_excel(workbook, sheet_name=selected)
     df.columns = [str(col).strip() for col in df.columns]
-    return df, sheet_names
+    return df, sheet_names, read_warnings
 
 
 def preview_file(content: bytes, filename: str, sheet_name: str | None = None) -> PreviewResponse:
-    df, sheet_names = read_upload(content, filename, sheet_name)
+    df, sheet_names, _ = read_upload(content, filename, sheet_name)
     mapping = detect_column_mapping(list(df.columns), df)
     preview_rows = df.head(5).fillna("").astype(str).to_dict(orient="records")
     return PreviewResponse(
@@ -317,9 +333,9 @@ def analyze_file(
     sheet_name: str | None = None,
     mapping_override: ColumnMapping | None = None,
 ) -> AnalysisResult:
-    df, _ = read_upload(content, filename, sheet_name)
+    df, _, read_warnings = read_upload(content, filename, sheet_name)
     prepared, mapping, missing_required = _prepare_dataframe(df, mapping_override)
-    warnings: list[str] = []
+    warnings: list[str] = list(read_warnings)
 
     if missing_required:
         return _empty_result(
@@ -362,6 +378,22 @@ def analyze_file(
             missing_fields.append("range_min")
         if range_max is None:
             missing_fields.append("range_max")
+
+        if (
+            salary is not None
+            and range_min is not None
+            and range_max is not None
+            and range_min > range_max
+        ):
+            invalid_record = _employee_record(
+                row,
+                row_number,
+                mapping,
+                penetration=None,
+                missing_fields=["invalid_range"],
+            )
+            missing_data.append(invalid_record)
+            continue
 
         penetration = None
         if salary is not None and range_min is not None and range_max is not None:
@@ -909,4 +941,4 @@ def _find_compression_issues(
                     )
                 )
 
-    return issues[:100]
+    return issues

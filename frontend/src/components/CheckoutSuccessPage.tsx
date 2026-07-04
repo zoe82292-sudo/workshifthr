@@ -5,7 +5,7 @@ import { BrandLogo } from "./BrandLogo";
 import { LegalFooter } from "./LegalFooter";
 
 const CONTACT_EMAIL = "hello@shiftworkshr.com";
-const MAX_POLL_ATTEMPTS = 10;
+const MAX_POLL_ATTEMPTS = 30;
 const POLL_INTERVAL_MS = 2000;
 
 export function CheckoutSuccessPage() {

@@ -297,6 +297,12 @@ export function ResultsDashboard({
   const [savingHistory, setSavingHistory] = useState(false);
   const [historyMessage, setHistoryMessage] = useState<string | null>(null);
   const [exporting, setExporting] = useState<string | null>(null);
+  const [targetMeritPercent, setTargetMeritPercent] = useState<number | null>(null);
+
+  const exportOptions = useMemo(
+    () => ({ targetMeritPercent }),
+    [targetMeritPercent],
+  );
 
   const filteredCompression = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -341,7 +347,7 @@ export function ResultsDashboard({
     setHistoryMessage(null);
     try {
       await saveAnalysisHistory(fileName, result);
-      setHistoryMessage("Analysis saved to your account history.");
+      setHistoryMessage("Analysis saved to your organization history.");
       onHistorySaved?.();
     } catch (caught) {
       setHistoryMessage(
@@ -373,7 +379,7 @@ export function ResultsDashboard({
             disabled={exporting === "excel"}
             onClick={() => {
               setExporting("excel");
-              void exportAnalysisExcel(result).finally(() => setExporting(null));
+              void exportAnalysisExcel(result, undefined, exportOptions).finally(() => setExporting(null));
             }}
           >
             {exporting === "excel" ? "Preparing…" : "Download Excel"}
@@ -384,7 +390,7 @@ export function ResultsDashboard({
             disabled={exporting === "pdf"}
             onClick={() => {
               setExporting("pdf");
-              void exportAnalysisPdf(result).finally(() => setExporting(null));
+              void exportAnalysisPdf(result, undefined, exportOptions).finally(() => setExporting(null));
             }}
           >
             {exporting === "pdf" ? "Preparing…" : "Download PDF"}
@@ -395,7 +401,7 @@ export function ResultsDashboard({
             disabled={exporting === "exec-pdf"}
             onClick={() => {
               setExporting("exec-pdf");
-              void exportExecutiveSummaryPdf(result).finally(() => setExporting(null));
+              void exportExecutiveSummaryPdf(result, undefined, exportOptions).finally(() => setExporting(null));
             }}
           >
             {exporting === "exec-pdf" ? "Preparing…" : "Executive PDF"}
@@ -406,7 +412,7 @@ export function ResultsDashboard({
             disabled={exporting === "exec-xlsx"}
             onClick={() => {
               setExporting("exec-xlsx");
-              void exportExecutiveSummaryExcel(result).finally(() => setExporting(null));
+              void exportExecutiveSummaryExcel(result, undefined, exportOptions).finally(() => setExporting(null));
             }}
           >
             {exporting === "exec-xlsx" ? "Preparing…" : "Executive Excel"}
@@ -421,7 +427,7 @@ export function ResultsDashboard({
         detectedColumns={result.detected_columns}
       />
 
-      <InsightsPanel result={result} />
+      <InsightsPanel result={result} onTargetMeritChange={setTargetMeritPercent} />
       <div className="summary-grid card-grid card-grid--4" aria-label="Issue counts">
         <div className="summary-card stat-card">
           <span className="stat-card__label">Total rows</span>
@@ -575,14 +581,7 @@ export function ResultsDashboard({
         result.compression.length === 0 ? (
           <div className="empty-state">No salary compression patterns detected.</div>
         ) : (
-          <>
-            {result.compression.length >= 100 && result.summary.compression_issues >= 100 ? (
-              <p className="file-meta" style={{ marginBottom: 12 }}>
-                Showing the first 100 compression issues. Download Excel for the full export if your
-                file triggered additional patterns.
-              </p>
-            ) : null}
-            <PaginatedSlice items={filteredCompression}>
+          <PaginatedSlice items={filteredCompression}>
             {(pageItems) => (
               <div className="table-wrap">
                 <table>
@@ -609,8 +608,7 @@ export function ResultsDashboard({
                 </table>
               </div>
             )}
-            </PaginatedSlice>
-          </>
+          </PaginatedSlice>
         )
       ) : null}
 
@@ -659,26 +657,30 @@ export function ResultsDashboard({
         result.missing_bonus_targets.length === 0 ? (
           <div className="empty-state">All rows include bonus targets.</div>
         ) : (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Row</th>
-                  <th>Employee ID</th>
-                  <th>Name</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.missing_bonus_targets.map((row) => (
-                  <tr key={row.row_number}>
-                    <td>{row.row_number}</td>
-                    <td>{row.employee_id ?? "—"}</td>
-                    <td>{row.employee_name ?? "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <PaginatedSlice items={result.missing_bonus_targets}>
+            {(pageItems) => (
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Row</th>
+                      <th>Employee ID</th>
+                      <th>Name</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pageItems.map((row) => (
+                      <tr key={row.row_number}>
+                        <td>{row.row_number}</td>
+                        <td>{row.employee_id ?? "—"}</td>
+                        <td>{row.employee_name ?? "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </PaginatedSlice>
         )
       ) : null}
 
@@ -686,28 +688,32 @@ export function ResultsDashboard({
         result.missing_salary_ranges.length === 0 ? (
           <div className="empty-state">All rows include salary range minimum and maximum.</div>
         ) : (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Row</th>
-                  <th>Employee ID</th>
-                  <th>Name</th>
-                  <th>Missing Fields</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.missing_salary_ranges.map((row) => (
-                  <tr key={row.row_number}>
-                    <td>{row.row_number}</td>
-                    <td>{row.employee_id ?? "—"}</td>
-                    <td>{row.employee_name ?? "—"}</td>
-                    <td>{row.missing_fields.join(", ")}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <PaginatedSlice items={result.missing_salary_ranges}>
+            {(pageItems) => (
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Row</th>
+                      <th>Employee ID</th>
+                      <th>Name</th>
+                      <th>Missing Fields</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pageItems.map((row) => (
+                      <tr key={row.row_number}>
+                        <td>{row.row_number}</td>
+                        <td>{row.employee_id ?? "—"}</td>
+                        <td>{row.employee_name ?? "—"}</td>
+                        <td>{row.missing_fields.join(", ")}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </PaginatedSlice>
         )
       ) : null}
 
@@ -715,30 +721,34 @@ export function ResultsDashboard({
         result.invalid_effective_dates.length === 0 ? (
           <div className="empty-state">All effective dates are valid.</div>
         ) : (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Row</th>
-                  <th>Employee ID</th>
-                  <th>Name</th>
-                  <th>Effective Date</th>
-                  <th>Issue</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.invalid_effective_dates.map((row) => (
-                  <tr key={row.row_number}>
-                    <td>{row.row_number}</td>
-                    <td>{row.employee_id ?? "—"}</td>
-                    <td>{row.employee_name ?? "—"}</td>
-                    <td>{row.effective_date ?? "—"}</td>
-                    <td>{row.reason}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <PaginatedSlice items={result.invalid_effective_dates}>
+            {(pageItems) => (
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Row</th>
+                      <th>Employee ID</th>
+                      <th>Name</th>
+                      <th>Effective Date</th>
+                      <th>Issue</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pageItems.map((row) => (
+                      <tr key={row.row_number}>
+                        <td>{row.row_number}</td>
+                        <td>{row.employee_id ?? "—"}</td>
+                        <td>{row.employee_name ?? "—"}</td>
+                        <td>{row.effective_date ?? "—"}</td>
+                        <td>{row.reason}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </PaginatedSlice>
         )
       ) : null}
 
@@ -746,30 +756,34 @@ export function ResultsDashboard({
         result.outlier_merit_increases.length === 0 ? (
           <div className="empty-state">No outlier merit increases detected.</div>
         ) : (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Row</th>
-                  <th>Employee ID</th>
-                  <th>Name</th>
-                  <th>Merit Increase</th>
-                  <th>Reason</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.outlier_merit_increases.map((row) => (
-                  <tr key={row.row_number}>
-                    <td>{row.row_number}</td>
-                    <td>{row.employee_id ?? "—"}</td>
-                    <td>{row.employee_name ?? "—"}</td>
-                    <td>{row.merit_increase}%</td>
-                    <td>{row.reason}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <PaginatedSlice items={result.outlier_merit_increases}>
+            {(pageItems) => (
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Row</th>
+                      <th>Employee ID</th>
+                      <th>Name</th>
+                      <th>Merit Increase</th>
+                      <th>Reason</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pageItems.map((row) => (
+                      <tr key={row.row_number}>
+                        <td>{row.row_number}</td>
+                        <td>{row.employee_id ?? "—"}</td>
+                        <td>{row.employee_name ?? "—"}</td>
+                        <td>{row.merit_increase}%</td>
+                        <td>{row.reason}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </PaginatedSlice>
         )
       ) : null}
 

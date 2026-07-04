@@ -71,32 +71,32 @@ export function buildMarketingUrl(
   return url.toString();
 }
 
-/** Copy-paste links for common channels (merit season 2025). */
+/** Copy-paste links for common channels (year-neutral campaign names). */
 export const SHARE_LINKS = {
   linkedinPost: buildMarketingUrl("/", {
     utm_source: "linkedin",
     utm_medium: "post",
-    utm_campaign: "merit2025",
+    utm_campaign: "comp-review",
   }),
   linkedinComment: buildMarketingUrl("/sample-preview", {
     utm_source: "linkedin",
     utm_medium: "comment",
-    utm_campaign: "merit2025",
+    utm_campaign: "comp-review",
     utm_content: "sample-preview",
   }),
   emailSignature: buildMarketingUrl("/", {
     utm_source: "email",
     utm_medium: "signature",
-    utm_campaign: "merit2025",
+    utm_campaign: "comp-review",
   }),
   coldOutreach: buildMarketingUrl("/", {
     utm_source: "email",
     utm_medium: "outreach",
-    utm_campaign: "merit2025",
+    utm_campaign: "comp-review",
   }),
   reddit: buildMarketingUrl("/sample-preview", {
     utm_source: "reddit",
     utm_medium: "comment",
-    utm_campaign: "merit2025",
+    utm_campaign: "comp-review",
   }),
 } as const;

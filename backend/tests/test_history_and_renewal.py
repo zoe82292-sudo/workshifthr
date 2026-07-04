@@ -12,7 +12,7 @@ def test_org_storage_key_is_stable() -> None:
     second = org_storage_key("Acme Corp", "hr@acme.com")
     peer = org_storage_key("Acme Corp", "peer@acme.com")
     assert first == second
-    assert first != peer
+    assert first == peer
     assert first.startswith("acme-corp-")
 
 
@@ -29,19 +29,18 @@ def test_save_and_load_analysis_history(sample_analysis_result: AnalysisResult) 
     assert loaded.result.summary.total_rows == sample_analysis_result.summary.total_rows
 
 
-def test_history_is_scoped_per_user(sample_analysis_result: AnalysisResult) -> None:
+def test_history_is_shared_across_org_members(sample_analysis_result: AnalysisResult) -> None:
     first = save_history("Acme Corp", "analyst@acme.com", "first.csv", sample_analysis_result)
-    save_history("Acme Corp", "peer@acme.com", "second.csv", sample_analysis_result)
+    second = save_history("Acme Corp", "peer@acme.com", "second.csv", sample_analysis_result)
 
     analyst_items = list_history("Acme Corp", "analyst@acme.com")
     peer_items = list_history("Acme Corp", "peer@acme.com")
 
-    assert len(analyst_items) == 1
-    assert len(peer_items) == 1
-    assert analyst_items[0].id == first.id
-    assert analyst_items[0].file_name == "first.csv"
-    assert peer_items[0].file_name == "second.csv"
-    assert get_history("Acme Corp", "peer@acme.com", first.id) is None
+    assert len(analyst_items) == 2
+    assert len(peer_items) == 2
+    assert {item.id for item in analyst_items} == {first.id, second.id}
+    assert get_history("Acme Corp", "peer@acme.com", first.id) is not None
+    assert get_history("Acme Corp", "analyst@acme.com", second.id) is not None
 
 
 def test_renew_org_access_extends_monthly_plan(tmp_path, monkeypatch) -> None:

@@ -154,6 +154,16 @@ def find_org_for_authorized_email(email: str) -> dict[str, Any] | None:
     return org
 
 
+def stripe_customer_id_for_email(email: str) -> str:
+    org = find_org_for_authorized_email(email)
+    if org is None:
+        with _file_lock:
+            org = _find_org_by_email(_read_store(), email.strip().lower())
+    if org is None:
+        return ""
+    return str(org.get("stripe_customer_id") or "")
+
+
 def _find_org_by_email(store: dict[str, Any], email: str) -> dict[str, Any] | None:
     normalized = email.strip().lower()
     for org in store.get("orgs", []):

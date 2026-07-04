@@ -12,7 +12,6 @@ COLUMN_ALIASES: dict[str, list[str]] = {
         "employee_id",
         "ee id",
         "worker id",
-        "id",
         "employee number",
         "emp no",
         "emp #",
