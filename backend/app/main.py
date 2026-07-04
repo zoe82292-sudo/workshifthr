@@ -47,7 +47,8 @@ from app.billing import (
     get_checkout_session,
     handle_stripe_webhook,
 )
-from app.models import AnalysisOptions, AnalysisResult, ColumnMapping, PreviewResponse
+from app.models import AnalysisOptions, AnalysisResult, BatchPreviewItem, BatchPreviewResponse, ColumnMapping, FileUploadSpec, PreviewResponse
+from app.file_merge import MAX_MERGE_FILES, analyze_merged_files
 from app.saved_mappings import get_saved_mapping, save_saved_mapping
 from app.rate_limit import enforce_rate_limit
 from app.uploads import max_upload_bytes, read_upload_bytes
@@ -403,6 +404,109 @@ async def preview(
 ) -> PreviewResponse:
     content = await read_upload_bytes(file)
     return preview_file(content, file.filename or "upload.xlsx", sheet_name)
+
+
+@app.post("/api/preview-batch", response_model=BatchPreviewResponse)
+async def preview_batch(
+    files: list[UploadFile] = File(...),
+    _: str = Depends(require_auth),
+) -> BatchPreviewResponse:
+    if not files:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Upload at least one file.",
+        )
+    if len(files) > MAX_MERGE_FILES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"You can upload up to {MAX_MERGE_FILES} files at a time.",
+        )
+
+    items: list[BatchPreviewItem] = []
+    for upload in files:
+        content = await read_upload_bytes(upload)
+        if not content:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"{upload.filename or 'Upload'} is empty.",
+            )
+        try:
+            preview = preview_file(content, upload.filename or "upload.xlsx")
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(exc),
+            ) from exc
+        items.append(
+            BatchPreviewItem(
+                filename=upload.filename or "upload.xlsx",
+                preview=preview,
+            )
+        )
+    return BatchPreviewResponse(files=items)
+
+
+@app.post("/api/analyze-batch", response_model=AnalysisResult)
+async def analyze_batch(
+    files: list[UploadFile] = File(...),
+    file_specs: str = Form(...),
+    merit_iqr_multiplier: float | None = Form(default=None),
+    _: str = Depends(require_auth),
+) -> AnalysisResult:
+    if not files:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Upload at least one file.",
+        )
+    if len(files) > MAX_MERGE_FILES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"You can merge up to {MAX_MERGE_FILES} files at a time.",
+        )
+
+    try:
+        specs = [FileUploadSpec.model_validate(item) for item in json.loads(file_specs)]
+    except (json.JSONDecodeError, ValueError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file mapping payload.",
+        ) from exc
+
+    if len(specs) != len(files):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Each uploaded file needs a column mapping entry.",
+        )
+
+    sources: list[tuple[bytes, str, str | None, ColumnMapping]] = []
+    for upload, spec in zip(files, specs, strict=True):
+        content = await read_upload_bytes(upload)
+        if not content:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"{upload.filename or 'Upload'} is empty.",
+            )
+        filename = upload.filename or spec.filename
+        sources.append((content, filename, spec.sheet_name, spec.column_mapping))
+
+    try:
+        options = AnalysisOptions(
+            merit_iqr_multiplier=merit_iqr_multiplier
+            if merit_iqr_multiplier is not None
+            else 1.5,
+        )
+        return analyze_merged_files(sources, options)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+    except Exception as exc:
+        logger.exception("Unexpected analyze-batch failure")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to merge and analyze these files. Check Employee ID mappings and try again.",
+        ) from exc
 
 
 @app.post("/api/analyze", response_model=AnalysisResult)

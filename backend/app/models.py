@@ -266,3 +266,18 @@ class PreviewResponse(BaseModel):
     suggested_mapping: ColumnMapping
     preview_rows: list[dict[str, Any]]
     sheet_names: list[str]
+
+
+class FileUploadSpec(BaseModel):
+    filename: str
+    sheet_name: str | None = None
+    column_mapping: ColumnMapping
+
+
+class BatchPreviewItem(BaseModel):
+    filename: str
+    preview: PreviewResponse
+
+
+class BatchPreviewResponse(BaseModel):
+    files: list[BatchPreviewItem]

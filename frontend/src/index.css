@@ -425,6 +425,77 @@ p {
   margin-top: 20px;
 }
 
+.mapping-step--embedded {
+  margin-top: 12px;
+}
+
+.mapping-step__file-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.mapping-step__file-label h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.multi-file-mapping__intro {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  max-width: 62ch;
+}
+
+.multi-file-mapping__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.multi-file-mapping__tab {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.multi-file-mapping__tab--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.upload-queue-panel {
+  margin-bottom: 16px;
+}
+
+.upload-queue-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.upload-queue-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-muted);
+}
+
 .mapping-preview-table {
   margin-top: 20px;
 }

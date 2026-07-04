@@ -47,6 +47,11 @@ type ColumnMappingStepProps = {
   onCancel: () => void;
   onSaveMapping?: () => void | Promise<void>;
   canSaveMapping?: boolean;
+  mergeMode?: boolean;
+  embedded?: boolean;
+  analyzeDisabled?: boolean;
+  analyzeLabel?: string;
+  onRemoveFile?: () => void;
 };
 
 export function ColumnMappingStep({
@@ -61,8 +66,14 @@ export function ColumnMappingStep({
   onCancel,
   onSaveMapping,
   canSaveMapping = false,
+  mergeMode = false,
+  embedded = false,
+  analyzeDisabled,
+  analyzeLabel,
+  onRemoveFile,
 }: ColumnMappingStepProps) {
-  const complete = mappingIsComplete(mapping);
+  const complete = mergeMode ? Boolean(mapping.employee_id) : mappingIsComplete(mapping);
+  const runDisabled = analyzeDisabled !== undefined ? analyzeDisabled : !complete;
   const [mappingNotice, setMappingNotice] = useState<string | null>(null);
 
   async function handleSaveMapping() {
@@ -78,17 +89,33 @@ export function ColumnMappingStep({
     }
   }
 
-  return (
-    <section className="panel mapping-step">
-      <div className="panel-header">
-        <h2>Confirm column mapping</h2>
-        <span className="pill">{fileName}</span>
-      </div>
+  const Wrapper = embedded ? "div" : "section";
+  const wrapperClass = embedded ? "mapping-step mapping-step--embedded" : "panel mapping-step";
 
-      <p className="mapping-step__intro">
-        We detected columns in your file. Confirm each field is mapped correctly before running
-        the analysis — especially salary and range min/max.
-      </p>
+  return (
+    <Wrapper className={wrapperClass}>
+      {!embedded ? (
+        <div className="panel-header">
+          <h2>Confirm column mapping</h2>
+          <span className="pill">{fileName}</span>
+        </div>
+      ) : (
+        <div className="mapping-step__file-label">
+          <h3>{fileName}</h3>
+          {onRemoveFile ? (
+            <button className="button button-secondary button-small" type="button" onClick={onRemoveFile}>
+              Remove file
+            </button>
+          ) : null}
+        </div>
+      )}
+
+      {!embedded ? (
+        <p className="mapping-step__intro">
+          We detected columns in your file. Confirm each field is mapped correctly before running
+          the analysis — especially salary and range min/max.
+        </p>
+      ) : null}
 
       {preview.sheet_names.length > 1 ? (
         <div className="field mapping-step__sheet">
@@ -136,10 +163,14 @@ export function ColumnMappingStep({
         ))}
       </div>
 
-      {!complete ? (
+      {!embedded && !complete ? (
         <div className="alert alert-warning">
           Map all required fields (employee ID, salary, range min, range max) to continue.
         </div>
+      ) : null}
+
+      {!embedded && mergeMode && !mapping.employee_id ? (
+        <div className="alert alert-warning">Map Employee ID on this file to merge it with the others.</div>
       ) : null}
 
       {preview.preview_rows.length > 0 ? (
@@ -168,30 +199,32 @@ export function ColumnMappingStep({
         </div>
       ) : null}
 
-      <div className="mapping-step__actions">
-        <button
-          className="button button-primary"
-          type="button"
-          disabled={!complete || loading}
-          onClick={onAnalyze}
-        >
-          {loading ? "Analyzing…" : "Run analysis"}
-        </button>
-        {canSaveMapping && onSaveMapping ? (
+      {!embedded ? (
+        <div className="mapping-step__actions">
           <button
-            className="button button-secondary"
+            className="button button-primary"
             type="button"
-            disabled={!complete || loading}
-            onClick={() => void handleSaveMapping()}
+            disabled={runDisabled || loading}
+            onClick={onAnalyze}
           >
-            Save mapping
+            {loading ? "Analyzing…" : analyzeLabel ?? "Run analysis"}
           </button>
-        ) : null}
-        <button className="button button-secondary" type="button" disabled={loading} onClick={onCancel}>
-          Choose a different file
-        </button>
-      </div>
-      {mappingNotice ? <div className="alert alert-info">{mappingNotice}</div> : null}
-    </section>
+          {canSaveMapping && onSaveMapping ? (
+            <button
+              className="button button-secondary"
+              type="button"
+              disabled={runDisabled || loading}
+              onClick={() => void handleSaveMapping()}
+            >
+              Save mapping
+            </button>
+          ) : null}
+          <button className="button button-secondary" type="button" disabled={loading} onClick={onCancel}>
+            Choose a different file
+          </button>
+        </div>
+      ) : null}
+      {!embedded && mappingNotice ? <div className="alert alert-info">{mappingNotice}</div> : null}
+    </Wrapper>
   );
 }

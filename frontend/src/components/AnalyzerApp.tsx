@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  analyzeBatch,
   analyzeFile,
   checkBackendHealth,
   clearAnalysisSnapshot,
@@ -8,6 +9,7 @@ import {
   fetchSavedColumnMapping,
   loadAnalysisSnapshot,
   openBillingPortal,
+  previewBatch,
   previewFile,
   saveAnalysisSnapshot,
   saveSavedColumnMapping,
@@ -16,6 +18,7 @@ import {
 } from "../api";
 import { trackEvent } from "../analytics";
 import { ColumnMappingStep } from "./ColumnMappingStep";
+import { MultiFileMappingStep, type UploadMappingEntry } from "./MultiFileMappingStep";
 import { AnalysisHistoryPanel } from "./AnalysisHistoryPanel";
 import { ResultsDashboard } from "./ResultsDashboard";
 import { BrandLogo } from "./BrandLogo";
@@ -25,7 +28,7 @@ import { OnboardingPanel } from "./OnboardingPanel";
 import { CycleComparisonPanel } from "./CycleComparisonPanel";
 import { LegalFooter } from "./LegalFooter";
 import { loadLocalColumnMapping, saveLocalColumnMapping } from "../savedMappingStorage";
-import type { AnalysisHistorySummary, AnalysisResult, AnalysisTab, ColumnMapping, PreviewResponse } from "../types";
+import type { AnalysisHistorySummary, AnalysisResult, AnalysisTab, ColumnMapping } from "../types";
 
 function pickInitialTab(analysis: AnalysisResult): AnalysisTab {
   if (analysis.pay_equity.available && analysis.summary.pay_equity_gaps > 0) {
@@ -53,6 +56,8 @@ function formatPlanExpiry(account: AccountInfo | null): string | null {
   return `Access expires ${dateLabel}`;
 }
 
+const MAX_UPLOAD_FILES = 5;
+
 type AnalyzerAppProps = {
   authRequired: boolean;
   userEmail: string | null;
@@ -66,12 +71,9 @@ export function AnalyzerApp({
   userOrganization,
   onLogout,
 }: AnalyzerAppProps) {
-  const [file, setFile] = useState<File | null>(null);
+  const [uploads, setUploads] = useState<UploadMappingEntry[]>([]);
   const [analyzedFileName, setAnalyzedFileName] = useState<string | null>(null);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
-  const [preview, setPreview] = useState<PreviewResponse | null>(null);
-  const [mapping, setMapping] = useState<ColumnMapping | null>(null);
-  const [sheetName, setSheetName] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [activeTab, setActiveTab] = useState<AnalysisTab>("below_minimum");
   const [dragging, setDragging] = useState(false);
@@ -132,10 +134,7 @@ export function AnalyzerApp({
   }
 
   function resetWorkflow() {
-    setFile(null);
-    setPreview(null);
-    setMapping(null);
-    setSheetName(null);
+    setUploads([]);
     setResult(null);
     setAnalyzedFileName(null);
     setError(null);
@@ -144,8 +143,22 @@ export function AnalyzerApp({
     }
   }
 
-  async function handleFileSelected(selected: File | null) {
-    if (!selected) return;
+  async function buildUploadEntry(file: File, saved: ColumnMapping | null): Promise<UploadMappingEntry> {
+    const previewResponse = await previewFile(file);
+    return {
+      file,
+      preview: previewResponse,
+      mapping: applySavedMapping(
+        previewResponse.suggested_mapping,
+        previewResponse.columns,
+        saved,
+      ),
+      sheetName: previewResponse.sheet_names[0] ?? null,
+    };
+  }
+
+  async function handleFilesSelected(fileList: FileList | File[] | null) {
+    if (!fileList || fileList.length === 0) return;
 
     if (!uploadAuthorized) {
       setError(
@@ -154,31 +167,49 @@ export function AnalyzerApp({
       return;
     }
 
-    if (!/\.(xlsx|xls|csv)$/i.test(selected.name)) {
+    const selected = Array.from(fileList).filter((candidate) =>
+      /\.(xlsx|xls|csv)$/i.test(candidate.name),
+    );
+    if (selected.length === 0) {
       setError("Please upload an .xlsx, .xls, or .csv file.");
       return;
     }
 
-    setFile(selected);
+    if (uploads.length + selected.length > MAX_UPLOAD_FILES) {
+      setError(`You can upload up to ${MAX_UPLOAD_FILES} files at a time.`);
+      return;
+    }
+
     setResult(null);
     setError(null);
     setLoading(true);
 
     try {
-      const previewResponse = await previewFile(selected);
       const saved = await resolveSavedMapping();
-      setPreview(previewResponse);
-      setMapping(
-        applySavedMapping(previewResponse.suggested_mapping, previewResponse.columns, saved),
-      );
-      setSheetName(previewResponse.sheet_names[0] ?? null);
+
+      if (selected.length === 1 && uploads.length === 0) {
+        const entry = await buildUploadEntry(selected[0], saved);
+        setUploads([entry]);
+        return;
+      }
+
+      const batch = await previewBatch(selected);
+      const nextEntries = batch.files.map((item, index) => ({
+        file: selected[index] ?? selected.find((file) => file.name === item.filename) ?? selected[0],
+        preview: item.preview,
+        mapping: applySavedMapping(item.preview.suggested_mapping, item.preview.columns, saved),
+        sheetName: item.preview.sheet_names[0] ?? null,
+      }));
+      setUploads((current) => [...current, ...nextEntries]);
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : "Unable to read file.";
       setError(message);
       if (message.includes("sign in again") || message.includes("expired")) {
         onLogout();
       }
-      resetWorkflow();
+      if (uploads.length === 0) {
+        resetWorkflow();
+      }
     } finally {
       setLoading(false);
       if (fileInputRef.current) {
@@ -187,25 +218,76 @@ export function AnalyzerApp({
     }
   }
 
+  async function handleSheetChange(index: number, nextSheet: string | null) {
+    const entry = uploads[index];
+    if (!entry) return;
+
+    setLoading(true);
+    setError(null);
+    try {
+      const previewResponse = await previewFile(entry.file, nextSheet);
+      setUploads((current) =>
+        current.map((item, itemIndex) =>
+          itemIndex === index
+            ? {
+                ...item,
+                preview: previewResponse,
+                mapping: applySavedMapping(
+                  previewResponse.suggested_mapping,
+                  previewResponse.columns,
+                  item.mapping,
+                ),
+                sheetName: nextSheet,
+              }
+            : item,
+        ),
+      );
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Unable to read worksheet.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleMappingChange(index: number, mapping: ColumnMapping) {
+    setUploads((current) =>
+      current.map((item, itemIndex) => (itemIndex === index ? { ...item, mapping } : item)),
+    );
+  }
+
+  function handleRemoveUpload(index: number) {
+    setUploads((current) => current.filter((_, itemIndex) => itemIndex !== index));
+  }
+
   async function runAnalysis() {
-    if (!file || !mapping) return;
+    if (uploads.length === 0) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      const analysis = await analyzeFile(file, {
-        columnMapping: mapping,
-        sheetName,
-        meritIqrMultiplier,
-      });
+      const analysis =
+        uploads.length === 1
+          ? await analyzeFile(uploads[0].file, {
+              columnMapping: uploads[0].mapping,
+              sheetName: uploads[0].sheetName,
+              meritIqrMultiplier,
+            })
+          : await analyzeBatch(uploads, { meritIqrMultiplier });
+
+      const label =
+        uploads.length === 1
+          ? uploads[0].file.name
+          : uploads.map((entry) => entry.file.name).join(" + ");
+
       setResult(analysis);
-      setAnalyzedFileName(file.name);
+      setAnalyzedFileName(label);
       setActiveTab(pickInitialTab(analysis));
-      setPreview(null);
-      saveAnalysisSnapshot(file.name, analysis);
+      setUploads([]);
+      saveAnalysisSnapshot(label, analysis);
       setSavedSnapshot(loadAnalysisSnapshot());
       trackEvent("analysis_completed", { rows: analysis.summary.total_rows });
+      setHistoryRefreshKey((value) => value + 1);
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : "Unable to analyze file.";
       setError(message);
@@ -217,30 +299,9 @@ export function AnalyzerApp({
     }
   }
 
-  async function handleSheetChange(nextSheet: string | null) {
-    if (!file) return;
-    setSheetName(nextSheet);
-    setLoading(true);
-    setError(null);
-    try {
-      const previewResponse = await previewFile(file, nextSheet);
-      const saved = await resolveSavedMapping();
-      setPreview(previewResponse);
-      setMapping(
-        applySavedMapping(previewResponse.suggested_mapping, previewResponse.columns, saved),
-      );
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Unable to read worksheet.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
   function restoreSnapshot() {
     if (!savedSnapshot) return;
-    setFile(null);
-    setPreview(null);
-    setMapping(null);
+    setUploads([]);
     setResult(savedSnapshot.result);
     setAnalyzedFileName(savedSnapshot.fileName);
     setActiveTab(pickInitialTab(savedSnapshot.result));
@@ -253,9 +314,7 @@ export function AnalyzerApp({
   }
 
   function loadFromHistory(fileName: string, analysis: AnalysisResult) {
-    setFile(null);
-    setPreview(null);
-    setMapping(null);
+    setUploads([]);
     setResult(analysis);
     setAnalyzedFileName(fileName);
     setActiveTab(pickInitialTab(analysis));
@@ -278,11 +337,12 @@ export function AnalyzerApp({
   }
 
   async function handleSaveMapping() {
-    if (!mapping) return;
+    const primary = uploads[0];
+    if (!primary) return;
     if (authRequired) {
-      await saveSavedColumnMapping(mapping);
+      await saveSavedColumnMapping(primary.mapping);
     } else {
-      saveLocalColumnMapping(mapping);
+      saveLocalColumnMapping(primary.mapping);
     }
   }
 
@@ -356,7 +416,7 @@ export function AnalyzerApp({
         </div>
       ) : null}
 
-      {savedSnapshot && !result && !preview ? (
+      {savedSnapshot && !result && uploads.length === 0 ? (
         <div className="alert alert-info snapshot-restore">
           <p>
             You have a saved analysis from <strong>{savedSnapshot.fileName}</strong> (
@@ -389,11 +449,10 @@ export function AnalyzerApp({
         />
       ) : null}
 
-      {!preview && !result ? (
+      {!result && uploads.length === 0 ? (
         <section className="panel">
           <div className="panel-header">
-            <h2>Upload compensation file</h2>
-            {file ? <span className="pill pill-success">{file.name}</span> : null}
+            <h2>Upload compensation file{uploads.length > 1 ? "s" : ""}</h2>
           </div>
 
           <div className="upload-consent-block">
@@ -431,43 +490,35 @@ export function AnalyzerApp({
                 );
                 return;
               }
-              const dropped = event.dataTransfer.files?.[0];
-              if (dropped) {
-                void handleFileSelected(dropped);
+              if (event.dataTransfer.files?.length) {
+                void handleFilesSelected(event.dataTransfer.files);
               }
             }}
           >
-            <p>Drop an `.xlsx`, `.xls`, or `.csv` file here to map columns and run analysis.</p>
+            <p>
+              Drop one or more `.xlsx`, `.xls`, or `.csv` files here. Upload multiple files
+              when your data is split across exports — they&apos;re merged on Employee ID.
+            </p>
             <div className="upload-actions">
               <label className={`button button-primary ${uploadAuthorized ? "" : "button-disabled"}`}>
-                {loading ? "Reading file…" : "Choose file"}
+                {loading ? "Reading files…" : "Choose files"}
                 <input
                   ref={fileInputRef}
                   type="file"
+                  multiple
                   accept=".xlsx,.xls,.csv,text/csv,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                   disabled={loading || !uploadAuthorized}
-                  onChange={(event) => void handleFileSelected(event.target.files?.[0] ?? null)}
+                  onChange={(event) => void handleFilesSelected(event.target.files)}
                 />
               </label>
-              {file ? (
-                <button
-                  className="button button-secondary"
-                  disabled={loading}
-                  onClick={resetWorkflow}
-                  type="button"
-                >
-                  Clear
-                </button>
-              ) : null}
               <a className="button button-secondary" href="/api/sample-template" download>
                 Download template
               </a>
             </div>
             <p className="file-meta">
-              Required: <strong>Employee ID</strong>, <strong>Salary</strong>,{" "}
-              <strong>Range min</strong>, and <strong>Range max</strong>. Range midpoint is
-              calculated automatically. Add <strong>Gender</strong> and{" "}
-              <strong>Race/Ethnicity</strong> for pay equity analysis.
+              Required across uploads: <strong>Employee ID</strong>, <strong>Salary</strong>,{" "}
+              <strong>Range min</strong>, and <strong>Range max</strong> (can be in different
+              files). Up to {MAX_UPLOAD_FILES} files per analysis.
             </p>
             <p className="file-meta legal-notice">
               For decision support only — not legal or professional compensation advice.
@@ -479,15 +530,52 @@ export function AnalyzerApp({
         </section>
       ) : null}
 
-      {preview && mapping && file ? (
+      {!result && uploads.length > 0 ? (
+        <section className="panel upload-queue-panel">
+          <div className="panel-header">
+            <h2>Uploaded files</h2>
+            <span className="pill">{uploads.length} selected</span>
+          </div>
+          <ul className="upload-queue-list">
+            {uploads.map((entry) => (
+              <li key={entry.file.name}>
+                <span>{entry.file.name}</span>
+                <button
+                  className="button button-secondary button-small"
+                  type="button"
+                  disabled={loading}
+                  onClick={() => handleRemoveUpload(uploads.indexOf(entry))}
+                >
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
+          {uploads.length < MAX_UPLOAD_FILES ? (
+            <label className={`button button-secondary button-small ${uploadAuthorized ? "" : "button-disabled"}`}>
+              Add another file
+              <input
+                type="file"
+                multiple
+                hidden
+                accept=".xlsx,.xls,.csv"
+                disabled={loading || !uploadAuthorized}
+                onChange={(event) => void handleFilesSelected(event.target.files)}
+              />
+            </label>
+          ) : null}
+        </section>
+      ) : null}
+
+      {!result && uploads.length === 1 ? (
         <ColumnMappingStep
-          fileName={file.name}
-          preview={preview}
-          mapping={mapping}
-          sheetName={sheetName}
+          fileName={uploads[0].file.name}
+          preview={uploads[0].preview}
+          mapping={uploads[0].mapping}
+          sheetName={uploads[0].sheetName}
           loading={loading}
-          onMappingChange={setMapping}
-          onSheetChange={(next) => void handleSheetChange(next)}
+          onMappingChange={(nextMapping) => handleMappingChange(0, nextMapping)}
+          onSheetChange={(next) => void handleSheetChange(0, next)}
           onAnalyze={() => void runAnalysis()}
           onCancel={resetWorkflow}
           canSaveMapping
@@ -495,7 +583,19 @@ export function AnalyzerApp({
         />
       ) : null}
 
-      {preview && mapping ? (
+      {!result && uploads.length > 1 ? (
+        <MultiFileMappingStep
+          entries={uploads}
+          loading={loading}
+          onMappingChange={handleMappingChange}
+          onSheetChange={(index, sheet) => void handleSheetChange(index, sheet)}
+          onAnalyze={() => void runAnalysis()}
+          onCancel={resetWorkflow}
+          onRemoveFile={handleRemoveUpload}
+        />
+      ) : null}
+
+      {!result && uploads.length > 0 ? (
         <section className="panel analyzer-options-panel">
           <label className="field analyzer-options-panel__field">
             <span>Merit outlier sensitivity (IQR multiplier: {meritIqrMultiplier.toFixed(1)})</span>
@@ -515,7 +615,7 @@ export function AnalyzerApp({
         </section>
       ) : null}
 
-      {loading && !preview ? (
+      {loading && uploads.length === 0 && !result ? (
         <div className="alert alert-info">
           Working on your file — this usually takes a few seconds. If the site just woke up,
           it can take up to a minute.

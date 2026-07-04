@@ -14,7 +14,9 @@ _LIMITS: dict[str, int] = {
     "/api/org/column-mapping": 20,
     "/api/billing/portal": 10,
     "/api/analyze": 30,
+    "/api/analyze-batch": 30,
     "/api/preview": 60,
+    "/api/preview-batch": 60,
     "/api/billing/checkout": 20,
 }
 _DEFAULT_LIMIT = 120

@@ -332,6 +332,8 @@ def _prepare_dataframe(
     detected = detect_column_mapping(list(df.columns), df)
     if mapping_override:
         for field in COLUMN_ALIASES:
+            if not hasattr(mapping_override, field):
+                continue
             override_value = getattr(mapping_override, field)
             if override_value:
                 detected[field] = override_value

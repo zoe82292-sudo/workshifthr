@@ -373,6 +373,92 @@ export async function previewFile(file: File, sheetName?: string | null): Promis
   return (await response.json()) as PreviewResponse;
 }
 
+export type BatchPreviewResponse = {
+  files: Array<{
+    filename: string;
+    preview: PreviewResponse;
+  }>;
+};
+
+export async function previewBatch(files: File[]): Promise<BatchPreviewResponse> {
+  for (const file of files) {
+    if (!isAllowedUpload(file)) {
+      throw new Error("Please upload an .xlsx, .xls, or .csv file.");
+    }
+  }
+
+  const formData = new FormData();
+  for (const file of files) {
+    formData.append("files", file, file.name);
+  }
+
+  const response = await fetch(`${API_BASE}/preview-batch`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: formData,
+  });
+
+  if (response.status === 401) {
+    clearSession();
+    throw new Error("Your session expired. Please sign in again.");
+  }
+
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+
+  return (await response.json()) as BatchPreviewResponse;
+}
+
+export async function analyzeBatch(
+  entries: Array<{ file: File; mapping: ColumnMapping; sheetName: string | null }>,
+  options?: { meritIqrMultiplier?: number },
+): Promise<AnalysisResult> {
+  for (const entry of entries) {
+    if (!isAllowedUpload(entry.file)) {
+      throw new Error("Please upload an .xlsx, .xls, or .csv file.");
+    }
+  }
+
+  const formData = new FormData();
+  const fileSpecs = entries.map((entry) => ({
+    filename: entry.file.name,
+    sheet_name: entry.sheetName,
+    column_mapping: entry.mapping,
+  }));
+
+  for (const entry of entries) {
+    formData.append("files", entry.file, entry.file.name);
+  }
+  formData.append("file_specs", JSON.stringify(fileSpecs));
+  if (options?.meritIqrMultiplier != null) {
+    formData.append("merit_iqr_multiplier", String(options.meritIqrMultiplier));
+  }
+
+  const response = await fetch(`${API_BASE}/analyze-batch`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: formData,
+  });
+
+  if (response.status === 401) {
+    clearSession();
+    throw new Error("Your session expired. Please sign in again.");
+  }
+
+  if (response.status === 403) {
+    clearSession();
+    throw new Error(await readError(response));
+  }
+
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+
+  const payload = (await response.json()) as AnalysisResult;
+  return normalizeResult(payload);
+}
+
 export async function analyzeFile(
   file: File,
   options?: {

@@ -26,6 +26,7 @@ Compensation analysis web app for HR teams. Upload an Excel or CSV file and auto
 | --- | --- |
 | Column mapping | Auto-detect columns; manually map any field before analysis |
 | Saved column mappings | Save and reuse mappings per organization (signed-in) or in localStorage (demo) |
+| Multi-file merge | Upload up to 5 files — merged on Employee ID when data is split across exports |
 | Department filter | Filter all result tabs by department |
 | Cycle comparison | Compare current run to a saved history entry (metric deltas + below-min changes) |
 | Merit IQR slider | Adjust outlier sensitivity for merit, promotion, and equity checks |
