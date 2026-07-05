@@ -85,6 +85,10 @@ function overviewRows(result: AnalysisResult, options?: ExportOptions): Array<Ar
     ["Pay equity gaps", summary.pay_equity_gaps],
     ["Tenure pay flags", summary.tenure_pay_flags ?? 0],
     ["Location pay gaps", summary.location_pay_gaps ?? 0],
+    ["Merit matrix flags", summary.merit_matrix_flags ?? 0],
+    ["Range structure issues", summary.range_structure_issues ?? 0],
+    ["New hires below range", summary.new_hire_placement_flags ?? 0],
+    ["Geo pay policy flags", summary.geo_pay_policy_flags ?? 0],
     [],
     ["Compa-ratio"],
     ["Average compa-ratio", insights.compa_ratio.average_compa_ratio ?? ""],
@@ -507,6 +511,95 @@ export function downloadReportExcel(
         ]),
       ]),
       "Location Pay",
+    );
+  }
+
+  if (result.compa_penetration_summary?.available) {
+    const summaryData = result.compa_penetration_summary;
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.aoa_to_sheet([
+        ["By Level", "Headcount", "Avg Compa", "Median Compa", "Below 90%", "90-110%", "Above 110%"],
+        ...summaryData.by_level.map((row) => [
+          row.group_key,
+          row.headcount,
+          row.average_compa ?? "",
+          row.median_compa ?? "",
+          row.below_90,
+          row.between_90_110,
+          row.above_110,
+        ]),
+        [],
+        ["By Department", "Headcount", "Avg Compa", "Median Compa", "Below 90%", "90-110%", "Above 110%"],
+        ...summaryData.by_department.map((row) => [
+          row.group_key,
+          row.headcount,
+          row.average_compa ?? "",
+          row.median_compa ?? "",
+          row.below_90,
+          row.between_90_110,
+          row.above_110,
+        ]),
+      ]),
+      "Compa Summary",
+    );
+  }
+
+  if (result.merit_matrix?.flags?.length) {
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.aoa_to_sheet([
+        ["Employee", "Department", "Compa", "Merit %", "Band", "Guideline Min", "Guideline Max", "Reason"],
+        ...result.merit_matrix.flags.map((row) => [
+          row.employee_name ?? row.employee_id ?? "",
+          row.department ?? "",
+          row.compa_ratio,
+          row.merit_increase,
+          row.matrix_band,
+          row.expected_merit_min,
+          row.expected_merit_max,
+          row.reason,
+        ]),
+      ]),
+      "Merit Matrix",
+    );
+  }
+
+  if (result.total_cash_comp?.available) {
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.aoa_to_sheet([
+        ["Employee", "Base", "Bonus Target %", "Target Bonus", "Total Cash", "Base Compa", "TCC Compa"],
+        ...result.total_cash_comp.employees.map((row) => [
+          row.employee_name ?? row.employee_id ?? "",
+          row.base_salary,
+          row.bonus_target_percent,
+          row.target_bonus_amount,
+          row.total_cash_comp,
+          row.base_compa_ratio ?? "",
+          row.tcc_compa_ratio ?? "",
+        ]),
+      ]),
+      "Total Cash Comp",
+    );
+  }
+
+  if (result.new_hire_placement?.available) {
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.aoa_to_sheet([
+        ["Employee", "Hire Date", "Days", "Salary", "Compa", "Penetration", "Placement"],
+        ...result.new_hire_placement.employees.map((row) => [
+          row.employee_name ?? row.employee_id ?? "",
+          row.hire_date ?? "",
+          row.tenure_days,
+          row.salary,
+          row.compa_ratio ?? "",
+          row.range_penetration ?? "",
+          row.placement_issue,
+        ]),
+      ]),
+      "New Hire Placement",
     );
   }
 

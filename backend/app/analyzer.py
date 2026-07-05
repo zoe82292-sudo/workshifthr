@@ -15,6 +15,19 @@ from app.columns import (
     normalize_upload_dataframe,
     resolve_column_mapping,
 )
+from app.comp_tier1 import (
+    build_compa_penetration_summary,
+    build_currency_report,
+    build_employee_type_report,
+    build_geo_pay_policy_report,
+    build_merit_matrix_report,
+    build_midpoint_progression_report,
+    build_new_hire_placement_report,
+    build_range_structure_report,
+    build_total_cash_comp_report,
+    filter_core_workforce,
+    is_excluded_employee_type,
+)
 from app.comp_extensions import (
     build_bonus_target_review,
     build_merit_by_department,
@@ -42,8 +55,17 @@ from app.models import (
     MeritByDepartmentReport,
     MeritCompaFlag,
     BonusTargetReview,
+    CompaPenetrationSummary,
+    CurrencyReport,
+    EmployeeTypeReport,
+    GeoPayPolicyReport,
+    MeritMatrixReport,
+    MidpointProgressionReport,
+    NewHirePlacementReport,
     PeerSpreadReport,
     PostMeritCompaReport,
+    RangeStructureReport,
+    TotalCashCompReport,
     NewHireMeritFlag,
     OutlierMeritIncreaseRecord,
     PayEquityReport,
@@ -353,6 +375,16 @@ def _empty_result(
         bonus_target_review=BonusTargetReview(available=False),
         post_merit_compa=PostMeritCompaReport(available=False),
         peer_spread=PeerSpreadReport(available=False),
+        merit_matrix=MeritMatrixReport(available=False),
+        range_structure=RangeStructureReport(available=False),
+        compa_penetration_summary=CompaPenetrationSummary(available=False),
+        total_cash_comp=TotalCashCompReport(available=False),
+        new_hire_placement=NewHirePlacementReport(available=False),
+        geo_pay_policy=GeoPayPolicyReport(available=False),
+        currency_report=CurrencyReport(available=False),
+        employee_type_report=EmployeeTypeReport(available=False),
+        midpoint_progression=MidpointProgressionReport(available=False),
+        excluded_employee_ids=[],
         insights=empty_insights(),
         warnings=warnings,
     )
@@ -520,10 +552,56 @@ def analyze_file(
     pay_equity = build_pay_equity_report(prepared, mapping, warnings)
     tenure = build_tenure_report(prepared, mapping, warnings)
     location_pay = build_location_pay_report(prepared, mapping, warnings)
-    merit_by_department = build_merit_by_department(range_penetration)
+
+    core_prepared = filter_core_workforce(prepared, mapping)
+    type_col = mapping.get("employee_type")
+    if type_col and type_col in prepared.columns:
+        excluded_count = sum(
+            1
+            for _, row in prepared.iterrows()
+            if is_excluded_employee_type(_string_value(row.get(type_col)))
+        )
+        if excluded_count:
+            warnings.append(
+                f"{excluded_count} intern/contractor/temporary employees excluded from "
+                "aggregate merit and peer-spread calculations."
+            )
+    core_range_penetration = [
+        employee
+        for employee in range_penetration
+        if employee.row_number
+        not in {
+            int(index) + 2
+            for index, row in prepared.iterrows()
+            if type_col
+            and is_excluded_employee_type(_string_value(row.get(type_col)))
+        }
+    ] if type_col and type_col in prepared.columns else range_penetration
+
+    merit_by_department = build_merit_by_department(core_range_penetration)
     bonus_target_review = build_bonus_target_review(prepared, mapping, warnings)
     post_merit_compa = build_post_merit_compa(range_penetration, mapping)
-    peer_spread = build_peer_spread_report(prepared, mapping, warnings)
+    peer_spread = build_peer_spread_report(core_prepared, mapping, warnings)
+    merit_matrix = build_merit_matrix_report(range_penetration)
+    range_structure = build_range_structure_report(prepared, mapping)
+    compa_penetration_summary = build_compa_penetration_summary(range_penetration)
+    total_cash_comp = build_total_cash_comp_report(prepared, mapping, range_penetration)
+    new_hire_placement = build_new_hire_placement_report(
+        prepared, mapping, range_penetration, below_minimum
+    )
+    geo_pay_policy = build_geo_pay_policy_report(prepared, mapping)
+    currency_report = build_currency_report(prepared, mapping, range_penetration)
+    employee_type_report = build_employee_type_report(prepared, mapping)
+    midpoint_progression = build_midpoint_progression_report(prepared, mapping)
+
+    excluded_employee_ids: list[str] = []
+    if type_col and type_col in prepared.columns:
+        id_col = mapping["employee_id"]
+        for _, row in prepared.iterrows():
+            if is_excluded_employee_type(_string_value(row.get(type_col))):
+                employee_id = _string_value(row.get(id_col))
+                if employee_id:
+                    excluded_employee_ids.append(employee_id)
 
     valid_rows = len(prepared) - len(missing_data)
     average_penetration = (
@@ -590,6 +668,11 @@ def analyze_file(
             bonus_target_outliers=len(bonus_target_review.outliers),
             peer_spread_flags=len(peer_spread.flags),
             post_merit_compa_rows=len(post_merit_compa.employees),
+            merit_matrix_flags=len(merit_matrix.flags),
+            range_structure_issues=len(range_structure.issues),
+            new_hire_placement_flags=new_hire_placement.below_range_count,
+            geo_pay_policy_flags=len(geo_pay_policy.flags),
+            midpoint_progression_issues=len(midpoint_progression.issues),
         ),
         column_mapping=ColumnMapping(**mapping),
         detected_columns=list(df.columns),
@@ -621,6 +704,16 @@ def analyze_file(
         bonus_target_review=bonus_target_review,
         post_merit_compa=post_merit_compa,
         peer_spread=peer_spread,
+        merit_matrix=merit_matrix,
+        range_structure=range_structure,
+        compa_penetration_summary=compa_penetration_summary,
+        total_cash_comp=total_cash_comp,
+        new_hire_placement=new_hire_placement,
+        geo_pay_policy=geo_pay_policy,
+        currency_report=currency_report,
+        employee_type_report=employee_type_report,
+        midpoint_progression=midpoint_progression,
+        excluded_employee_ids=excluded_employee_ids,
         insights=empty_insights(),
         warnings=warnings,
     )

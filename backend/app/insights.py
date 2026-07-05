@@ -253,6 +253,43 @@ def _build_executive_summary(
             f"{_plural(summary.bonus_target_outliers, 'outlier', 'outliers')} vs. same job level."
         )
 
+    if summary.merit_matrix_flags:
+        bullets.append(
+            f"{summary.merit_matrix_flags} merit increase "
+            f"{_plural(summary.merit_matrix_flags, 'flag', 'flags')} outside default compa-ratio matrix bands."
+        )
+
+    if summary.range_structure_issues:
+        bullets.append(
+            f"{summary.range_structure_issues} range structure "
+            f"{_plural(summary.range_structure_issues, 'issue', 'issues')} — invalid order, overlap, or unusual width."
+        )
+
+    if summary.new_hire_placement_flags:
+        bullets.append(
+            f"{summary.new_hire_placement_flags} recent "
+            f"{_plural(summary.new_hire_placement_flags, 'hire', 'hires')} "
+            f"{_plural(summary.new_hire_placement_flags, 'is', 'are')} still below range minimum."
+        )
+
+    if summary.geo_pay_policy_flags:
+        bullets.append(
+            f"{summary.geo_pay_policy_flags} geo differential "
+            f"{_plural(summary.geo_pay_policy_flags, 'flag', 'flags')} vs. pay-zone medians."
+        )
+
+    if summary.midpoint_progression_issues:
+        bullets.append(
+            f"{summary.midpoint_progression_issues} midpoint progression "
+            f"{_plural(summary.midpoint_progression_issues, 'issue', 'issues')} between adjacent job levels."
+        )
+
+    if result.total_cash_comp.available and result.total_cash_comp.average_tcc is not None:
+        bullets.append(
+            f"Total cash comp (base + target bonus) averages "
+            f"${result.total_cash_comp.average_tcc:,.0f} across employees with bonus targets."
+        )
+
     if result.pay_equity.available:
         if result.pay_equity.gender_gaps:
             top_gender_gap = result.pay_equity.gender_gaps[0]

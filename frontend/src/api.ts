@@ -77,6 +77,11 @@ function normalizeSummary(raw: Partial<AnalysisSummary> | undefined): AnalysisSu
     bonus_target_outliers: raw?.bonus_target_outliers ?? 0,
     peer_spread_flags: raw?.peer_spread_flags ?? 0,
     post_merit_compa_rows: raw?.post_merit_compa_rows ?? 0,
+    merit_matrix_flags: raw?.merit_matrix_flags ?? 0,
+    range_structure_issues: raw?.range_structure_issues ?? 0,
+    new_hire_placement_flags: raw?.new_hire_placement_flags ?? 0,
+    geo_pay_policy_flags: raw?.geo_pay_policy_flags ?? 0,
+    midpoint_progression_issues: raw?.midpoint_progression_issues ?? 0,
   };
 }
 
@@ -140,6 +145,34 @@ const EMPTY_PEER_SPREAD = {
   disclaimer: "",
 };
 
+const EMPTY_MERIT_MATRIX = { available: false, flags: [], bands: [], disclaimer: "" };
+const EMPTY_RANGE_STRUCTURE = { available: false, issues: [], level_ranges: [], disclaimer: "" };
+const EMPTY_COMPA_SUMMARY = {
+  available: false,
+  by_level: [],
+  by_department: [],
+  by_level_department: [],
+  disclaimer: "",
+};
+const EMPTY_TCC = { available: false, employees: [], average_tcc: null, disclaimer: "" };
+const EMPTY_NEW_HIRE_PLACEMENT = {
+  available: false,
+  employees: [],
+  lookback_days: 365,
+  below_range_count: 0,
+  disclaimer: "",
+};
+const EMPTY_GEO_POLICY = { available: false, flags: [], zone_medians: [], disclaimer: "" };
+const EMPTY_CURRENCY = { available: false, currencies: [], multi_currency: false, disclaimer: "" };
+const EMPTY_EMPLOYEE_TYPE = {
+  available: false,
+  types: [],
+  excluded_types: [],
+  excluded_count: 0,
+  disclaimer: "",
+};
+const EMPTY_MIDPOINT = { available: false, issues: [], level_midpoints: [], disclaimer: "" };
+
 function normalizeResult(raw: AnalysisResult): AnalysisResult {
   return {
     ...raw,
@@ -158,6 +191,16 @@ function normalizeResult(raw: AnalysisResult): AnalysisResult {
     bonus_target_review: raw.bonus_target_review ?? EMPTY_BONUS_REVIEW,
     post_merit_compa: raw.post_merit_compa ?? EMPTY_POST_MERIT,
     peer_spread: raw.peer_spread ?? EMPTY_PEER_SPREAD,
+    merit_matrix: raw.merit_matrix ?? EMPTY_MERIT_MATRIX,
+    range_structure: raw.range_structure ?? EMPTY_RANGE_STRUCTURE,
+    compa_penetration_summary: raw.compa_penetration_summary ?? EMPTY_COMPA_SUMMARY,
+    total_cash_comp: raw.total_cash_comp ?? EMPTY_TCC,
+    new_hire_placement: raw.new_hire_placement ?? EMPTY_NEW_HIRE_PLACEMENT,
+    geo_pay_policy: raw.geo_pay_policy ?? EMPTY_GEO_POLICY,
+    currency_report: raw.currency_report ?? EMPTY_CURRENCY,
+    employee_type_report: raw.employee_type_report ?? EMPTY_EMPLOYEE_TYPE,
+    midpoint_progression: raw.midpoint_progression ?? EMPTY_MIDPOINT,
+    excluded_employee_ids: raw.excluded_employee_ids ?? [],
     insights: raw.insights ?? EMPTY_INSIGHTS,
     warnings: raw.warnings ?? [],
     managers_below_reports: raw.managers_below_reports ?? [],

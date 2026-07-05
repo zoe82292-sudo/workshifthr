@@ -7,6 +7,7 @@ import {
   buildDepartmentLookup,
   collectDepartments,
   employeeInDepartment,
+  rowPassesCoreFilter,
   textMatchesSearch,
 } from "../analysisFilters";
 import {
@@ -15,6 +16,17 @@ import {
   PeerSpreadPanel,
   PostMeritCompaPanel,
 } from "./CompPlanningPanels";
+import {
+  CompaPenetrationSummaryPanel,
+  CurrencyReportPanel,
+  EmployeeTypePanel,
+  GeoPayPolicyPanel,
+  MeritMatrixPanel,
+  MidpointProgressionPanel,
+  NewHirePlacementPanel,
+  RangeStructurePanel,
+  TotalCashCompPanel,
+} from "./CompTier1Panels";
 import { ColumnMappingSummary } from "./ColumnMappingSummary";
 import { InsightsPanel } from "./InsightsPanel";
 import { PayEquityPanel, payEquityTabCount } from "./PayEquityPanel";
@@ -141,6 +153,56 @@ const TABS: Array<{ id: AnalysisTab; label: string; count: (result: AnalysisResu
       label: "Post-Merit Compa",
       count: (r) => r.summary.post_merit_compa_rows ?? r.post_merit_compa?.employees?.length ?? 0,
     },
+    {
+      id: "new_hire_placement",
+      label: "New Hire Placement",
+      count: (r) =>
+        r.summary.new_hire_placement_flags ??
+        r.new_hire_placement?.below_range_count ??
+        r.new_hire_placement?.employees?.length ??
+        0,
+    },
+    {
+      id: "merit_matrix",
+      label: "Merit Matrix",
+      count: (r) => r.summary.merit_matrix_flags ?? r.merit_matrix?.flags?.length ?? 0,
+    },
+    {
+      id: "range_structure",
+      label: "Range Structure",
+      count: (r) => r.summary.range_structure_issues ?? r.range_structure?.issues?.length ?? 0,
+    },
+    {
+      id: "compa_summary",
+      label: "Compa Summary",
+      count: (r) => r.compa_penetration_summary?.by_level?.length ?? 0,
+    },
+    {
+      id: "total_cash_comp",
+      label: "Total Cash Comp",
+      count: (r) => r.total_cash_comp?.employees?.length ?? 0,
+    },
+    {
+      id: "geo_pay_policy",
+      label: "Geo Pay Policy",
+      count: (r) => r.summary.geo_pay_policy_flags ?? r.geo_pay_policy?.flags?.length ?? 0,
+    },
+    {
+      id: "midpoint_progression",
+      label: "Midpoint Progression",
+      count: (r) =>
+        r.summary.midpoint_progression_issues ?? r.midpoint_progression?.issues?.length ?? 0,
+    },
+    {
+      id: "currency_report",
+      label: "Currency",
+      count: (r) => r.currency_report?.currencies?.length ?? 0,
+    },
+    {
+      id: "employee_types",
+      label: "Employee Types",
+      count: (r) => r.employee_type_report?.types?.length ?? 0,
+    },
     { id: "missing_data", label: "Missing Data", count: (r) => r.summary.missing_data },
   ];
 
@@ -154,11 +216,20 @@ const TAB_GROUPS: Array<{ title: string; ids: AnalysisTab[] }> = [
       "compression",
       "peer_spread",
       "managers_below_reports",
+      "new_hire_placement",
     ],
   },
   {
     title: "Ranges & compa",
-    ids: ["range_penetration", "compa_ratio", "post_merit_compa"],
+    ids: [
+      "range_penetration",
+      "compa_ratio",
+      "compa_summary",
+      "post_merit_compa",
+      "range_structure",
+      "midpoint_progression",
+      "total_cash_comp",
+    ],
   },
   {
     title: "Pay equity",
@@ -166,7 +237,7 @@ const TAB_GROUPS: Array<{ title: string; ids: AnalysisTab[] }> = [
   },
   {
     title: "Workforce insights",
-    ids: ["tenure", "location_pay"],
+    ids: ["tenure", "location_pay", "geo_pay_policy", "currency_report", "employee_types"],
   },
   {
     title: "Merit & LTI",
@@ -174,6 +245,7 @@ const TAB_GROUPS: Array<{ title: string; ids: AnalysisTab[] }> = [
       "outlier_merit_increases",
       "new_hire_merit_flags",
       "merit_compa_flags",
+      "merit_matrix",
       "equity_grants",
       "unusual_comp_changes",
     ],
@@ -209,6 +281,8 @@ function EmployeeTable({
   showGapToMinimum = false,
   departmentFilter = "",
   search = "",
+  excludeNonCore = false,
+  excludedIds,
   onDepartmentSelect,
 }: {
   rows: AnalysisResult["below_minimum"];
@@ -216,11 +290,20 @@ function EmployeeTable({
   showGapToMinimum?: boolean;
   departmentFilter?: string;
   search?: string;
+  excludeNonCore?: boolean;
+  excludedIds?: Set<string>;
   onDepartmentSelect?: (department: string) => void;
 }) {
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
     return rows.filter((row) => {
+      if (
+        excludeNonCore &&
+        excludedIds &&
+        !rowPassesCoreFilter(row.employee_id, excludeNonCore, excludedIds)
+      ) {
+        return false;
+      }
       if (departmentFilter && (row.department ?? "") !== departmentFilter) {
         return false;
       }
@@ -236,7 +319,7 @@ function EmployeeTable({
         .toLowerCase();
       return haystack.includes(query);
     });
-  }, [rows, departmentFilter, search]);
+  }, [rows, departmentFilter, search, excludeNonCore, excludedIds]);
 
   const { sortedRows, toggleSort, sortLabel } = useSortableRows(filtered, "row_number");
   const pagination = useTablePagination(sortedRows);
@@ -392,6 +475,7 @@ export function ResultsDashboard({
   onHistorySaved,
 }: ResultsDashboardProps) {
   const [departmentFilter, setDepartmentFilter] = useState("");
+  const [excludeNonCore, setExcludeNonCore] = useState(false);
   const [search, setSearch] = useState("");
   const [savingHistory, setSavingHistory] = useState(false);
   const [historyMessage, setHistoryMessage] = useState<string | null>(null);
@@ -400,6 +484,11 @@ export function ResultsDashboard({
   const [anonymizeExports, setAnonymizeExports] = useState(false);
 
   const departmentLookup = useMemo(() => buildDepartmentLookup(result), [result]);
+  const excludedIds = useMemo(
+    () => new Set(result.excluded_employee_ids ?? []),
+    [result.excluded_employee_ids],
+  );
+  const hasExcludedEmployees = excludedIds.size > 0;
 
   const exportOptions = useMemo(
     () => ({ targetMeritPercent, anonymize: anonymizeExports }),
@@ -464,6 +553,12 @@ export function ResultsDashboard({
       const query = search.trim().toLowerCase();
       return rows.filter((row) => {
         if (
+          excludeNonCore &&
+          !rowPassesCoreFilter(row.employee_id, excludeNonCore, excludedIds)
+        ) {
+          return false;
+        }
+        if (
           departmentFilter &&
           !employeeInDepartment(row.employee_id, departmentFilter, departmentLookup)
         ) {
@@ -473,7 +568,7 @@ export function ResultsDashboard({
         return textMatchesSearch([row.employee_id, row.employee_name], query);
       });
     },
-    [departmentFilter, departmentLookup, search],
+    [departmentFilter, departmentLookup, excludeNonCore, excludedIds, search],
   );
 
   const filteredEquityGrants = useMemo(() => {
@@ -607,6 +702,39 @@ export function ResultsDashboard({
         onTargetMeritChange={setTargetMeritPercent}
       />
       <MeritByDepartmentTable report={result.merit_by_department} />
+      {result.compa_penetration_summary?.available ? (
+        <section className="equity-section insights-compa-summary">
+          <div className="panel-header">
+            <h3>Compa by level</h3>
+          </div>
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Level</th>
+                  <th>Headcount</th>
+                  <th>Avg compa</th>
+                  <th>&lt;90%</th>
+                  <th>90–110%</th>
+                  <th>&gt;110%</th>
+                </tr>
+              </thead>
+              <tbody>
+                {result.compa_penetration_summary.by_level.map((row) => (
+                  <tr key={row.group_key}>
+                    <td>{row.group_key}</td>
+                    <td>{row.headcount}</td>
+                    <td>{row.average_compa != null ? `${row.average_compa}%` : "—"}</td>
+                    <td>{row.below_90}</td>
+                    <td>{row.between_90_110}</td>
+                    <td>{row.above_110}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : null}
       <div className="summary-grid card-grid card-grid--4" aria-label="Issue counts">
         <div className="summary-card stat-card">
           <span className="stat-card__label">Total rows</span>
@@ -685,6 +813,16 @@ export function ResultsDashboard({
               onChange={(event) => setSearch(event.target.value)}
             />
           </label>
+          {hasExcludedEmployees ? (
+            <label className="table-filters__checkbox">
+              <input
+                type="checkbox"
+                checked={excludeNonCore}
+                onChange={(event) => setExcludeNonCore(event.target.checked)}
+              />
+              <span>Hide interns & contractors</span>
+            </label>
+          ) : null}
           {departmentFilter ? (
             <div className="table-filters__active">
               <span>
@@ -733,6 +871,8 @@ export function ResultsDashboard({
           showGapToMinimum
           departmentFilter={departmentFilter}
           search={search}
+          excludeNonCore={excludeNonCore}
+          excludedIds={excludedIds}
           onDepartmentSelect={toggleDepartmentFilter}
         />
       ) : null}
@@ -741,6 +881,8 @@ export function ResultsDashboard({
           rows={result.above_maximum}
           departmentFilter={departmentFilter}
           search={search}
+          excludeNonCore={excludeNonCore}
+          excludedIds={excludedIds}
           onDepartmentSelect={toggleDepartmentFilter}
         />
       ) : null}
@@ -786,6 +928,8 @@ export function ResultsDashboard({
             showPenetration
             departmentFilter={departmentFilter}
             search={search}
+            excludeNonCore={excludeNonCore}
+            excludedIds={excludedIds}
             onDepartmentSelect={toggleDepartmentFilter}
           />
         </>
@@ -1273,6 +1417,42 @@ export function ResultsDashboard({
 
       {activeTab === "post_merit_compa" ? (
         <PostMeritCompaPanel report={result.post_merit_compa} />
+      ) : null}
+
+      {activeTab === "merit_matrix" ? (
+        <MeritMatrixPanel report={result.merit_matrix} />
+      ) : null}
+
+      {activeTab === "range_structure" ? (
+        <RangeStructurePanel report={result.range_structure} />
+      ) : null}
+
+      {activeTab === "compa_summary" ? (
+        <CompaPenetrationSummaryPanel summary={result.compa_penetration_summary} />
+      ) : null}
+
+      {activeTab === "total_cash_comp" ? (
+        <TotalCashCompPanel report={result.total_cash_comp} />
+      ) : null}
+
+      {activeTab === "new_hire_placement" ? (
+        <NewHirePlacementPanel report={result.new_hire_placement} />
+      ) : null}
+
+      {activeTab === "geo_pay_policy" ? (
+        <GeoPayPolicyPanel report={result.geo_pay_policy} />
+      ) : null}
+
+      {activeTab === "currency_report" ? (
+        <CurrencyReportPanel report={result.currency_report} />
+      ) : null}
+
+      {activeTab === "employee_types" ? (
+        <EmployeeTypePanel report={result.employee_type_report} />
+      ) : null}
+
+      {activeTab === "midpoint_progression" ? (
+        <MidpointProgressionPanel report={result.midpoint_progression} />
       ) : null}
 
       {activeTab === "pay_equity" ? (

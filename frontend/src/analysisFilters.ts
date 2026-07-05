@@ -39,6 +39,23 @@ export function employeeInDepartment(
   return lookup.get(employeeId) === departmentFilter;
 }
 
+export function employeeIsExcluded(
+  employeeId: string | null | undefined,
+  excludeNonCore: boolean,
+  excludedIds: Set<string>,
+): boolean {
+  if (!excludeNonCore || !employeeId) return false;
+  return excludedIds.has(employeeId);
+}
+
+export function rowPassesCoreFilter(
+  employeeId: string | null | undefined,
+  excludeNonCore: boolean,
+  excludedIds: Set<string>,
+): boolean {
+  return !employeeIsExcluded(employeeId, excludeNonCore, excludedIds);
+}
+
 export function rowMatchesDepartment(
   row: EmployeeRecord,
   departmentFilter: string,

@@ -24,6 +24,10 @@ class ColumnMapping(BaseModel):
     equity_grant: str | None = None
     gender: str | None = None
     race_ethnicity: str | None = None
+    employee_type: str | None = None
+    pay_zone: str | None = None
+    geo_differential: str | None = None
+    currency: str | None = None
 
 
 class AnalysisOptions(BaseModel):
@@ -257,6 +261,203 @@ class PeerSpreadReport(BaseModel):
     disclaimer: str = ""
 
 
+class MeritMatrixBand(BaseModel):
+    label: str
+    compa_min: float
+    compa_max: float
+    merit_min: float
+    merit_max: float
+
+
+class MeritMatrixFlag(BaseModel):
+    row_number: int
+    employee_id: str | None = None
+    employee_name: str | None = None
+    department: str | None = None
+    job_level: str | None = None
+    compa_ratio: float
+    merit_increase: float
+    matrix_band: str
+    expected_merit_min: float
+    expected_merit_max: float
+    reason: str
+
+
+class MeritMatrixReport(BaseModel):
+    available: bool = False
+    flags: list[MeritMatrixFlag] = Field(default_factory=list)
+    bands: list[MeritMatrixBand] = Field(default_factory=list)
+    disclaimer: str = ""
+
+
+class RangeStructureIssue(BaseModel):
+    issue_type: str
+    job_level: str
+    description: str
+    related_level: str | None = None
+    range_min: float | None = None
+    range_mid: float | None = None
+    range_max: float | None = None
+
+
+class LevelRangeSummary(BaseModel):
+    job_level: str
+    range_min: float
+    range_mid: float | None = None
+    range_max: float
+    range_width: float
+    range_width_percent: float | None = None
+    employee_count: int = 0
+
+
+class RangeStructureReport(BaseModel):
+    available: bool = False
+    issues: list[RangeStructureIssue] = Field(default_factory=list)
+    level_ranges: list[LevelRangeSummary] = Field(default_factory=list)
+    disclaimer: str = ""
+
+
+class GroupCompaStats(BaseModel):
+    group_type: str
+    group_key: str
+    job_level: str | None = None
+    department: str | None = None
+    headcount: int
+    average_compa: float | None = None
+    median_compa: float | None = None
+    average_penetration: float | None = None
+    below_90: int = 0
+    between_90_110: int = 0
+    above_110: int = 0
+
+
+class CompaPenetrationSummary(BaseModel):
+    available: bool = False
+    by_level: list[GroupCompaStats] = Field(default_factory=list)
+    by_department: list[GroupCompaStats] = Field(default_factory=list)
+    by_level_department: list[GroupCompaStats] = Field(default_factory=list)
+    disclaimer: str = ""
+
+
+class TotalCashCompRecord(BaseModel):
+    row_number: int
+    employee_id: str | None = None
+    employee_name: str | None = None
+    department: str | None = None
+    job_level: str | None = None
+    base_salary: float
+    bonus_target_percent: float
+    target_bonus_amount: float
+    total_cash_comp: float
+    base_compa_ratio: float | None = None
+    tcc_compa_ratio: float | None = None
+
+
+class TotalCashCompReport(BaseModel):
+    available: bool = False
+    employees: list[TotalCashCompRecord] = Field(default_factory=list)
+    average_tcc: float | None = None
+    disclaimer: str = ""
+
+
+class NewHirePlacementRecord(BaseModel):
+    row_number: int
+    employee_id: str | None = None
+    employee_name: str | None = None
+    department: str | None = None
+    job_level: str | None = None
+    hire_date: str | None = None
+    tenure_days: int
+    salary: float
+    range_min: float
+    range_max: float
+    compa_ratio: float | None = None
+    range_penetration: float | None = None
+    below_minimum: bool = False
+    placement_issue: str
+
+
+class NewHirePlacementReport(BaseModel):
+    available: bool = False
+    employees: list[NewHirePlacementRecord] = Field(default_factory=list)
+    lookback_days: int = 365
+    below_range_count: int = 0
+    disclaimer: str = ""
+
+
+class GeoPayPolicyFlag(BaseModel):
+    row_number: int
+    employee_id: str | None = None
+    pay_zone: str | None = None
+    location: str | None = None
+    expected_differential: float | None = None
+    actual_differential: float | None = None
+    salary: float
+    reason: str
+
+
+class GeoZoneMedian(BaseModel):
+    pay_zone: str
+    median_differential: float
+
+
+class GeoPayPolicyReport(BaseModel):
+    available: bool = False
+    flags: list[GeoPayPolicyFlag] = Field(default_factory=list)
+    zone_medians: list[GeoZoneMedian] = Field(default_factory=list)
+    disclaimer: str = ""
+
+
+class CurrencyGroupStats(BaseModel):
+    currency: str
+    headcount: int
+    median_salary: float | None = None
+    median_salary_usd: float | None = None
+    fx_rate_to_usd: float = 1.0
+
+
+class CurrencyReport(BaseModel):
+    available: bool = False
+    currencies: list[CurrencyGroupStats] = Field(default_factory=list)
+    multi_currency: bool = False
+    disclaimer: str = ""
+
+
+class EmployeeTypeCount(BaseModel):
+    employee_type: str
+    headcount: int
+    excluded_from_aggregates: bool = False
+
+
+class EmployeeTypeReport(BaseModel):
+    available: bool = False
+    types: list[EmployeeTypeCount] = Field(default_factory=list)
+    excluded_types: list[str] = Field(default_factory=list)
+    excluded_count: int = 0
+    disclaimer: str = ""
+
+
+class LevelMidpointRow(BaseModel):
+    job_level: str
+    range_mid: float
+    sort_rank: int = 0
+
+
+class MidpointProgressionIssue(BaseModel):
+    lower_level: str
+    higher_level: str
+    lower_midpoint: float
+    higher_midpoint: float
+    description: str
+
+
+class MidpointProgressionReport(BaseModel):
+    available: bool = False
+    issues: list[MidpointProgressionIssue] = Field(default_factory=list)
+    level_midpoints: list[LevelMidpointRow] = Field(default_factory=list)
+    disclaimer: str = ""
+
+
 class UnusualCompChangeRecord(BaseModel):
     row_number: int
     employee_id: str | None = None
@@ -403,6 +604,11 @@ class AnalysisSummary(BaseModel):
     bonus_target_outliers: int = 0
     peer_spread_flags: int = 0
     post_merit_compa_rows: int = 0
+    merit_matrix_flags: int = 0
+    range_structure_issues: int = 0
+    new_hire_placement_flags: int = 0
+    geo_pay_policy_flags: int = 0
+    midpoint_progression_issues: int = 0
 
 
 class AnalysisResult(BaseModel):
@@ -433,6 +639,16 @@ class AnalysisResult(BaseModel):
     bonus_target_review: BonusTargetReview
     post_merit_compa: PostMeritCompaReport
     peer_spread: PeerSpreadReport
+    merit_matrix: MeritMatrixReport
+    range_structure: RangeStructureReport
+    compa_penetration_summary: CompaPenetrationSummary
+    total_cash_comp: TotalCashCompReport
+    new_hire_placement: NewHirePlacementReport
+    geo_pay_policy: GeoPayPolicyReport
+    currency_report: CurrencyReport
+    employee_type_report: EmployeeTypeReport
+    midpoint_progression: MidpointProgressionReport
+    excluded_employee_ids: list[str] = Field(default_factory=list)
     insights: AnalysisInsights
     warnings: list[str] = Field(default_factory=list)
 
