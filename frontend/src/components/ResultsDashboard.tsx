@@ -39,7 +39,7 @@ import {
   tabSeverity,
 } from "../tabConfig";
 import { LocationPayPanel, TenurePanel } from "./TenureLocationPanels";
-import { useMemo, useState, useCallback, type ReactNode } from "react";
+import { useMemo, useState, useCallback, useEffect, type ReactNode } from "react";
 import { TablePagination, useTablePagination } from "./TablePagination";
 
 interface ResultsDashboardProps {
@@ -415,6 +415,37 @@ export function ResultsDashboard({
 
   const departments = useMemo(() => collectDepartments(result), [result]);
 
+  const visibleTabGroups = useMemo(
+    () =>
+      TAB_GROUPS.map((group) => ({
+        ...group,
+        ids: group.ids.filter((tabId) => tabIsVisible(tabId, result)),
+      })).filter((group) => group.ids.length > 0),
+    [result],
+  );
+
+  const [activeTabGroup, setActiveTabGroup] = useState(
+    () => visibleTabGroups.find((group) => group.ids.includes(activeTab))?.title ?? visibleTabGroups[0]?.title ?? "",
+  );
+
+  useEffect(() => {
+    const group = visibleTabGroups.find((item) => item.ids.includes(activeTab));
+    if (group) {
+      setActiveTabGroup(group.title);
+    }
+  }, [activeTab, visibleTabGroups]);
+
+  const currentTabGroup = visibleTabGroups.find((group) => group.title === activeTabGroup) ?? visibleTabGroups[0];
+
+  function selectTabGroup(title: string) {
+    setActiveTabGroup(title);
+    const group = visibleTabGroups.find((item) => item.title === title);
+    if (!group) return;
+    if (!group.ids.includes(activeTab)) {
+      onTabChange(group.ids[0]);
+    }
+  }
+
   function toggleDepartmentFilter(department: string) {
     setDepartmentFilter((current) => (current === department ? "" : department));
   }
@@ -634,40 +665,46 @@ export function ResultsDashboard({
             </div>
           ) : null}
         </div>
+      </div>
 
-      <div className="tab-groups" role="tablist" aria-label="Issue categories">
-        {TAB_GROUPS.map((group) => {
-          const visibleTabs = group.ids.filter((tabId) => tabIsVisible(tabId, result));
-          if (visibleTabs.length === 0) return null;
-          return (
-          <div className="tab-group" key={group.title}>
-            <span className="tab-group__label">{group.title}</span>
-            <div className="tab-group__tabs">
-              {visibleTabs.map((tabId) => {
-                const tab = TABS_BY_ID[tabId];
-                const count = tab.count(result);
-                const severity = tabSeverity(count, tab.countKind);
-                return (
-                  <button
-                    key={tabId}
-                    type="button"
-                    role="tab"
-                    aria-selected={activeTab === tabId}
-                    className={`tab tab--${severity} ${activeTab === tabId ? "active" : ""}`}
-                    onClick={() => onTabChange(tabId)}
-                  >
-                    <span className={`tab-severity tab-severity--${severity}`} aria-hidden />
-                    {tab.label} ({formatTabCount(tab, count)})
-                  </button>
-                );
-              })}
-            </div>
+      <div className="results-tab-nav" role="tablist" aria-label="Issue categories">
+        <div className="tab-category-nav">
+          {visibleTabGroups.map((group) => (
+            <button
+              key={group.title}
+              type="button"
+              className={`tab-category ${activeTabGroup === group.title ? "active" : ""}`}
+              onClick={() => selectTabGroup(group.title)}
+            >
+              {group.title}
+            </button>
+          ))}
+        </div>
+        {currentTabGroup ? (
+          <div className="tab-group__tabs">
+            {currentTabGroup.ids.map((tabId) => {
+              const tab = TABS_BY_ID[tabId];
+              const count = tab.count(result);
+              const severity = tabSeverity(count, tab.countKind);
+              return (
+                <button
+                  key={tabId}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === tabId}
+                  className={`tab tab--${severity} ${activeTab === tabId ? "active" : ""}`}
+                  onClick={() => onTabChange(tabId)}
+                >
+                  <span className={`tab-severity tab-severity--${severity}`} aria-hidden />
+                  {tab.label} ({formatTabCount(tab, count)})
+                </button>
+              );
+            })}
           </div>
-          );
-        })}
-      </div>
+        ) : null}
       </div>
 
+      <div className="results-tab-content">
       {activeTab === "review_queue" ? (
         <ReviewQueuePanel
           result={result}
@@ -1311,6 +1348,7 @@ export function ResultsDashboard({
           </PaginatedSlice>
         )
       ) : null}
+      </div>
     </>
   );
 }
