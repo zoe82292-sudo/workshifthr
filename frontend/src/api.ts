@@ -238,8 +238,16 @@ function normalizeResult(raw: AnalysisResult): AnalysisResult {
     equity_grants: raw.equity_grants ?? [],
     detected_columns: raw.detected_columns ?? [],
     missing_required_columns: raw.missing_required_columns ?? [],
+    trial_mode: raw.trial_mode ?? false,
   };
 }
+
+export type AuthStatus = {
+  auth_enabled: boolean;
+  trial_enabled: boolean;
+  trial_max_rows: number;
+  trial_max_files: number;
+};
 
 export async function checkBackendHealth(): Promise<boolean> {
   try {
@@ -250,16 +258,31 @@ export async function checkBackendHealth(): Promise<boolean> {
   }
 }
 
-export async function checkAuthStatus(): Promise<boolean> {
+export async function checkAuthStatus(): Promise<AuthStatus> {
   try {
     const response = await fetch(`${API_BASE}/auth/status`);
     if (!response.ok) {
-      return false;
+      return {
+        auth_enabled: false,
+        trial_enabled: false,
+        trial_max_rows: 250,
+        trial_max_files: 1,
+      };
     }
-    const payload = (await response.json()) as { auth_enabled?: boolean };
-    return payload.auth_enabled === true;
+    const payload = (await response.json()) as Partial<AuthStatus>;
+    return {
+      auth_enabled: payload.auth_enabled === true,
+      trial_enabled: payload.trial_enabled === true,
+      trial_max_rows: payload.trial_max_rows ?? 250,
+      trial_max_files: payload.trial_max_files ?? 1,
+    };
   } catch {
-    return false;
+    return {
+      auth_enabled: false,
+      trial_enabled: false,
+      trial_max_rows: 500,
+      trial_max_files: 1,
+    };
   }
 }
 

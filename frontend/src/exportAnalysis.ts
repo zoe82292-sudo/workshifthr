@@ -2,103 +2,63 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import type { AnalysisResult } from "./types";
+import {
+  BRAND,
+  buildDataSheet,
+  buildOverviewSheet,
+  displayEmployeeName,
+  drawPdfHeader,
+  drawTrialWatermark,
+  formatMoney,
+  formatPercent,
+  pdfFooter,
+  riskColor,
+  triggerDownload,
+  type ExportOptions,
+} from "./exportFormatters";
+
+export type { ExportOptions };
 
 const REPORT_FILENAME = "shiftworkshr-report";
 const SUMMARY_FILENAME = "shiftworkshr-summary";
 
-export type ExportOptions = {
-  targetMeritPercent?: number | null;
-  anonymize?: boolean;
+function exportFilename(base: string, ext: "xlsx" | "pdf", trial?: boolean) {
+  if (trial) {
+    return ext === "pdf" ? "shiftworkshr-trial-summary.pdf" : "shiftworkshr-trial-report.xlsx";
+  }
+  return `${base}.${ext}`;
+}
+
+const TABLE_THEME = {
+  styles: {
+    fontSize: 9,
+    cellPadding: 5,
+    lineColor: [210, 221, 214] as [number, number, number],
+    lineWidth: 0.5,
+  },
+  headStyles: {
+    fillColor: BRAND.primary,
+    textColor: 255,
+    fontStyle: "bold" as const,
+    halign: "left" as const,
+  },
+  alternateRowStyles: {
+    fillColor: BRAND.surface,
+  },
+  margin: { left: 48, right: 48 },
 };
 
-function displayEmployeeName(
-  employeeId: string | null | undefined,
-  employeeName: string | null | undefined,
-  options?: ExportOptions,
-): string {
-  if (options?.anonymize) {
-    return employeeId ? `Employee ${employeeId}` : "Employee";
-  }
-  return employeeName ?? employeeId ?? "";
+function appendSheet(
+  workbook: XLSX.WorkBook,
+  name: string,
+  headers: string[],
+  rows: Array<Array<string | number | null | undefined>>,
+  options?: Parameters<typeof buildDataSheet>[2],
+) {
+  XLSX.utils.book_append_sheet(workbook, buildDataSheet(headers, rows, options), name.slice(0, 31));
 }
 
-function triggerDownload(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(url);
-}
-
-function formatMoney(value: number | null | undefined): string {
-  if (value == null) return "";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-function overviewRows(result: AnalysisResult, options?: ExportOptions): Array<Array<string | number>> {
-  const { insights, summary } = result;
-  const generatedAt = new Date().toLocaleString();
-  const meritPercent = options?.targetMeritPercent;
-  const projectedMeritPool =
-    meritPercent != null && Number.isFinite(meritPercent)
-      ? (insights.merit_calculator.payroll_base * meritPercent) / 100
-      : insights.budget_impact.projected_merit_pool;
-  const totalBudgetImpact = insights.budget_impact.cost_to_minimum + projectedMeritPool;
-  return [
-    ["ShiftWorksHR Compensation Report"],
-    ["Generated", generatedAt],
-    [
-      "What's in the Excel file",
-      "This Overview tab plus separate tabs for flagged issues, pay equity, tenure, location pay, and employee detail.",
-    ],
-    [],
-    ["Key findings"],
-    ["Headline", insights.executive_summary.headline],
-    ["Risk level", insights.executive_summary.risk_level],
-    ...insights.executive_summary.bullets.map((bullet) => ["", bullet]),
-    [],
-    ["Budget impact"],
-    ["Cost to minimum", insights.budget_impact.cost_to_minimum],
-    ["Projected merit pool", projectedMeritPool],
-    ["Total budget impact", totalBudgetImpact],
-    [],
-    ["Issue counts"],
-    ["Total rows", summary.total_rows],
-    ["Below minimum", summary.below_minimum],
-    ["Above maximum", summary.above_maximum],
-    ["Duplicate IDs", summary.duplicate_ids],
-    ["Compression issues", summary.compression_issues],
-    ["Managers below reports", summary.managers_below_reports],
-    ["Missing bonus targets", summary.missing_bonus_targets],
-    ["Missing salary ranges", summary.missing_salary_ranges],
-    ["Invalid effective dates", summary.invalid_effective_dates],
-    ["Outlier merit increases", summary.outlier_merit_increases],
-    ["New-hire merit flags", summary.new_hire_merit_flags ?? 0],
-    ["Merit vs compa flags", summary.merit_compa_flags ?? 0],
-    ["Unusual comp changes", summary.unusual_comp_changes ?? 0],
-    ["Equity grant outliers", summary.equity_grant_outliers ?? 0],
-    ["Pay equity gaps", summary.pay_equity_gaps],
-    ["Tenure pay flags", summary.tenure_pay_flags ?? 0],
-    ["Location pay gaps", summary.location_pay_gaps ?? 0],
-    ["Merit matrix flags", summary.merit_matrix_flags ?? 0],
-    ["Range structure issues", summary.range_structure_issues ?? 0],
-    ["New hires below range", summary.new_hire_placement_flags ?? 0],
-    ["Geo pay policy flags", summary.geo_pay_policy_flags ?? 0],
-    [],
-    ["Compa-ratio"],
-    ["Average compa-ratio", insights.compa_ratio.average_compa_ratio ?? ""],
-    ["Below 90%", insights.compa_ratio.below_90_percent],
-    ["90% to 110%", insights.compa_ratio.between_90_and_110],
-    ["Above 110%", insights.compa_ratio.above_110_percent],
-  ];
-}
-
-function employeeRows(result: AnalysisResult, options?: ExportOptions): Array<Array<string | number | null>> {
+function employeeRows(result: AnalysisResult, options?: ExportOptions) {
   return result.range_penetration.map((row) => [
     row.row_number,
     row.employee_id ?? "",
@@ -108,10 +68,10 @@ function employeeRows(result: AnalysisResult, options?: ExportOptions): Array<Ar
     row.salary ?? "",
     row.range_min ?? "",
     row.range_max ?? "",
-    row.compa_ratio ?? "",
-    row.range_penetration ?? "",
+    row.compa_ratio != null ? row.compa_ratio / 100 : "",
+    row.range_penetration != null ? row.range_penetration / 100 : "",
     row.gap_to_minimum ?? "",
-    row.merit_increase ?? "",
+    row.merit_increase != null ? row.merit_increase / 100 : "",
   ]);
 }
 
@@ -121,592 +81,576 @@ export function downloadReportExcel(
   options?: ExportOptions,
 ) {
   const workbook = XLSX.utils.book_new();
+  const resolvedName = options?.trialMode ? exportFilename(REPORT_FILENAME, "xlsx", true) : filename;
 
-  XLSX.utils.book_append_sheet(
-    workbook,
-    XLSX.utils.aoa_to_sheet(overviewRows(result, options)),
-    "Overview",
-  );
+  XLSX.utils.book_append_sheet(workbook, buildOverviewSheet(result, options), "Overview");
 
-  XLSX.utils.book_append_sheet(
-    workbook,
-    XLSX.utils.aoa_to_sheet([
-      [
-        "Row",
-        "Employee ID",
-        "Name",
-        "Department",
-        "Level",
-        "Salary",
-        "Range Min",
-        "Range Max",
-        "Compa Ratio %",
-        "Range Penetration %",
-        "Gap to Minimum",
-        "Merit Increase %",
-      ],
-      ...employeeRows(result, options),
-    ]),
-    "All Employees",
-  );
+  if (result.review_queue?.items?.length) {
+    appendSheet(
+      workbook,
+      "Review Queue",
+      ["Priority", "Severity", "Category", "Employee", "Department", "Reason"],
+      result.review_queue.items.map((item) => [
+        item.priority,
+        item.severity,
+        item.category,
+        displayEmployeeName(item.employee_id, item.employee_name, options),
+        item.department ?? "",
+        item.reason,
+      ]),
+      { columnWidths: [10, 12, 18, 22, 16, 48], freezeHeader: true },
+    );
+  }
 
   if (result.below_minimum.length > 0) {
-    XLSX.utils.book_append_sheet(
+    appendSheet(
       workbook,
-      XLSX.utils.aoa_to_sheet([
-        ["Row", "Employee ID", "Name", "Salary", "Range Min", "Gap to Minimum"],
-        ...result.below_minimum.map((row) => [
-          row.row_number,
-          row.employee_id ?? "",
-          displayEmployeeName(row.employee_id, row.employee_name, options),
-          row.salary ?? "",
-          row.range_min ?? "",
-          row.gap_to_minimum ?? "",
-        ]),
-      ]),
       "Below Minimum",
+      ["Row", "Employee ID", "Name", "Department", "Level", "Salary", "Range Min", "Gap to Minimum"],
+      result.below_minimum.map((row) => [
+        row.row_number,
+        row.employee_id ?? "",
+        displayEmployeeName(row.employee_id, row.employee_name, options),
+        row.department ?? "",
+        row.job_level ?? "",
+        row.salary ?? "",
+        row.range_min ?? "",
+        row.gap_to_minimum ?? "",
+      ]),
+      {
+        columnWidths: [8, 14, 22, 18, 10, 12, 12, 14],
+        currencyColumns: [5, 6, 7],
+        freezeHeader: true,
+      },
     );
   }
 
   if (result.above_maximum.length > 0) {
-    XLSX.utils.book_append_sheet(
+    appendSheet(
       workbook,
-      XLSX.utils.aoa_to_sheet([
-        ["Row", "Employee ID", "Name", "Salary", "Range Max", "Range Penetration %"],
-        ...result.above_maximum.map((row) => [
-          row.row_number,
-          row.employee_id ?? "",
-          displayEmployeeName(row.employee_id, row.employee_name, options),
-          row.salary ?? "",
-          row.range_max ?? "",
-          row.range_penetration ?? "",
-        ]),
-      ]),
       "Above Maximum",
+      ["Row", "Employee ID", "Name", "Department", "Salary", "Range Max", "Range Penetration %"],
+      result.above_maximum.map((row) => [
+        row.row_number,
+        row.employee_id ?? "",
+        displayEmployeeName(row.employee_id, row.employee_name, options),
+        row.department ?? "",
+        row.salary ?? "",
+        row.range_max ?? "",
+        row.range_penetration != null ? row.range_penetration / 100 : "",
+      ]),
+      { columnWidths: [8, 14, 22, 18, 12, 12, 16], currencyColumns: [4, 5], percentColumns: [6], freezeHeader: true },
     );
   }
 
+  appendSheet(
+    workbook,
+    "All Employees",
+    [
+      "Row",
+      "Employee ID",
+      "Name",
+      "Department",
+      "Level",
+      "Salary",
+      "Range Min",
+      "Range Max",
+      "Compa Ratio",
+      "Range Penetration",
+      "Gap to Minimum",
+      "Merit Increase",
+    ],
+    employeeRows(result, options),
+    {
+      columnWidths: [8, 14, 22, 16, 10, 12, 12, 12, 12, 14, 14, 12],
+      currencyColumns: [5, 6, 7, 10],
+      percentColumns: [8, 9, 11],
+      freezeHeader: true,
+    },
+  );
+
   if (result.compression.length > 0) {
-    XLSX.utils.book_append_sheet(
+    appendSheet(
       workbook,
-      XLSX.utils.aoa_to_sheet([
-        ["Type", "Description", "Employee", "Row"],
-        ...result.compression.map((issue) => [
-          issue.issue_type,
-          issue.description,
-          displayEmployeeName(issue.employee_id, issue.employee_name, options),
-          issue.row_number ?? "",
-        ]),
-      ]),
       "Compression",
+      ["Type", "Description", "Employee", "Row"],
+      result.compression.map((issue) => [
+        issue.issue_type,
+        issue.description,
+        displayEmployeeName(issue.employee_id, issue.employee_name, options),
+        issue.row_number ?? "",
+      ]),
+      { columnWidths: [16, 48, 22, 8], freezeHeader: true },
     );
   }
 
   if (result.managers_below_reports.length > 0) {
-    XLSX.utils.book_append_sheet(
+    appendSheet(
       workbook,
-      XLSX.utils.aoa_to_sheet([
-        [
-          "Manager ID",
-          "Manager Name",
-          "Manager Salary",
-          "Report ID",
-          "Report Name",
-          "Report Salary",
-          "Pay Gap",
-        ],
-        ...result.managers_below_reports.map((row) => [
-          row.manager_id,
-          displayEmployeeName(row.manager_id, row.manager_name, options),
-          row.manager_salary,
-          row.report_id,
-          displayEmployeeName(row.report_id, row.report_name, options),
-          row.report_salary,
-          row.pay_gap,
-        ]),
-      ]),
       "Managers Below Reports",
-    );
-  }
-
-  if (result.duplicate_ids.length > 0) {
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.aoa_to_sheet([
-        ["Employee ID", "Occurrences", "Rows"],
-        ...result.duplicate_ids.map((group) => [
-          group.employee_id,
-          group.count,
-          group.rows.join(", "),
-        ]),
+      ["Manager ID", "Manager", "Manager Pay", "Report ID", "Report", "Report Pay", "Gap"],
+      result.managers_below_reports.map((row) => [
+        row.manager_id,
+        displayEmployeeName(row.manager_id, row.manager_name, options),
+        row.manager_salary,
+        row.report_id,
+        displayEmployeeName(row.report_id, row.report_name, options),
+        row.report_salary,
+        row.pay_gap,
       ]),
-      "Duplicate IDs",
-    );
-  }
-
-  if (result.missing_data.length > 0) {
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.aoa_to_sheet([
-        ["Row", "Employee ID", "Name", "Missing Fields"],
-        ...result.missing_data.map((row) => [
-          row.row_number,
-          row.employee_id ?? "",
-          displayEmployeeName(row.employee_id, row.employee_name, options),
-          row.missing_fields.join(", "),
-        ]),
-      ]),
-      "Missing Data",
-    );
-  }
-
-  if (result.outlier_merit_increases.length > 0) {
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.aoa_to_sheet([
-        ["Row", "Employee ID", "Name", "Merit Increase %", "Reason"],
-        ...result.outlier_merit_increases.map((row) => [
-          row.row_number,
-          row.employee_id ?? "",
-          displayEmployeeName(row.employee_id, row.employee_name, options),
-          row.merit_increase,
-          row.reason,
-        ]),
-      ]),
-      "Outlier Merit",
-    );
-  }
-
-  if ((result.equity_grants ?? []).length > 0) {
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.aoa_to_sheet([
-        ["Row", "Employee ID", "Name", "Department", "Equity Grant %", "Outlier", "Reason"],
-        ...result.equity_grants.map((row) => [
-          row.row_number,
-          row.employee_id ?? "",
-          displayEmployeeName(row.employee_id, row.employee_name, options),
-          row.department ?? "",
-          row.equity_grant,
-          row.is_outlier ? "Yes" : "No",
-          row.reason ?? "",
-        ]),
-      ]),
-      "Equity Grants",
-    );
-  }
-
-  if (result.missing_bonus_targets.length > 0) {
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.aoa_to_sheet([
-        ["Row", "Employee ID", "Name"],
-        ...result.missing_bonus_targets.map((row) => [
-          row.row_number,
-          row.employee_id ?? "",
-          displayEmployeeName(row.employee_id, row.employee_name, options),
-        ]),
-      ]),
-      "Missing Bonus Targets",
-    );
-  }
-
-  if (result.missing_salary_ranges.length > 0) {
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.aoa_to_sheet([
-        ["Row", "Employee ID", "Name", "Missing Fields"],
-        ...result.missing_salary_ranges.map((row) => [
-          row.row_number,
-          row.employee_id ?? "",
-          displayEmployeeName(row.employee_id, row.employee_name, options),
-          row.missing_fields.join(", "),
-        ]),
-      ]),
-      "Missing Salary Ranges",
-    );
-  }
-
-  if (result.invalid_effective_dates.length > 0) {
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.aoa_to_sheet([
-        ["Row", "Employee ID", "Name", "Effective Date", "Issue"],
-        ...result.invalid_effective_dates.map((row) => [
-          row.row_number,
-          row.employee_id ?? "",
-          displayEmployeeName(row.employee_id, row.employee_name, options),
-          row.effective_date ?? "",
-          row.reason,
-        ]),
-      ]),
-      "Invalid Effective Dates",
-    );
-  }
-
-  if (result.compa_ratios.length > 0) {
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.aoa_to_sheet([
-        ["Row", "Employee ID", "Name", "Salary", "Range Midpoint", "Compa Ratio %"],
-        ...result.compa_ratios.map((row) => [
-          row.row_number,
-          row.employee_id ?? "",
-          displayEmployeeName(row.employee_id, row.employee_name, options),
-          row.salary,
-          row.range_midpoint,
-          row.compa_ratio,
-        ]),
-      ]),
-      "Compa-Ratio",
-    );
-  }
-
-  if (result.pay_equity.available) {
-    const equity = result.pay_equity;
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.aoa_to_sheet([
-        ["Pay Equity Disclaimer"],
-        [equity.disclaimer],
-        [],
-        ["Gender Groups"],
-        ["Group", "Headcount", "% Workforce", "Median Salary", "Mean Salary", "Median Compa %"],
-        ...equity.gender_groups.map((group) => [
-          group.group_name,
-          group.headcount,
-          group.workforce_percent,
-          group.suppressed ? "Hidden" : group.median_salary ?? "",
-          group.suppressed ? "" : group.mean_salary ?? "",
-          group.suppressed ? "" : group.median_compa_ratio ?? "",
-        ]),
-        [],
-        ["Gender Gaps"],
-        ["Scope", "Higher Group", "Lower Group", "Higher Median", "Lower Median", "Gap", "Gap %"],
-        ...equity.gender_gaps.map((gap) => [
-          gap.scope,
-          gap.higher_paid_group,
-          gap.lower_paid_group,
-          gap.higher_median,
-          gap.lower_median,
-          gap.gap_amount,
-          gap.gap_percent ?? "",
-        ]),
-        [],
-        ["Race Groups"],
-        ["Group", "Headcount", "% Workforce", "Median Salary", "Mean Salary", "Median Compa %"],
-        ...equity.race_groups.map((group) => [
-          group.group_name,
-          group.headcount,
-          group.workforce_percent,
-          group.suppressed ? "Hidden" : group.median_salary ?? "",
-          group.suppressed ? "" : group.mean_salary ?? "",
-          group.suppressed ? "" : group.median_compa_ratio ?? "",
-        ]),
-        [],
-        ["Race Gaps"],
-        ["Scope", "Higher Group", "Lower Group", "Higher Median", "Lower Median", "Gap", "Gap %"],
-        ...equity.race_gaps.map((gap) => [
-          gap.scope,
-          gap.higher_paid_group,
-          gap.lower_paid_group,
-          gap.higher_median,
-          gap.lower_median,
-          gap.gap_amount,
-          gap.gap_percent ?? "",
-        ]),
-      ]),
-      "Pay Equity",
-    );
-  }
-
-  if (result.tenure.available) {
-    const tenure = result.tenure;
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.aoa_to_sheet([
-        ["Tenure Disclaimer"],
-        [tenure.disclaimer],
-        [],
-        ["Tenure Bands"],
-        ["Band", "Headcount", "Median Salary", "Median Tenure (years)", "Median Compa %"],
-        ...tenure.bands.map((band) => [
-          band.band_label,
-          band.headcount,
-          band.median_salary ?? "",
-          band.median_tenure_years ?? "",
-          band.median_compa_ratio ?? "",
-        ]),
-        [],
-        ["Tenure Pay Flags"],
-        ["Row", "Employee", "Hire Date", "Tenure (years)", "Salary", "Flag", "Reason"],
-        ...tenure.flags.map((flag) => [
-          flag.row_number,
-          flag.employee_name ?? flag.employee_id ?? "",
-          flag.hire_date ?? "",
-          flag.tenure_years,
-          flag.salary,
-          flag.flag_type,
-          flag.reason,
-        ]),
-        [],
-        ["Employee Tenure Detail"],
-        [
-          "Row",
-          "Employee",
-          "Location",
-          "Department",
-          "Level",
-          "Hire Date",
-          "Tenure (years)",
-          "Band",
-          "Salary",
-          "Compa %",
-        ],
-        ...tenure.employees.map((row) => [
-          row.row_number,
-          row.employee_name ?? row.employee_id ?? "",
-          row.location ?? "",
-          row.department ?? "",
-          row.job_level ?? "",
-          row.hire_date ?? "",
-          row.tenure_years,
-          row.tenure_band,
-          row.salary ?? "",
-          row.compa_ratio ?? "",
-        ]),
-      ]),
-      "Tenure",
-    );
-  }
-
-  if (result.location_pay.available) {
-    const location = result.location_pay;
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.aoa_to_sheet([
-        ["Location Pay Disclaimer"],
-        [location.disclaimer],
-        [],
-        ["Location Groups"],
-        ["Location", "Headcount", "% Workforce", "Median Salary", "Mean Salary"],
-        ...location.location_groups.map((group) => [
-          group.group_name,
-          group.headcount,
-          group.workforce_percent,
-          group.suppressed ? "Hidden" : group.median_salary ?? "",
-          group.suppressed ? "" : group.mean_salary ?? "",
-        ]),
-        [],
-        ["Location Gaps"],
-        ["Scope", "Higher Location", "Lower Location", "Higher Median", "Lower Median", "Gap", "Gap %"],
-        ...location.location_gaps.map((gap) => [
-          gap.scope,
-          gap.higher_paid_group,
-          gap.lower_paid_group,
-          gap.higher_median,
-          gap.lower_median,
-          gap.gap_amount,
-          gap.gap_percent ?? "",
-        ]),
-      ]),
-      "Location Pay",
+      { columnWidths: [14, 22, 14, 14, 22, 14, 12], currencyColumns: [2, 5, 6], freezeHeader: true },
     );
   }
 
   if (result.compa_penetration_summary?.available) {
     const summaryData = result.compa_penetration_summary;
-    XLSX.utils.book_append_sheet(
+    appendSheet(
       workbook,
-      XLSX.utils.aoa_to_sheet([
-        ["By Level", "Headcount", "Avg Compa", "Median Compa", "Below 90%", "90-110%", "Above 110%"],
-        ...summaryData.by_level.map((row) => [
-          row.group_key,
-          row.headcount,
-          row.average_compa ?? "",
-          row.median_compa ?? "",
-          row.below_90,
-          row.between_90_110,
-          row.above_110,
-        ]),
-        [],
-        ["By Department", "Headcount", "Avg Compa", "Median Compa", "Below 90%", "90-110%", "Above 110%"],
-        ...summaryData.by_department.map((row) => [
-          row.group_key,
-          row.headcount,
-          row.average_compa ?? "",
-          row.median_compa ?? "",
-          row.below_90,
-          row.between_90_110,
-          row.above_110,
-        ]),
-      ]),
       "Compa Summary",
+      ["Group", "Headcount", "Avg Compa", "Median Compa", "Below 90%", "90-110%", "Above 110%"],
+      [
+        ...summaryData.by_level.map((row) => [
+          `Level: ${row.group_key}`,
+          row.headcount,
+          row.average_compa != null ? row.average_compa / 100 : "",
+          row.median_compa != null ? row.median_compa / 100 : "",
+          row.below_90,
+          row.between_90_110,
+          row.above_110,
+        ]),
+        ...summaryData.by_department.map((row) => [
+          `Dept: ${row.group_key}`,
+          row.headcount,
+          row.average_compa != null ? row.average_compa / 100 : "",
+          row.median_compa != null ? row.median_compa / 100 : "",
+          row.below_90,
+          row.between_90_110,
+          row.above_110,
+        ]),
+      ],
+      { columnWidths: [24, 12, 12, 12, 12, 12, 12], percentColumns: [2, 3], freezeHeader: true },
     );
   }
 
   if (result.merit_matrix?.flags?.length) {
-    XLSX.utils.book_append_sheet(
+    appendSheet(
       workbook,
-      XLSX.utils.aoa_to_sheet([
-        ["Employee", "Department", "Compa", "Merit %", "Band", "Guideline Min", "Guideline Max", "Reason"],
-        ...result.merit_matrix.flags.map((row) => [
-          row.employee_name ?? row.employee_id ?? "",
-          row.department ?? "",
-          row.compa_ratio,
-          row.merit_increase,
-          row.matrix_band,
-          row.expected_merit_min,
-          row.expected_merit_max,
-          row.reason,
-        ]),
-      ]),
       "Merit Matrix",
+      ["Employee", "Department", "Compa", "Merit %", "Band", "Guideline Min", "Guideline Max", "Reason"],
+      result.merit_matrix.flags.map((row) => [
+        displayEmployeeName(row.employee_id, row.employee_name, options),
+        row.department ?? "",
+        row.compa_ratio != null ? row.compa_ratio / 100 : "",
+        row.merit_increase != null ? row.merit_increase / 100 : "",
+        row.matrix_band,
+        row.expected_merit_min != null ? row.expected_merit_min / 100 : "",
+        row.expected_merit_max != null ? row.expected_merit_max / 100 : "",
+        row.reason,
+      ]),
+      { columnWidths: [22, 16, 10, 10, 14, 12, 12, 40], percentColumns: [2, 3, 5, 6], freezeHeader: true },
+    );
+  }
+
+  if (result.pay_equity.available) {
+    const equity = result.pay_equity;
+    appendSheet(
+      workbook,
+      "Pay Equity",
+      ["Section", "Group / Scope", "Headcount", "Metric", "Value", "Notes"],
+      [
+        ["Disclaimer", equity.disclaimer, "", "", "", ""],
+        ...equity.gender_groups.flatMap((group) => [
+          ["Gender", group.group_name, group.headcount, "Median salary", group.median_salary ?? "", group.suppressed ? "Suppressed" : ""],
+          ["Gender", group.group_name, group.headcount, "Median compa", group.median_compa_ratio ?? "", ""],
+        ]),
+        ...equity.gender_gaps.map((gap) => [
+          "Gender gap",
+          `${gap.higher_paid_group} vs ${gap.lower_paid_group}`,
+          "",
+          gap.scope,
+          gap.gap_amount,
+          gap.gap_percent != null ? `${gap.gap_percent}%` : "",
+        ]),
+        ...equity.race_groups.flatMap((group) => [
+          ["Race", group.group_name, group.headcount, "Median salary", group.median_salary ?? "", group.suppressed ? "Suppressed" : ""],
+        ]),
+        ...equity.race_gaps.map((gap) => [
+          "Race gap",
+          `${gap.higher_paid_group} vs ${gap.lower_paid_group}`,
+          "",
+          gap.scope,
+          gap.gap_amount,
+          gap.gap_percent != null ? `${gap.gap_percent}%` : "",
+        ]),
+      ],
+      { columnWidths: [14, 28, 12, 16, 14, 14], currencyColumns: [4], freezeHeader: true },
+    );
+  }
+
+  if (result.tenure.available) {
+    const tenure = result.tenure;
+    appendSheet(
+      workbook,
+      "Tenure",
+      ["Section", "Band / Employee", "Headcount", "Metric", "Value"],
+      [
+        ["Disclaimer", tenure.disclaimer, "", "", ""],
+        ...tenure.bands.flatMap((band) => [
+          ["Band", band.band_label, band.headcount, "Median salary", band.median_salary ?? ""],
+          ["Band", band.band_label, band.headcount, "Median tenure (yrs)", band.median_tenure_years ?? ""],
+        ]),
+        ...tenure.flags.map((flag) => [
+          "Flag",
+          displayEmployeeName(flag.employee_id, flag.employee_name, options),
+          "",
+          flag.flag_type,
+          flag.salary,
+        ]),
+      ],
+      { columnWidths: [12, 28, 12, 18, 14], currencyColumns: [4], freezeHeader: true },
+    );
+  }
+
+  if (result.location_pay.available) {
+    const location = result.location_pay;
+    appendSheet(
+      workbook,
+      "Location Pay",
+      ["Section", "Location / Scope", "Headcount", "Metric", "Value"],
+      [
+        ["Disclaimer", location.disclaimer, "", "", ""],
+        ...location.location_groups.map((group) => [
+          "Location",
+          group.group_name,
+          group.headcount,
+          "Median salary",
+          group.suppressed ? "Hidden" : group.median_salary ?? "",
+        ]),
+        ...location.location_gaps.map((gap) => [
+          "Gap",
+          `${gap.higher_paid_group} vs ${gap.lower_paid_group}`,
+          "",
+          gap.scope,
+          gap.gap_amount,
+        ]),
+      ],
+      { columnWidths: [12, 28, 12, 18, 14], currencyColumns: [4], freezeHeader: true },
+    );
+  }
+
+  if (result.duplicate_ids.length > 0) {
+    appendSheet(
+      workbook,
+      "Duplicate IDs",
+      ["Employee ID", "Occurrences", "Rows"],
+      result.duplicate_ids.map((group) => [group.employee_id, group.count, group.rows.join(", ")]),
+      { columnWidths: [18, 14, 40], freezeHeader: true },
+    );
+  }
+
+  if (result.missing_data.length > 0) {
+    appendSheet(
+      workbook,
+      "Missing Data",
+      ["Row", "Employee ID", "Name", "Missing Fields"],
+      result.missing_data.map((row) => [
+        row.row_number,
+        row.employee_id ?? "",
+        displayEmployeeName(row.employee_id, row.employee_name, options),
+        row.missing_fields.join(", "),
+      ]),
+      { columnWidths: [8, 14, 22, 48], freezeHeader: true },
+    );
+  }
+
+  if (result.missing_bonus_targets.length > 0) {
+    appendSheet(
+      workbook,
+      "Missing Bonus Targets",
+      ["Row", "Employee ID", "Name"],
+      result.missing_bonus_targets.map((row) => [
+        row.row_number,
+        row.employee_id ?? "",
+        displayEmployeeName(row.employee_id, row.employee_name, options),
+      ]),
+      { columnWidths: [8, 14, 28], freezeHeader: true },
+    );
+  }
+
+  if (result.missing_salary_ranges.length > 0) {
+    appendSheet(
+      workbook,
+      "Missing Salary Ranges",
+      ["Row", "Employee ID", "Name", "Missing Fields"],
+      result.missing_salary_ranges.map((row) => [
+        row.row_number,
+        row.employee_id ?? "",
+        displayEmployeeName(row.employee_id, row.employee_name, options),
+        row.missing_fields.join(", "),
+      ]),
+      { columnWidths: [8, 14, 22, 36], freezeHeader: true },
+    );
+  }
+
+  if (result.invalid_effective_dates.length > 0) {
+    appendSheet(
+      workbook,
+      "Invalid Effective Dates",
+      ["Row", "Employee ID", "Name", "Effective Date", "Issue"],
+      result.invalid_effective_dates.map((row) => [
+        row.row_number,
+        row.employee_id ?? "",
+        displayEmployeeName(row.employee_id, row.employee_name, options),
+        row.effective_date ?? "",
+        row.reason,
+      ]),
+      { columnWidths: [8, 14, 22, 16, 40], freezeHeader: true },
+    );
+  }
+
+  if (result.compa_ratios.length > 0) {
+    appendSheet(
+      workbook,
+      "Compa-Ratio",
+      ["Row", "Employee ID", "Name", "Salary", "Range Midpoint", "Compa Ratio"],
+      result.compa_ratios.map((row) => [
+        row.row_number,
+        row.employee_id ?? "",
+        displayEmployeeName(row.employee_id, row.employee_name, options),
+        row.salary,
+        row.range_midpoint,
+        row.compa_ratio != null ? row.compa_ratio / 100 : "",
+      ]),
+      { columnWidths: [8, 14, 22, 12, 14, 12], currencyColumns: [3, 4], percentColumns: [5], freezeHeader: true },
     );
   }
 
   if (result.total_cash_comp?.available) {
-    XLSX.utils.book_append_sheet(
+    appendSheet(
       workbook,
-      XLSX.utils.aoa_to_sheet([
-        ["Employee", "Base", "Bonus Target %", "Target Bonus", "Total Cash", "Base Compa", "TCC Compa"],
-        ...result.total_cash_comp.employees.map((row) => [
-          row.employee_name ?? row.employee_id ?? "",
-          row.base_salary,
-          row.bonus_target_percent,
-          row.target_bonus_amount,
-          row.total_cash_comp,
-          row.base_compa_ratio ?? "",
-          row.tcc_compa_ratio ?? "",
-        ]),
-      ]),
       "Total Cash Comp",
+      ["Employee", "Base", "Bonus Target", "Target Bonus", "Total Cash", "Base Compa", "TCC Compa"],
+      result.total_cash_comp.employees.map((row) => [
+        displayEmployeeName(row.employee_id, row.employee_name, options),
+        row.base_salary,
+        row.bonus_target_percent != null ? row.bonus_target_percent / 100 : "",
+        row.target_bonus_amount,
+        row.total_cash_comp,
+        row.base_compa_ratio != null ? row.base_compa_ratio / 100 : "",
+        row.tcc_compa_ratio != null ? row.tcc_compa_ratio / 100 : "",
+      ]),
+      {
+        columnWidths: [22, 12, 12, 14, 14, 12, 12],
+        currencyColumns: [1, 3, 4],
+        percentColumns: [2, 5, 6],
+        freezeHeader: true,
+      },
     );
   }
 
   if (result.new_hire_placement?.available) {
-    XLSX.utils.book_append_sheet(
+    appendSheet(
       workbook,
-      XLSX.utils.aoa_to_sheet([
-        ["Employee", "Hire Date", "Days", "Salary", "Compa", "Penetration", "Placement"],
-        ...result.new_hire_placement.employees.map((row) => [
-          row.employee_name ?? row.employee_id ?? "",
-          row.hire_date ?? "",
-          row.tenure_days,
-          row.salary,
-          row.compa_ratio ?? "",
-          row.range_penetration ?? "",
-          row.placement_issue,
-        ]),
-      ]),
       "New Hire Placement",
+      ["Employee", "Hire Date", "Days", "Salary", "Compa", "Penetration", "Placement Issue"],
+      result.new_hire_placement.employees.map((row) => [
+        displayEmployeeName(row.employee_id, row.employee_name, options),
+        row.hire_date ?? "",
+        row.tenure_days,
+        row.salary,
+        row.compa_ratio != null ? row.compa_ratio / 100 : "",
+        row.range_penetration != null ? row.range_penetration / 100 : "",
+        row.placement_issue,
+      ]),
+      {
+        columnWidths: [22, 12, 8, 12, 10, 12, 36],
+        currencyColumns: [3],
+        percentColumns: [4, 5],
+        freezeHeader: true,
+      },
     );
   }
 
-  XLSX.writeFile(workbook, filename);
+  if (result.outlier_merit_increases.length > 0) {
+    appendSheet(
+      workbook,
+      "Outlier Merit",
+      ["Row", "Employee ID", "Name", "Merit Increase", "Reason"],
+      result.outlier_merit_increases.map((row) => [
+        row.row_number,
+        row.employee_id ?? "",
+        displayEmployeeName(row.employee_id, row.employee_name, options),
+        row.merit_increase != null ? row.merit_increase / 100 : "",
+        row.reason,
+      ]),
+      { columnWidths: [8, 14, 24, 14, 48], percentColumns: [3], freezeHeader: true },
+    );
+  }
+
+  if ((result.equity_grants ?? []).length > 0) {
+    appendSheet(
+      workbook,
+      "Equity Grants",
+      ["Row", "Employee ID", "Name", "Department", "Equity Grant", "Outlier", "Reason"],
+      result.equity_grants.map((row) => [
+        row.row_number,
+        row.employee_id ?? "",
+        displayEmployeeName(row.employee_id, row.employee_name, options),
+        row.department ?? "",
+        row.equity_grant != null ? row.equity_grant / 100 : "",
+        row.is_outlier ? "Yes" : "No",
+        row.reason ?? "",
+      ]),
+      { columnWidths: [8, 14, 22, 16, 12, 10, 36], percentColumns: [4], freezeHeader: true },
+    );
+  }
+
+  XLSX.writeFile(workbook, resolvedName);
 }
 
-/** Leadership-ready PDF: key findings and metrics only (no employee-level detail). */
+/** Leadership-ready PDF: branded summary for comp cycle readouts. */
 export function downloadSummaryPdf(
   result: AnalysisResult,
   filename = `${SUMMARY_FILENAME}.pdf`,
   options?: ExportOptions,
 ) {
+  const resolvedName = options?.trialMode ? exportFilename(SUMMARY_FILENAME, "pdf", true) : filename;
   const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "letter" });
   const { insights, summary } = result;
+  const margin = 48;
   const meritPercent = options?.targetMeritPercent;
   const projectedMeritPool =
     meritPercent != null && Number.isFinite(meritPercent)
       ? (insights.merit_calculator.payroll_base * meritPercent) / 100
       : insights.budget_impact.projected_merit_pool;
   const totalBudgetImpact = insights.budget_impact.cost_to_minimum + projectedMeritPool;
-  const margin = 48;
-  let y = margin;
+  const generatedAt = new Date().toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+
+  let y = drawPdfHeader(doc, "Compensation Cycle Summary", [
+    `Generated ${generatedAt}`,
+    `${summary.valid_rows} employees analyzed · ${summary.total_rows} rows in source file`,
+    options?.anonymize ? "Anonymized export" : "Confidential — internal use only",
+  ], margin);
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.text("ShiftWorksHR Summary Report", margin, y);
-  y += 22;
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(80, 80, 80);
-  doc.text(`Generated ${new Date().toLocaleString()} · PDF summary for leadership`, margin, y);
+  doc.setFontSize(11);
+  doc.setTextColor(...riskColor(insights.executive_summary.risk_level));
+  doc.text(`Cycle risk: ${insights.executive_summary.risk_level.toUpperCase()}`, margin, y);
   doc.setTextColor(0, 0, 0);
-  y += 26;
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.text("Key findings", margin, y);
-  y += 16;
+  y += 18;
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
-  const headlineLines = doc.splitTextToSize(insights.executive_summary.headline, 520);
+  const headlineLines = doc.splitTextToSize(insights.executive_summary.headline, 516);
   doc.text(headlineLines, margin, y);
-  y += headlineLines.length * 14 + 6;
-
-  for (const bullet of insights.executive_summary.bullets) {
-    const lines = doc.splitTextToSize(`• ${bullet}`, 520);
-    doc.text(lines, margin, y);
-    y += lines.length * 14 + 4;
-    if (y > 720) {
-      doc.addPage();
-      y = margin;
-    }
-  }
-
-  if (insights.budget_impact.note) {
-    const noteLines = doc.splitTextToSize(insights.budget_impact.note, 520);
-    doc.setFontSize(9);
-    doc.setTextColor(80, 80, 80);
-    doc.text(noteLines, margin, y + 4);
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(11);
-    y += noteLines.length * 12 + 8;
-  }
+  y += headlineLines.length * 14 + 12;
 
   autoTable(doc, {
-    startY: y + 8,
-    head: [["Budget & issue counts", "Value"]],
+    startY: y,
+    head: [["Budget metric", "Amount"]],
     body: [
-      ["Risk level", insights.executive_summary.risk_level],
-      ["Cost to minimum", formatMoney(insights.budget_impact.cost_to_minimum)],
+      ["Cost to range minimum", formatMoney(insights.budget_impact.cost_to_minimum)],
       ["Projected merit pool", formatMoney(projectedMeritPool)],
       ["Total budget impact", formatMoney(totalBudgetImpact)],
       [
         "Average compa-ratio",
         insights.compa_ratio.average_compa_ratio != null
-          ? `${insights.compa_ratio.average_compa_ratio}%`
+          ? formatPercent(insights.compa_ratio.average_compa_ratio)
           : "—",
       ],
-      ["Below minimum", String(summary.below_minimum)],
-      ["Above maximum", String(summary.above_maximum)],
-      ["Compression issues", String(summary.compression_issues)],
-      ["Managers below reports", String(summary.managers_below_reports)],
-      ["Pay equity gaps", String(summary.pay_equity_gaps)],
-      ["Tenure pay flags", String(summary.tenure_pay_flags ?? 0)],
-      ["Location pay gaps", String(summary.location_pay_gaps ?? 0)],
-      ["Outlier merit increases", String(summary.outlier_merit_increases)],
+      ["Employees below 90% compa", String(insights.compa_ratio.below_90_percent)],
+      ["Employees above 110% compa", String(insights.compa_ratio.above_110_percent)],
     ],
-    styles: { fontSize: 10, cellPadding: 6 },
-    headStyles: { fillColor: [15, 118, 110] },
-    margin: { left: margin, right: margin },
+    ...TABLE_THEME,
+    columnStyles: { 1: { halign: "right" } },
   });
 
-  const footerY = ((doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y) + 20;
-  if (footerY < 720) {
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(9);
-    doc.setTextColor(100, 100, 100);
-    doc.text(
-      "For employee-level detail and all flagged rows, download the Excel report from the analyzer.",
-      margin,
-      footerY,
-    );
+  y = ((doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y) + 18;
+
+  autoTable(doc, {
+    startY: y,
+    head: [["Priority issue", "Count"]],
+    body: [
+      ["Review queue items", String(summary.review_queue_items ?? result.review_queue?.total_items ?? 0)],
+      ["Below range minimum", String(summary.below_minimum)],
+      ["Above range maximum", String(summary.above_maximum)],
+      ["New hires below range", String(summary.new_hire_placement_flags ?? 0)],
+      ["Managers below reports", String(summary.managers_below_reports)],
+      ["Merit matrix flags", String(summary.merit_matrix_flags ?? 0)],
+      ["Peer pay spread flags", String(summary.peer_spread_flags ?? 0)],
+      ["Compression issues", String(summary.compression_issues)],
+      ["Pay equity gaps", String(summary.pay_equity_gaps)],
+    ].filter((row) => row[1] !== "0"),
+    ...TABLE_THEME,
+    columnStyles: { 1: { halign: "right" } },
+  });
+
+  y = ((doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y) + 18;
+
+  if (result.penetration_distribution?.available) {
+    autoTable(doc, {
+      startY: y,
+      head: [["Range penetration band", "Employees", "Share"]],
+      body: result.penetration_distribution.bands.map((band) => [
+        band.label,
+        String(band.count),
+        formatPercent(band.percent, 1),
+      ]),
+      ...TABLE_THEME,
+      columnStyles: { 1: { halign: "right" }, 2: { halign: "right" } },
+    });
+    y = ((doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y) + 18;
   }
 
-  triggerDownload(doc.output("blob"), filename);
+  if (y > 620) {
+    doc.addPage();
+    y = margin;
+  }
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text("Key findings", margin, y);
+  y += 14;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  for (const bullet of insights.executive_summary.bullets.slice(0, 8)) {
+    const lines = doc.splitTextToSize(`• ${bullet}`, 516);
+    if (y + lines.length * 12 > 720) {
+      doc.addPage();
+      y = margin;
+    }
+    doc.text(lines, margin, y);
+    y += lines.length * 12 + 4;
+  }
+
+  if (result.review_queue?.items?.length) {
+    if (y > 640) {
+      doc.addPage();
+      y = margin;
+    }
+    y += 8;
+    autoTable(doc, {
+      startY: y,
+      head: [["Top review queue items", "Severity", "Category"]],
+      body: result.review_queue.items.slice(0, 12).map((item) => [
+        item.reason.length > 72 ? `${item.reason.slice(0, 69)}…` : item.reason,
+        item.severity,
+        item.category,
+      ]),
+      ...TABLE_THEME,
+    });
+  }
+
+  pdfFooter(doc, margin);
+  if (options?.trialMode) {
+    drawTrialWatermark(doc);
+  }
+
+  triggerDownload(doc.output("blob"), resolvedName);
 }
 
 /** @deprecated Use downloadReportExcel */
@@ -714,3 +658,5 @@ export const downloadAnalysisExcel = downloadReportExcel;
 
 /** @deprecated Use downloadSummaryPdf */
 export const downloadExecutiveSummaryPdf = downloadSummaryPdf;
+
+export { displayEmployeeName, formatMoney, triggerDownload };

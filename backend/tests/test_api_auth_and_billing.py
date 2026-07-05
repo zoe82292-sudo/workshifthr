@@ -99,7 +99,9 @@ def test_domain_login_uses_shared_password(auth_client: TestClient) -> None:
     assert response.json()["organization"] == "Acme Corp"
 
 
-def test_analyze_requires_auth_when_enabled(auth_client: TestClient) -> None:
+def test_analyze_requires_auth_when_trial_disabled(auth_client: TestClient, monkeypatch) -> None:
+    monkeypatch.setenv("TRIAL_ENABLED", "false")
+    invalidate_credentials_cache()
     response = auth_client.post("/api/analyze")
     assert response.status_code == 401
 

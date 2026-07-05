@@ -43,6 +43,11 @@ class AuthContext(BaseModel):
     organization: str
 
 
+class ResolvedAccess(BaseModel):
+    user: AuthContext
+    is_trial: bool = False
+
+
 class AccountInfoResponse(BaseModel):
     email: str
     organization: str
@@ -288,3 +293,38 @@ def require_auth(
     credentials: HTTPAuthorizationCredentials | None = Depends(security),
 ) -> str:
     return require_auth_user(credentials).email
+
+
+def resolve_access(
+    credentials: HTTPAuthorizationCredentials | None = Depends(security),
+) -> ResolvedAccess:
+    if not auth_enabled():
+        return ResolvedAccess(
+            user=AuthContext(email="anonymous", organization="Anonymous"),
+            is_trial=False,
+        )
+
+    if credentials is not None and credentials.scheme.lower() == "bearer":
+        context = decode_auth_context(credentials.credentials)
+        from app.provisioning import org_access_expired
+
+        if org_access_expired(context.email):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Your plan has expired. Renew at shiftworkshr.com/#pricing or email hello@shiftworkshr.com.",
+            )
+        return ResolvedAccess(user=context, is_trial=False)
+
+    from app.trial import trial_enabled
+
+    if trial_enabled():
+        return ResolvedAccess(
+            user=AuthContext(email="trial@shiftworkshr.com", organization="Free trial"),
+            is_trial=True,
+        )
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Sign in required.",
+        headers={"WWW-Authenticate": "Bearer"},
+    )

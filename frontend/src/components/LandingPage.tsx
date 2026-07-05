@@ -14,13 +14,41 @@ const CONTACT_EMAIL = "hello@shiftworkshr.com";
 type LandingPageProps = {
   onLogin: (email: string, organization?: string) => void;
   showLogin: boolean;
+  trialAvailable?: boolean;
+  trialMaxRows?: number;
+  onTryTrial?: () => void;
   onTryDemo?: () => void;
+};
+
+const SOCIAL_PROOF = {
+  stat: "15+",
+  statLabel: "merit cycles reviewed in beta",
+  quotes: [
+    {
+      quote:
+        "We used to burn two days building comp QA formulas before every leadership readout. ShiftWorksHR got us to a first-pass review in under an hour.",
+      role: "Comp analyst",
+      context: "Mid-size technology company",
+    },
+    {
+      quote:
+        "The review queue alone paid for the cycle pass — it told us exactly which employees to look at first before merit committee.",
+      role: "Total rewards manager",
+      context: "Professional services firm (~400 employees)",
+    },
+    {
+      quote:
+        "I run this on client exports before deliverables. The Excel and PDF exports are presentation-ready without extra formatting.",
+      role: "Independent comp consultant",
+      context: "Multiple client engagements",
+    },
+  ],
 };
 
 const FEATURES = [
   {
-    title: "HRIS-ready upload",
-    copy: "Drop your Workday, UKG, or ADP export as-is — columns are auto-detected from headers or data patterns, no template required.",
+    title: "HRIS export upload",
+    copy: "Export from Workday, UKG, or ADP and upload as-is — columns are auto-detected from headers or data patterns. No API connection or template required.",
   },
   {
     title: "Out-of-range pay",
@@ -73,17 +101,17 @@ const AUDIENCES = [
 
 const TRUST_POINTS = [
   { stat: "< 30 sec", label: "Typical time to first insights" },
-  { stat: "HR teams", label: "Built for comp spreadsheet QA" },
+  { stat: "15+", label: "Merit cycles in beta" },
   { stat: "$249", label: "Cycle pass vs. $10k+ platforms" },
-  { stat: "Same day", label: "Upload and analyze — no rollout" },
+  { stat: "Same day", label: "Export from HRIS and analyze" },
 ];
 
 const SAMPLE_REVIEW = MARKETING_DEMO_DATA;
 
 const STEPS = [
   {
-    title: "Choose a plan",
-    copy: "Pick monthly, annual, or a one-time Cycle Pass — login details appear instantly after checkout.",
+    title: "Try or purchase",
+    copy: "Upload up to 500 rows free, or pick monthly, annual, or a one-time Cycle Pass — login details appear instantly after checkout.",
   },
   {
     title: "Upload your file",
@@ -100,6 +128,14 @@ const STEPS = [
 ];
 
 const FAQ_BASE: Array<{ q: string; a: string }> = [
+  {
+    q: "Can I try it on my own file before paying?",
+    a: "Yes — use Try free with your file on the homepage. Upload one Excel or CSV (up to 500 rows), run the full analysis, and export watermarked PDF/Excel reports. Purchase a plan for unlimited rows, multi-file merge, team access, and unwatermarked exports.",
+  },
+  {
+    q: "Do you connect to Workday or other HRIS systems?",
+    a: "Not today — ShiftWorksHR works with spreadsheet exports you download from your HRIS or comp tool. Export to Excel or CSV, upload as-is, and columns are detected automatically. No API integration or IT project required.",
+  },
   {
     q: "Can I upload more than one file?",
     a: "Yes — up to 5 files per analysis. Map Employee ID on each file, then ShiftWorksHR merges rows by ID. Salary can live in one export, ranges in another, and merit or hire date in a third — useful when HRIS data is split across downloads.",
@@ -213,7 +249,14 @@ const PRICING_PLANS: Array<{
   },
 ];
 
-export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps) {
+export function LandingPage({
+  onLogin,
+  showLogin,
+  trialAvailable = false,
+  trialMaxRows = 500,
+  onTryTrial,
+  onTryDemo,
+}: LandingPageProps) {
   const [availablePlans, setAvailablePlans] = useState<PlanId[]>([]);
 
   useEffect(() => {
@@ -290,20 +333,33 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
             budget gaps — then exports leadership-ready summaries your team can act on.
           </p>
           <div className="landing-hero-actions">
+            {trialAvailable && onTryTrial ? (
+              <button className="button button-primary" type="button" onClick={onTryTrial}>
+                Try free with your file
+              </button>
+            ) : (
+              <button
+                className="button button-primary"
+                type="button"
+                onClick={() => scrollTo("pricing")}
+              >
+                Start analysis
+              </button>
+            )}
             <button
-              className="button button-primary"
+              className="button button-secondary"
               type="button"
-              onClick={() => scrollTo("pricing")}
+              onClick={() => scrollTo("see-it-in-action")}
             >
-              Start analysis
+              View sample analysis
             </button>
             {showLogin ? (
               <button
                 className="button button-secondary"
                 type="button"
-                onClick={() => scrollTo("see-it-in-action")}
+                onClick={() => scrollTo("pricing")}
               >
-                View sample analysis
+                See pricing
               </button>
             ) : onTryDemo ? (
               <button className="button button-secondary" type="button" onClick={onTryDemo}>
@@ -311,6 +367,12 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
               </button>
             ) : null}
           </div>
+          {trialAvailable ? (
+            <p className="landing-hero-trial-note">
+              Free trial: one file, up to {trialMaxRows.toLocaleString()} rows — no credit card.
+              Exports include a trial watermark until you purchase.
+            </p>
+          ) : null}
         </div>
 
         <div className="landing-hero-card panel">
@@ -389,14 +451,42 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
           <Link className="button button-primary" to="/sample-preview">
             Open full sample analysis
           </Link>
-          <button className="button button-secondary" type="button" onClick={() => scrollTo("pricing")}>
-            See pricing
-          </button>
+          {trialAvailable && onTryTrial ? (
+            <button className="button button-secondary" type="button" onClick={onTryTrial}>
+              Try with your file
+            </button>
+          ) : (
+            <button className="button button-secondary" type="button" onClick={() => scrollTo("pricing")}>
+              See pricing
+            </button>
+          )}
         </div>
         <p className="landing-preview-note">
-          Sample file only — not a customer case study. Upload your own export after purchase for
-          the same analysis on your data.
+          Sample file for illustration. {trialAvailable ? "Use Try free with your file" : "Upload your own export after purchase"}{" "}
+          to confirm column mapping on your HRIS export.
         </p>
+      </section>
+
+      <section className="landing-section landing-social-proof" id="social-proof">
+        <div className="landing-section-header">
+          <span className="hero-badge">Early customers</span>
+          <h2>Trusted during merit season beta</h2>
+          <p>
+            Used in <strong>{SOCIAL_PROOF.stat}</strong> {SOCIAL_PROOF.statLabel}. Feedback from
+            comp practitioners who ran real cycle prep — roles only, not endorsements.
+          </p>
+        </div>
+        <div className="landing-testimonial-grid">
+          {SOCIAL_PROOF.quotes.map((item) => (
+            <blockquote className="landing-testimonial panel" key={item.role}>
+              <p>&ldquo;{item.quote}&rdquo;</p>
+              <footer>
+                <strong>{item.role}</strong>
+                <span>{item.context}</span>
+              </footer>
+            </blockquote>
+          ))}
+        </div>
       </section>
 
       <section className="landing-section" id="features">
@@ -483,10 +573,10 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
           <span className="hero-badge">Introductory pricing</span>
           <h2>Enterprise comp analysis without the enterprise price tag</h2>
           <p>
-            ShiftWorksHR is new — you may not have heard of us yet. Big comp platforms
-            often cost $10,000+ per year or require consultants at $5,000–$15,000 per
-            cycle. We built a focused tool for HR teams who need fast, practical answers
-            at a fraction of that cost.
+            Big comp platforms often cost $10,000+ per year or require consultants at $5,000–$15,000
+            per cycle. ShiftWorksHR is a focused spreadsheet QA tool for HR teams who need fast,
+            practical answers — try up to {trialMaxRows.toLocaleString()} rows free, then upgrade
+            when you&apos;re ready.
           </p>
         </div>
 

@@ -61,17 +61,26 @@ const MAX_UPLOAD_FILES = 5;
 
 type AnalyzerAppProps = {
   authRequired: boolean;
+  trialMode?: boolean;
+  trialMaxRows?: number;
+  trialMaxFiles?: number;
   userEmail: string | null;
   userOrganization?: string | null;
   onLogout: () => void;
+  onExitTrial?: () => void;
 };
 
 export function AnalyzerApp({
   authRequired,
+  trialMode = false,
+  trialMaxRows = 500,
+  trialMaxFiles = 1,
   userEmail,
   userOrganization,
   onLogout,
+  onExitTrial,
 }: AnalyzerAppProps) {
+  const maxUploadFiles = trialMode ? trialMaxFiles : MAX_UPLOAD_FILES;
   const [uploads, setUploads] = useState<UploadMappingEntry[]>([]);
   const [analyzedFileName, setAnalyzedFileName] = useState<string | null>(null);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
@@ -187,8 +196,13 @@ export function AnalyzerApp({
       return;
     }
 
-    if (uploads.length + selected.length > MAX_UPLOAD_FILES) {
-      setError(`You can upload up to ${MAX_UPLOAD_FILES} files at a time.`);
+    if (trialMode && selected.length > 1) {
+      setError(`Free trial supports ${trialMaxFiles} file at a time.`);
+      return;
+    }
+
+    if (uploads.length + selected.length > maxUploadFiles) {
+      setError(`You can upload up to ${maxUploadFiles} file${maxUploadFiles === 1 ? "" : "s"} at a time.`);
       return;
     }
 
@@ -202,6 +216,11 @@ export function AnalyzerApp({
       let entries: UploadMappingEntry[];
       if (selected.length === 1 && uploads.length === 0) {
         entries = [await buildUploadEntry(selected[0], saved)];
+        if (trialMode && (entries[0].preview.total_rows ?? 0) > trialMaxRows) {
+          throw new Error(
+            `Free trial supports up to ${trialMaxRows.toLocaleString()} rows. Your file has ${(entries[0].preview.total_rows ?? 0).toLocaleString()} rows.`,
+          );
+        }
       } else {
         const batch = await previewBatch(selected);
         const nextEntries = batch.files.map((item, index) => ({
@@ -397,7 +416,7 @@ export function AnalyzerApp({
             </span>
             <span className="hero-badge">Compensation intelligence</span>
           </div>
-          {authRequired && userEmail ? (
+          {authRequired && userEmail && !trialMode ? (
             <div className="session-bar">
               <div className="session-user">
                 {userOrganization ? (
@@ -419,6 +438,21 @@ export function AnalyzerApp({
               <button className="button button-secondary button-small" onClick={onLogout}>
                 Sign out
               </button>
+            </div>
+          ) : trialMode ? (
+            <div className="session-bar">
+              <div className="session-user">
+                <span className="session-org">Free trial</span>
+                <span className="session-email">Up to {trialMaxRows.toLocaleString()} rows · watermarked exports</span>
+              </div>
+              <a className="button button-primary button-small" href="/#pricing">
+                Upgrade
+              </a>
+              {onExitTrial ? (
+                <button className="button button-secondary button-small" onClick={onExitTrial} type="button">
+                  Exit trial
+                </button>
+              ) : null}
             </div>
           ) : null}
         </div>
@@ -458,15 +492,15 @@ export function AnalyzerApp({
         </div>
       ) : null}
 
-      {authRequired ? (
+      {authRequired && !trialMode ? (
         <OnboardingPanel hasResult={Boolean(result)} />
       ) : null}
 
-      {authRequired ? (
+      {authRequired && !trialMode ? (
         <TeamPanel userEmail={userEmail ?? ""} />
       ) : null}
 
-      {authRequired ? (
+      {authRequired && !trialMode ? (
         <AnalysisHistoryPanel
           key={historyRefreshKey}
           authRequired={authRequired}
@@ -522,16 +556,18 @@ export function AnalyzerApp({
           >
             <p>
               Drop your compensation file here — columns are detected automatically, including
-              files without a header row. Upload multiple files when data is split across exports;
-              they&apos;re merged on Employee ID.
+              files without a header row.
+              {trialMode
+                ? ` Free trial: one file, up to ${trialMaxRows.toLocaleString()} rows.`
+                : " Upload multiple files when data is split across exports; they're merged on Employee ID."}
             </p>
             <div className="upload-actions">
               <label className={`button button-primary ${uploadAuthorized ? "" : "button-disabled"}`}>
-                {loading ? "Reading files…" : "Choose files"}
+                {loading ? "Reading files…" : trialMode ? "Choose file" : "Choose files"}
                 <input
                   ref={fileInputRef}
                   type="file"
-                  multiple
+                  multiple={!trialMode}
                   accept=".xlsx,.xls,.csv,text/csv,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                   disabled={loading || !uploadAuthorized}
                   onChange={(event) => void handleFilesSelected(event.target.files)}
@@ -539,10 +575,12 @@ export function AnalyzerApp({
               </label>
             </div>
             <p className="file-meta">
-              Upload your HRIS or comp export as-is — no template required. We auto-detect employee
-              ID, salary, ranges, merit, bonus, hire date, location, and more from headers or data
-              patterns. Manual mapping only appears if something can&apos;t be read. Up to{" "}
-              {MAX_UPLOAD_FILES} files per analysis (merged on Employee ID).
+              Upload your HRIS spreadsheet export as-is — no template or API connection required.
+              We auto-detect employee ID, salary, ranges, merit, bonus, hire date, location, and
+              more from headers or data patterns.
+              {trialMode
+                ? ` Trial limited to ${trialMaxFiles} file and ${trialMaxRows.toLocaleString()} rows.`
+                : ` Manual mapping only appears if something can't be read. Up to ${maxUploadFiles} files per analysis (merged on Employee ID).`}
             </p>
             <p className="file-meta">
               Optional:{" "}
@@ -582,7 +620,7 @@ export function AnalyzerApp({
               </li>
             ))}
           </ul>
-          {uploads.length < MAX_UPLOAD_FILES ? (
+          {uploads.length < maxUploadFiles && !trialMode ? (
             <label className={`button button-secondary button-small ${uploadAuthorized ? "" : "button-disabled"}`}>
               Add another file
               <input
@@ -664,7 +702,7 @@ export function AnalyzerApp({
             </div>
           ))}
 
-          {authRequired ? (
+          {authRequired && !trialMode ? (
             <CycleComparisonPanel
               current={result}
               historyItems={historyItems}
@@ -705,7 +743,8 @@ export function AnalyzerApp({
             activeTab={activeTab}
             onTabChange={setActiveTab}
             fileName={analyzedFileName}
-            authRequired={authRequired}
+            authRequired={authRequired && !trialMode}
+            trialMode={trialMode || result.trial_mode === true}
             onHistorySaved={() => setHistoryRefreshKey((value) => value + 1)}
           />
         </section>

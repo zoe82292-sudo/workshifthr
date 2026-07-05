@@ -17,6 +17,10 @@ export function SecurityPage() {
           after analysis unless you explicitly save a run to history
         </li>
         <li>
+          <strong>Free trial available</strong> — try one file (up to 500 rows) without purchase;
+          trial exports are watermarked
+        </li>
+        <li>
           <strong>Results return to your browser</strong> — optional saved analyses are
           stored only when your organization chooses to save them
         </li>
@@ -192,6 +196,12 @@ export function SecurityPage() {
       </p>
 
       <h2>12. Questions</h2>
+      <p>
+        Procurement reviewers: see our one-page{" "}
+        <a href="/security-summary">Security Summary</a> (printable) and{" "}
+        <a href="/dpa">DPA template</a>.
+      </p>
+
       <p>
         Security and data-handling questions:{" "}
         <a href="mailto:hello@shiftworkshr.com">hello@shiftworkshr.com</a>

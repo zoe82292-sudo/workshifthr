@@ -46,6 +46,7 @@ jobs:
         env:
           JWT_SECRET: ci-test-jwt-secret-with-enough-length-32chars
           AUTH_USERS: '[{"email":"ci@shiftworkshr.com","password":"CiTestPass123!","organization":"CI Org"}]'
+          TRIAL_ENABLED: "true"
         run: |
           export PYTHONPATH=$PWD
           uvicorn app.main:app --host 127.0.0.1 --port 8080 &

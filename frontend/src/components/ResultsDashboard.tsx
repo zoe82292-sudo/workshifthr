@@ -48,6 +48,7 @@ interface ResultsDashboardProps {
   onTabChange: (tab: AnalysisTab) => void;
   fileName?: string | null;
   authRequired?: boolean;
+  trialMode?: boolean;
   onHistorySaved?: () => void;
 }
 
@@ -274,6 +275,7 @@ export function ResultsDashboard({
   onTabChange,
   fileName,
   authRequired = false,
+  trialMode = false,
   onHistorySaved,
 }: ResultsDashboardProps) {
   const [departmentFilter, setDepartmentFilter] = useState("");
@@ -295,8 +297,8 @@ export function ResultsDashboard({
   const hasExcludedEmployees = excludedIds.size > 0;
 
   const exportOptions = useMemo(
-    () => ({ targetMeritPercent, anonymize: anonymizeExports }),
-    [targetMeritPercent, anonymizeExports],
+    () => ({ targetMeritPercent, anonymize: anonymizeExports, trialMode }),
+    [targetMeritPercent, anonymizeExports, trialMode],
   );
 
   const filteredCompression = useMemo(() => {
@@ -469,6 +471,13 @@ export function ResultsDashboard({
 
   return (
     <>
+      {trialMode ? (
+        <div className="alert alert-info trial-export-banner">
+          <strong>Free trial export.</strong> PDF and Excel downloads include a trial watermark.
+          <a href="/#pricing"> Upgrade</a> for unlimited rows, multi-file merge, team access, and
+          full exports.
+        </div>
+      ) : null}
       <div className="panel-header" style={{ marginBottom: 16 }}>
         <h2>Analysis results</h2>
         <div className="export-actions">

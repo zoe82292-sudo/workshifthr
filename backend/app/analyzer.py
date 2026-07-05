@@ -219,6 +219,7 @@ def preview_file(content: bytes, filename: str, sheet_name: str | None = None) -
         suggested_mapping=ColumnMapping(**mapping),
         preview_rows=preview_rows,
         sheet_names=sheet_names,
+        total_rows=len(df),
     )
 
 

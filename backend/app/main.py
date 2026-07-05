@@ -19,11 +19,13 @@ from app.auth import (
     LoginResponse,
     RecoverAccessRequest,
     RecoverAccessResponse,
+    ResolvedAccess,
     auth_enabled,
     authenticate_user,
     create_access_token,
     require_auth,
     require_auth_user,
+    resolve_access,
 )
 from app.analysis_history import (
     AnalysisHistoryDetail,
@@ -48,6 +50,12 @@ from app.billing import (
     handle_stripe_webhook,
 )
 from app.models import AnalysisOptions, AnalysisResult, BatchPreviewItem, BatchPreviewResponse, ColumnMapping, FileUploadSpec, PreviewResponse
+from app.trial import (
+    enforce_trial_file_count,
+    enforce_trial_rate_limit,
+    enforce_trial_row_count,
+    trial_status,
+)
 from app.file_merge import MAX_MERGE_FILES, analyze_merged_files
 from app.saved_mappings import get_saved_mapping, save_saved_mapping
 from app.rate_limit import enforce_rate_limit
@@ -75,6 +83,18 @@ ALLOWED_ORIGINS = os.getenv(
     "ALLOWED_ORIGINS",
     "http://localhost:5173,http://127.0.0.1:5173",
 ).split(",")
+
+
+def _apply_trial_result(result: AnalysisResult, access: ResolvedAccess) -> AnalysisResult:
+    if not access.is_trial:
+        return result
+    enforce_trial_row_count(result.summary.total_rows)
+    result.trial_mode = True
+    if not any("Free trial" in warning for warning in result.warnings):
+        result.warnings.append(
+            "Free trial analysis — exports include a trial watermark. Purchase access for full exports."
+        )
+    return result
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
@@ -176,8 +196,8 @@ def _frontend_bundle_name() -> str:
 
 
 @app.get("/api/auth/status")
-def auth_status() -> dict[str, bool]:
-    return {"auth_enabled": auth_enabled()}
+def auth_status() -> dict[str, object]:
+    return {"auth_enabled": auth_enabled(), **trial_status()}
 
 
 @app.post("/api/auth/login", response_model=LoginResponse)
@@ -398,19 +418,29 @@ def sample_template() -> FileResponse:
 
 @app.post("/api/preview", response_model=PreviewResponse)
 async def preview(
+    request: Request,
     file: UploadFile = File(...),
     sheet_name: str | None = Form(default=None),
-    _: str = Depends(require_auth),
+    access: ResolvedAccess = Depends(resolve_access),
 ) -> PreviewResponse:
+    if access.is_trial:
+        enforce_trial_rate_limit(request, analyze=False)
     content = await read_upload_bytes(file)
-    return preview_file(content, file.filename or "upload.xlsx", sheet_name)
+    preview = preview_file(content, file.filename or "upload.xlsx", sheet_name)
+    if access.is_trial:
+        enforce_trial_row_count(preview.total_rows)
+    return preview
 
 
 @app.post("/api/preview-batch", response_model=BatchPreviewResponse)
 async def preview_batch(
+    request: Request,
     files: list[UploadFile] = File(...),
-    _: str = Depends(require_auth),
+    access: ResolvedAccess = Depends(resolve_access),
 ) -> BatchPreviewResponse:
+    if access.is_trial:
+        enforce_trial_rate_limit(request, analyze=False)
+        enforce_trial_file_count(len(files))
     if not files:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -443,16 +473,22 @@ async def preview_batch(
                 preview=preview,
             )
         )
+        if access.is_trial:
+            enforce_trial_row_count(preview.total_rows)
     return BatchPreviewResponse(files=items)
 
 
 @app.post("/api/analyze-batch", response_model=AnalysisResult)
 async def analyze_batch(
+    request: Request,
     files: list[UploadFile] = File(...),
     file_specs: str = Form(...),
     merit_iqr_multiplier: float | None = Form(default=None),
-    _: str = Depends(require_auth),
+    access: ResolvedAccess = Depends(resolve_access),
 ) -> AnalysisResult:
+    if access.is_trial:
+        enforce_trial_rate_limit(request, analyze=True)
+        enforce_trial_file_count(len(files))
     if not files:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -495,7 +531,8 @@ async def analyze_batch(
             if merit_iqr_multiplier is not None
             else 1.5,
         )
-        return analyze_merged_files(sources, options)
+        result = analyze_merged_files(sources, options)
+        return _apply_trial_result(result, access)
     except ValueError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -511,12 +548,15 @@ async def analyze_batch(
 
 @app.post("/api/analyze", response_model=AnalysisResult)
 async def analyze(
+    request: Request,
     file: UploadFile = File(...),
     sheet_name: str | None = Form(default=None),
     column_mapping: str | None = Form(default=None),
     merit_iqr_multiplier: float | None = Form(default=None),
-    _: str = Depends(require_auth),
+    access: ResolvedAccess = Depends(resolve_access),
 ) -> AnalysisResult:
+    if access.is_trial:
+        enforce_trial_rate_limit(request, analyze=True)
     content = await read_upload_bytes(file)
     if not content:
         raise HTTPException(
@@ -540,13 +580,14 @@ async def analyze(
             if merit_iqr_multiplier is not None
             else 1.5,
         )
-        return analyze_file(
+        result = analyze_file(
             content,
             file.filename or "upload.xlsx",
             sheet_name,
             mapping_override,
             options,
         )
+        return _apply_trial_result(result, access)
     except ValueError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

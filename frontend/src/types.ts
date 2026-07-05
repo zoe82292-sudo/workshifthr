@@ -718,6 +718,7 @@ export interface AnalysisResult {
   excluded_employee_ids: string[];
   insights: AnalysisInsights;
   warnings: string[];
+  trial_mode?: boolean;
 }
 
 export interface PreviewResponse {
@@ -725,6 +726,7 @@ export interface PreviewResponse {
   suggested_mapping: ColumnMapping;
   preview_rows: Record<string, string>[];
   sheet_names: string[];
+  total_rows?: number;
 }
 
 export interface AnalysisHistorySummary {

@@ -729,6 +729,7 @@ class AnalysisResult(BaseModel):
     excluded_employee_ids: list[str] = Field(default_factory=list)
     insights: AnalysisInsights
     warnings: list[str] = Field(default_factory=list)
+    trial_mode: bool = False
 
 
 class PreviewResponse(BaseModel):
@@ -736,6 +737,7 @@ class PreviewResponse(BaseModel):
     suggested_mapping: ColumnMapping
     preview_rows: list[dict[str, Any]]
     sheet_names: list[str]
+    total_rows: int = 0
 
 
 class FileUploadSpec(BaseModel):
