@@ -537,14 +537,19 @@ export function AnalyzerApp({
                   onChange={(event) => void handleFilesSelected(event.target.files)}
                 />
               </label>
-              <a className="button button-secondary" href="/api/sample-template" download>
-                Download template
-              </a>
             </div>
             <p className="file-meta">
-              We auto-detect employee ID, salary, and range columns from headers or data patterns.
-              Manual mapping only appears if something can&apos;t be read. Up to {MAX_UPLOAD_FILES}{" "}
-              files per analysis.
+              Upload your HRIS or comp export as-is — no template required. We auto-detect employee
+              ID, salary, ranges, merit, bonus, hire date, location, and more from headers or data
+              patterns. Manual mapping only appears if something can&apos;t be read. Up to{" "}
+              {MAX_UPLOAD_FILES} files per analysis (merged on Employee ID).
+            </p>
+            <p className="file-meta">
+              Optional:{" "}
+              <a href="/api/sample-template" download>
+                download a sample file
+              </a>{" "}
+              to preview the analyzer layout.
             </p>
             <p className="file-meta legal-notice">
               For decision support only — not legal or professional compensation advice.
@@ -676,6 +681,22 @@ export function AnalyzerApp({
               <strong>Pay equity:</strong> Add <strong>Gender</strong> and/or{" "}
               <strong>Race/Ethnicity</strong> columns to your spreadsheet to see median pay
               comparisons. Then click the <strong>Pay Equity</strong> tab above.
+            </div>
+          ) : null}
+
+          {!result.tenure.available && !result.column_mapping.hire_date ? (
+            <div className="alert alert-info">
+              <strong>Tenure:</strong> Add a <strong>Hire Date</strong> or{" "}
+              <strong>Start Date</strong> column to see pay by tenure band and tenure pay flags
+              under <strong>Workforce insights</strong>.
+            </div>
+          ) : null}
+
+          {!result.location_pay.available && !result.column_mapping.location ? (
+            <div className="alert alert-info">
+              <strong>Location pay:</strong> Add a <strong>Work Location</strong>,{" "}
+              <strong>City</strong>, or <strong>Office</strong> column to compare median pay
+              across locations under <strong>Workforce insights</strong>.
             </div>
           ) : null}
 

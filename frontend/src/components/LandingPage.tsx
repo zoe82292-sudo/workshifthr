@@ -19,6 +19,10 @@ type LandingPageProps = {
 
 const FEATURES = [
   {
+    title: "HRIS-ready upload",
+    copy: "Drop your Workday, UKG, or ADP export as-is — columns are auto-detected from headers or data patterns, no template required.",
+  },
+  {
     title: "Out-of-range pay",
     copy: "Flag employees below minimum or above maximum in seconds.",
   },
@@ -102,7 +106,7 @@ const FAQ_BASE: Array<{ q: string; a: string }> = [
   },
   {
     q: "What file format do I need?",
-    a: "Excel (.xlsx) or CSV up to 25 MB. Include employee ID, salary, and range min/mid/max when possible. Gender and race columns unlock pay equity views; hire date and location unlock tenure and location pay views; an equity grant column unlocks LTI outlier review.",
+    a: "Excel (.xlsx) or CSV up to 25 MB — upload your HRIS or comp export as-is; no template required. Columns are detected automatically from headers or data patterns. Gender and race unlock pay equity; hire date and location unlock tenure and location pay; merit and bonus columns unlock budget and compa projections.",
   },
   {
     q: "Is my compensation data stored?",

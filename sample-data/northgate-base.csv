@@ -1,18 +1,18 @@
-Employee ID,Employee Name,Department,Job Level,Manager ID,Gender,Race/Ethnicity,Salary,Range Min,Range Max,Hire Date
-NG001,Alex Morgan,Executive,6,,Female,White,178000,165000,195000,2016-03-01
-NG002,Jordan Lee,Engineering,5,NG001,Male,Asian,142000,135000,160000,2018-07-15
-NG003,Sam Rivera,Engineering,4,NG002,Non-binary,Hispanic or Latino,118000,115000,135000,2020-02-10
-NG004,Taylor Kim,Engineering,3,NG002,Female,Asian,98000,95000,115000,2022-09-01
-NG005,Chris Patel,Engineering,3,NG002,Male,Asian,105000,95000,115000,2021-05-20
-NG006,Morgan Blake,Engineering,2,NG004,Female,White,82000,78000,92000,2023-11-08
-NG007,Riley Chen,Engineering,2,NG004,Male,Asian,83000,78000,92000,2023-08-15
-NG008,Jamie Ortiz,Product,4,NG001,Female,Hispanic or Latino,112000,110000,130000,2019-06-22
-NG009,Casey Nguyen,Product,3,NG008,Male,Asian,92000,90000,110000,2022-01-17
-NG010,Drew Williams,Product,3,NG008,Male,White,94000,90000,110000,2021-08-30
-NG011,Quinn Adams,Sales,4,NG001,Male,White,108000,105000,128000,2017-11-05
-NG012,Avery Johnson,Sales,3,NG011,Female,Black or African American,90000,82000,98000,2020-04-14
-NG013,Reese Martin,Sales,2,NG011,Female,Hispanic or Latino,78000,70000,85000,2023-06-01
-NG014,Skyler Reed,Operations,3,NG001,Male,White,91000,85000,102000,2019-12-12
-NG015,Pat Harper,Operations,2,NG001,Female,White,79000,72000,86000,2022-03-25
-NG016,Logan Price,Finance,2,NG001,Male,Asian,81000,78000,92000,2021-10-03
-NG017,Sydney Cole,Finance,2,NG001,Female,White,83000,78000,92000,2022-07-01
+Employee ID,Employee Name,Department,Work Location,Job Level,Manager ID,Gender,Race/Ethnicity,Salary,Range Min,Range Max,Hire Date
+NG001,Alex Morgan,Executive,Boston,6,,Female,White,178000,165000,195000,2016-03-01
+NG002,Jordan Lee,Engineering,San Francisco,5,NG001,Male,Asian,142000,135000,160000,2018-07-15
+NG003,Sam Rivera,Engineering,San Francisco,4,NG002,Non-binary,Hispanic or Latino,118000,115000,135000,2020-02-10
+NG004,Taylor Kim,Engineering,Remote,3,NG002,Female,Asian,98000,95000,115000,2022-09-01
+NG005,Chris Patel,Engineering,Austin,3,NG002,Male,Asian,105000,95000,115000,2021-05-20
+NG006,Morgan Blake,Engineering,Remote,2,NG004,Female,White,82000,78000,92000,2023-11-08
+NG007,Riley Chen,Engineering,Austin,2,NG004,Male,Asian,83000,78000,92000,2023-08-15
+NG008,Jamie Ortiz,Product,New York,4,NG001,Female,Hispanic or Latino,112000,110000,130000,2019-06-22
+NG009,Casey Nguyen,Product,New York,3,NG008,Male,Asian,92000,90000,110000,2022-01-17
+NG010,Drew Williams,Product,Remote,3,NG008,Male,White,94000,90000,110000,2021-08-30
+NG011,Quinn Adams,Sales,Boston,4,NG001,Male,White,108000,105000,128000,2017-11-05
+NG012,Avery Johnson,Sales,Boston,3,NG011,Female,Black or African American,90000,82000,98000,2020-04-14
+NG013,Reese Martin,Sales,Remote,2,NG011,Female,Hispanic or Latino,78000,70000,85000,2023-06-01
+NG014,Skyler Reed,Operations,Chicago,3,NG001,Male,White,91000,85000,102000,2019-12-12
+NG015,Pat Harper,Operations,Chicago,2,NG001,Female,White,79000,72000,86000,2022-03-25
+NG016,Logan Price,Finance,Boston,2,NG001,Male,Asian,81000,78000,92000,2021-10-03
+NG017,Sydney Cole,Finance,Boston,2,NG001,Female,White,83000,78000,92000,2022-07-01

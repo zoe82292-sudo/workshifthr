@@ -167,6 +167,96 @@ class NewHireMeritFlag(BaseModel):
     reason: str
 
 
+class MeritCompaFlag(BaseModel):
+    row_number: int
+    employee_id: str | None = None
+    employee_name: str | None = None
+    department: str | None = None
+    compa_ratio: float
+    merit_increase: float
+    file_average_merit: float
+    flag_type: str
+    reason: str
+
+
+class DepartmentMeritStats(BaseModel):
+    department: str
+    headcount: int
+    employees_with_merit: int
+    average_merit_percent: float | None = None
+    projected_merit_pool: float = 0
+    payroll_base: float = 0
+
+
+class MeritByDepartmentReport(BaseModel):
+    available: bool = False
+    departments: list[DepartmentMeritStats] = Field(default_factory=list)
+    file_average_merit: float | None = None
+    disclaimer: str = ""
+
+
+class BonusTargetOutlierRecord(BaseModel):
+    row_number: int
+    employee_id: str | None = None
+    employee_name: str | None = None
+    department: str | None = None
+    job_level: str | None = None
+    bonus_target: float
+    level_median_bonus: float | None = None
+    reason: str
+
+
+class BonusTargetReview(BaseModel):
+    available: bool = False
+    outliers: list[BonusTargetOutlierRecord] = Field(default_factory=list)
+    disclaimer: str = ""
+
+
+class PostMeritCompaRecord(BaseModel):
+    row_number: int
+    employee_id: str | None = None
+    employee_name: str | None = None
+    department: str | None = None
+    job_level: str | None = None
+    salary: float
+    merit_increase: float
+    current_compa_ratio: float
+    projected_compa_ratio: float
+    compa_change: float
+    projected_salary: float
+
+
+class PostMeritCompaReport(BaseModel):
+    available: bool = False
+    employees: list[PostMeritCompaRecord] = Field(default_factory=list)
+    average_current_compa: float | None = None
+    average_projected_compa: float | None = None
+    employees_below_90_after: int = 0
+    employees_above_110_after: int = 0
+    disclaimer: str = ""
+
+
+class PeerSpreadFlag(BaseModel):
+    row_number: int
+    employee_id: str | None = None
+    employee_name: str | None = None
+    job_level: str | None = None
+    department: str | None = None
+    salary: float
+    group_min_salary: float
+    group_max_salary: float
+    spread_percent: float
+    headcount: int
+    reason: str
+
+
+class PeerSpreadReport(BaseModel):
+    available: bool = False
+    flags: list[PeerSpreadFlag] = Field(default_factory=list)
+    spread_threshold: float = 15.0
+    disclaimer: str = ""
+
+
 class UnusualCompChangeRecord(BaseModel):
     row_number: int
     employee_id: str | None = None
@@ -293,6 +383,7 @@ class AnalysisSummary(BaseModel):
     valid_rows: int
     below_minimum: int
     above_maximum: int
+    new_hires_below_range: int = 0
     duplicate_ids: int
     missing_data: int
     compression_issues: int
@@ -303,11 +394,15 @@ class AnalysisSummary(BaseModel):
     invalid_effective_dates: int = 0
     outlier_merit_increases: int = 0
     new_hire_merit_flags: int = 0
+    merit_compa_flags: int = 0
     unusual_comp_changes: int = 0
     equity_grant_outliers: int = 0
     pay_equity_gaps: int = 0
     tenure_pay_flags: int = 0
     location_pay_gaps: int = 0
+    bonus_target_outliers: int = 0
+    peer_spread_flags: int = 0
+    post_merit_compa_rows: int = 0
 
 
 class AnalysisResult(BaseModel):
@@ -327,12 +422,17 @@ class AnalysisResult(BaseModel):
     invalid_effective_dates: list[InvalidEffectiveDateRecord]
     outlier_merit_increases: list[OutlierMeritIncreaseRecord]
     new_hire_merit_flags: list[NewHireMeritFlag] = Field(default_factory=list)
+    merit_compa_flags: list[MeritCompaFlag] = Field(default_factory=list)
     unusual_comp_changes: list[UnusualCompChangeRecord] = Field(default_factory=list)
     equity_grants: list[EquityGrantRecord] = Field(default_factory=list)
     compa_ratios: list[CompaRatioRecord]
     pay_equity: PayEquityReport
     tenure: TenureReport
     location_pay: LocationPayReport
+    merit_by_department: MeritByDepartmentReport
+    bonus_target_review: BonusTargetReview
+    post_merit_compa: PostMeritCompaReport
+    peer_spread: PeerSpreadReport
     insights: AnalysisInsights
     warnings: list[str] = Field(default_factory=list)
 

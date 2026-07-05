@@ -16,7 +16,7 @@ export function getBundledDemoAnalysis(): AnalysisResult {
       range_midpoint: null,
       job_level: "Job Level",
       department: "Department",
-      location: null,
+      location: "Work Location",
       manager_id: "Manager ID",
       bonus_target: "Bonus Target",
       effective_date: "Effective Date",
@@ -52,6 +52,7 @@ export function getBundledDemoAnalysis(): AnalysisResult {
           "Employee hired within 90 days has a 18% merit increase — verify eligibility.",
       },
     ],
+    merit_compa_flags: [],
     unusual_comp_changes: [
       {
         row_number: 12,
@@ -129,21 +130,76 @@ export function getBundledDemoAnalysis(): AnalysisResult {
         "Pay equity views are decision support only — not a legal pay equity audit. Review outliers with business context.",
     },
     tenure: {
-      available: false,
-      bands: [],
+      available: true,
+      bands: [
+        {
+          band_label: "1–3 years",
+          headcount: 6,
+          median_salary: 92000,
+          median_tenure_years: 2.1,
+          median_compa_ratio: 94.5,
+        },
+      ],
       employees: [],
       flags: [],
       employees_missing_hire_date: 0,
-      disclaimer: "",
+      disclaimer:
+        "Tenure summaries are based on hire date and current base salary. They do not adjust for job level, location, performance, or promotion history. Use for directional review only.",
     },
     location_pay: {
-      available: false,
-      location_groups: [],
+      available: true,
+      location_groups: [
+        {
+          dimension: "location",
+          group_name: "San Francisco",
+          headcount: 5,
+          median_salary: 108000,
+          mean_salary: 110400,
+          median_compa_ratio: 98.2,
+          workforce_percent: 27.8,
+          suppressed: false,
+        },
+      ],
       location_gaps: [],
       level_breakdowns: [],
       employees_missing_location: 0,
+      disclaimer:
+        "Location pay comparisons are descriptive medians only. They do not control for job level, cost of living, tenure, or role mix. Groups with fewer than five employees are hidden.",
+    },
+    merit_by_department: {
+      available: true,
+      departments: [
+        {
+          department: "Engineering",
+          headcount: 8,
+          employees_with_merit: 8,
+          average_merit_percent: 4.1,
+          projected_merit_pool: 32000,
+          payroll_base: 780000,
+        },
+        {
+          department: "Sales",
+          headcount: 4,
+          employees_with_merit: 4,
+          average_merit_percent: 3.2,
+          projected_merit_pool: 12000,
+          payroll_base: 375000,
+        },
+      ],
+      file_average_merit: 3.8,
       disclaimer: "",
     },
+    bonus_target_review: { available: false, outliers: [], disclaimer: "" },
+    post_merit_compa: {
+      available: false,
+      employees: [],
+      average_current_compa: null,
+      average_projected_compa: null,
+      employees_below_90_after: 0,
+      employees_above_110_after: 0,
+      disclaimer: "",
+    },
+    peer_spread: { available: false, flags: [], spread_threshold: 15, disclaimer: "" },
     insights,
     warnings: [],
   };

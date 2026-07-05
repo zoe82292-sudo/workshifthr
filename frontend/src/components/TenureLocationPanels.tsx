@@ -283,18 +283,22 @@ export function TenurePanel({ report }: { report: TenureReport }) {
   );
 }
 
-export function tenureTabCount(result: { tenure: TenureReport; summary: { tenure_pay_flags?: number } }): number {
-  if (!result.tenure.available) return 0;
-  return (result.summary.tenure_pay_flags ?? result.tenure.flags.length) + (result.tenure.bands.length > 0 ? 1 : 0);
+export function tenureTabCount(result: {
+  tenure: TenureReport;
+  column_mapping: { hire_date?: string | null };
+}): number {
+  if (result.tenure.available) {
+    return result.tenure.employees.length || result.tenure.bands.length;
+  }
+  return result.column_mapping.hire_date ? 1 : 0;
 }
 
 export function locationTabCount(result: {
   location_pay: LocationPayReport;
-  summary: { location_pay_gaps?: number };
+  column_mapping: { location?: string | null };
 }): number {
-  if (!result.location_pay.available) return 0;
-  return (
-    (result.summary.location_pay_gaps ?? result.location_pay.location_gaps.length) +
-    (result.location_pay.location_groups.length > 0 ? 1 : 0)
-  );
+  if (result.location_pay.available) {
+    return result.location_pay.location_groups.length || result.location_pay.location_gaps.length;
+  }
+  return result.column_mapping.location ? 1 : 0;
 }

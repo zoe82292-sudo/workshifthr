@@ -161,6 +161,9 @@ COLUMN_ALIASES: dict[str, list[str]] = {
         "bonus %",
         "bonustarget",
         "targetbonus",
+        "bonus pct",
+        "target bonus percent",
+        "variable target",
     ],
     "effective_date": [
         "effective date",

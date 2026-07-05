@@ -9,6 +9,12 @@ import {
   employeeInDepartment,
   textMatchesSearch,
 } from "../analysisFilters";
+import {
+  BonusTargetOutliersPanel,
+  MeritByDepartmentTable,
+  PeerSpreadPanel,
+  PostMeritCompaPanel,
+} from "./CompPlanningPanels";
 import { ColumnMappingSummary } from "./ColumnMappingSummary";
 import { InsightsPanel } from "./InsightsPanel";
 import { PayEquityPanel, payEquityTabCount } from "./PayEquityPanel";
@@ -62,6 +68,11 @@ const TABS: Array<{ id: AnalysisTab; label: string; count: (result: AnalysisResu
     { id: "range_penetration", label: "Range Penetration", count: (r) => r.range_penetration.length },
     { id: "compression", label: "Salary Compression", count: (r) => r.summary.compression_issues },
     {
+      id: "peer_spread",
+      label: "Peer Pay Spread",
+      count: (r) => r.summary.peer_spread_flags ?? r.peer_spread?.flags?.length ?? 0,
+    },
+    {
       id: "pay_equity",
       label: "Pay Equity",
       count: (r) => payEquityTabCount(r),
@@ -83,8 +94,10 @@ const TABS: Array<{ id: AnalysisTab; label: string; count: (result: AnalysisResu
     },
     {
       id: "missing_bonus_targets",
-      label: "Missing Bonus Targets",
-      count: (r) => r.summary.missing_bonus_targets,
+      label: "Bonus Targets",
+      count: (r) =>
+        r.summary.missing_bonus_targets +
+        (r.summary.bonus_target_outliers ?? r.bonus_target_review?.outliers?.length ?? 0),
     },
     {
       id: "missing_salary_ranges",
@@ -107,9 +120,14 @@ const TABS: Array<{ id: AnalysisTab; label: string; count: (result: AnalysisResu
       count: (r) => r.summary.new_hire_merit_flags ?? r.new_hire_merit_flags.length,
     },
     {
+      id: "merit_compa_flags",
+      label: "Merit vs Compa",
+      count: (r) => r.summary.merit_compa_flags ?? r.merit_compa_flags?.length ?? 0,
+    },
+    {
       id: "equity_grants",
       label: "Equity Grants",
-      count: (r) => (r.column_mapping.equity_grant ? r.summary.equity_grant_outliers ?? 0 : 0),
+      count: (r) => (r.column_mapping.equity_grant ? (r.equity_grants ?? []).length : 0),
     },
     {
       id: "unusual_comp_changes",
@@ -118,6 +136,11 @@ const TABS: Array<{ id: AnalysisTab; label: string; count: (result: AnalysisResu
         (r.unusual_comp_changes ?? []).filter((row) => row.change_type === "promotion").length,
     },
     { id: "compa_ratio", label: "Compa-Ratio", count: (r) => r.compa_ratios.length },
+    {
+      id: "post_merit_compa",
+      label: "Post-Merit Compa",
+      count: (r) => r.summary.post_merit_compa_rows ?? r.post_merit_compa?.employees?.length ?? 0,
+    },
     { id: "missing_data", label: "Missing Data", count: (r) => r.summary.missing_data },
   ];
 
@@ -129,12 +152,13 @@ const TAB_GROUPS: Array<{ title: string; ids: AnalysisTab[] }> = [
       "above_maximum",
       "duplicate_ids",
       "compression",
+      "peer_spread",
       "managers_below_reports",
     ],
   },
   {
     title: "Ranges & compa",
-    ids: ["range_penetration", "compa_ratio"],
+    ids: ["range_penetration", "compa_ratio", "post_merit_compa"],
   },
   {
     title: "Pay equity",
@@ -146,7 +170,13 @@ const TAB_GROUPS: Array<{ title: string; ids: AnalysisTab[] }> = [
   },
   {
     title: "Merit & LTI",
-    ids: ["outlier_merit_increases", "new_hire_merit_flags", "equity_grants", "unusual_comp_changes"],
+    ids: [
+      "outlier_merit_increases",
+      "new_hire_merit_flags",
+      "merit_compa_flags",
+      "equity_grants",
+      "unusual_comp_changes",
+    ],
   },
   {
     title: "Data quality",
@@ -457,6 +487,27 @@ export function ResultsDashboard({
     });
   }, [departmentFilter, result.equity_grants, search]);
 
+  const filteredMeritCompaFlags = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return (result.merit_compa_flags ?? []).filter((row) => {
+      if (departmentFilter && (row.department ?? "") !== departmentFilter) {
+        if (!employeeInDepartment(row.employee_id, departmentFilter, departmentLookup)) {
+          return false;
+        }
+      }
+      if (!query) return true;
+      return textMatchesSearch(
+        [row.employee_id, row.employee_name, row.department, row.flag_type],
+        query,
+      );
+    });
+  }, [departmentFilter, departmentLookup, result.merit_compa_flags, search]);
+
+  const equityGrantOutliers = useMemo(
+    () => (result.equity_grants ?? []).filter((row) => row.is_outlier).length,
+    [result.equity_grants],
+  );
+
   const filteredPromotionChanges = useMemo(() => {
     return filterIssueRows(
       (result.unusual_comp_changes ?? []).filter((row) => row.change_type === "promotion"),
@@ -551,7 +602,11 @@ export function ResultsDashboard({
         detectedColumns={result.detected_columns}
       />
 
-      <InsightsPanel result={result} onTargetMeritChange={setTargetMeritPercent} />
+      <InsightsPanel
+        result={result}
+        onTargetMeritChange={setTargetMeritPercent}
+      />
+      <MeritByDepartmentTable report={result.merit_by_department} />
       <div className="summary-grid card-grid card-grid--4" aria-label="Issue counts">
         <div className="summary-card stat-card">
           <span className="stat-card__label">Total rows</span>
@@ -817,33 +872,51 @@ export function ResultsDashboard({
       ) : null}
 
       {activeTab === "missing_bonus_targets" ? (
-        filterIssueRows(result.missing_bonus_targets).length === 0 ? (
-          <div className="empty-state">All rows include bonus targets.</div>
+        filterIssueRows(result.missing_bonus_targets).length === 0 &&
+        (result.bonus_target_review?.outliers?.length ?? 0) === 0 ? (
+          <div className="empty-state">
+            {result.column_mapping.bonus_target
+              ? "No missing or outlier bonus targets detected."
+              : "Map a Bonus Target column to review missing values and level-based outliers."}
+          </div>
         ) : (
-          <PaginatedSlice items={filterIssueRows(result.missing_bonus_targets)}>
-            {(pageItems) => (
-              <div className="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Row</th>
-                      <th>Employee ID</th>
-                      <th>Name</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pageItems.map((row) => (
-                      <tr key={row.row_number}>
-                        <td>{row.row_number}</td>
-                        <td>{row.employee_id ?? "—"}</td>
-                        <td>{row.employee_name ?? "—"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </PaginatedSlice>
+          <>
+            {filterIssueRows(result.missing_bonus_targets).length > 0 ? (
+              <>
+                <h3 className="equity-section">Missing bonus targets</h3>
+                <PaginatedSlice items={filterIssueRows(result.missing_bonus_targets)}>
+                  {(pageItems) => (
+                    <div className="table-wrap">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Row</th>
+                            <th>Employee ID</th>
+                            <th>Name</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {pageItems.map((row) => (
+                            <tr key={row.row_number}>
+                              <td>{row.row_number}</td>
+                              <td>{row.employee_id ?? "—"}</td>
+                              <td>{row.employee_name ?? "—"}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </PaginatedSlice>
+              </>
+            ) : null}
+            {(result.bonus_target_review?.outliers?.length ?? 0) > 0 ? (
+              <>
+                <h3 className="equity-section">Bonus target outliers by level</h3>
+                <BonusTargetOutliersPanel review={result.bonus_target_review} />
+              </>
+            ) : null}
+          </>
         )
       ) : null}
 
@@ -989,6 +1062,64 @@ export function ResultsDashboard({
         )
       ) : null}
 
+      {activeTab === "merit_compa_flags" ? (
+        filteredMeritCompaFlags.length === 0 ? (
+          <div className="empty-state">
+            No merit vs. compa misalignment flags detected. Employees below 90% compa-ratio with
+            below-average merit, or above 110% with above-average merit, appear here.
+          </div>
+        ) : (
+          <>
+            <p className="file-meta" style={{ marginBottom: 16 }}>
+              Flags employees whose merit increase may not match range positioning — common comp
+              review checks for under-correction and over-rewarding.
+            </p>
+            <PaginatedSlice items={filteredMeritCompaFlags}>
+              {(pageItems) => (
+                <div className="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Row</th>
+                        <th>Employee ID</th>
+                        <th>Name</th>
+                        <th>Department</th>
+                        <th>Compa-Ratio</th>
+                        <th>Merit Increase</th>
+                        <th>File Avg Merit</th>
+                        <th>Flag</th>
+                        <th>Reason</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pageItems.map((row) => (
+                        <tr key={row.row_number}>
+                          <td>{row.row_number}</td>
+                          <td>{row.employee_id ?? "—"}</td>
+                          <td>{row.employee_name ?? "—"}</td>
+                          <td>{row.department ?? "—"}</td>
+                          <td>{row.compa_ratio}%</td>
+                          <td>{row.merit_increase}%</td>
+                          <td>{row.file_average_merit}%</td>
+                          <td>
+                            <span className="pill pill-warning">
+                              {row.flag_type === "under_correction"
+                                ? "Under-correction"
+                                : "Over-rewarding"}
+                            </span>
+                          </td>
+                          <td>{row.reason}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </PaginatedSlice>
+          </>
+        )
+      ) : null}
+
       {activeTab === "equity_grants" ? (
         !result.column_mapping.equity_grant ? (
           <div className="empty-state">
@@ -1001,9 +1132,12 @@ export function ResultsDashboard({
         ) : (
           <>
             <p className="file-meta" style={{ marginBottom: 16 }}>
-              Statistical outliers are flagged when a grant falls outside the expected spread for
-              this file. Adjust merit outlier sensitivity before re-running analysis to flag more
-              or fewer grants.
+              {filteredEquityGrants.length}{" "}
+              {filteredEquityGrants.length === 1 ? "grant" : "grants"}
+              {equityGrantOutliers > 0
+                ? ` · ${equityGrantOutliers} outlier${equityGrantOutliers === 1 ? "" : "s"} flagged`
+                : " · no statistical outliers"}
+              . Outliers fall outside the expected spread for this file.
             </p>
             <PaginatedSlice items={filteredEquityGrants}>
               {(pageItems) => (
@@ -1131,6 +1265,14 @@ export function ResultsDashboard({
             )}
           </PaginatedSlice>
         )
+      ) : null}
+
+      {activeTab === "peer_spread" ? (
+        <PeerSpreadPanel report={result.peer_spread} />
+      ) : null}
+
+      {activeTab === "post_merit_compa" ? (
+        <PostMeritCompaPanel report={result.post_merit_compa} />
       ) : null}
 
       {activeTab === "pay_equity" ? (

@@ -1,21 +1,21 @@
-Employee ID,Employee Name,Department,Job Level,Manager ID,Gender,Race/Ethnicity,Salary,Range Min,Range Max,Bonus Target,Effective Date,Merit Increase %,Hire Date,Promotion Increase %,Equity Grant %
-E001,Alice Chen,Engineering,3,E010,Female,Asian,95000,90000,110000,15,2026-01-01,3.5,2022-03-15,10,10
-E002,Ben Ortiz,Engineering,4,E010,Male,Hispanic or Latino,108000,105000,130000,20,2026-01-01,4.0,2021-06-01,12,15
-E003,Carla Diaz,Product,2,E001,Female,Hispanic or Latino,78000,85000,100000,10,2026-01-01,2.5,2023-01-10,8,5
-E004,Dev Patel,Engineering,5,E010,Male,Asian,132000,125000,155000,25,2026-01-01,4.5,2019-08-20,15,20
-E001,Duplicate Row,Engineering,3,E001,Female,Asian,96000,90000,110000,15,2026-01-01,3.0,2022-03-15,10,10
-E006,Evan Brooks,Engineering,3,E002,Male,White,112000,90000,110000,15,2027-01-01,3.2,2023-08-10,11,10
-E007,Fiona Ng,Sales,4,E004,Female,Asian,104000,105000,130000,,2026-01-01,3.8,2020-11-05,10,5
-E008,Grace Kim,Product,2,E001,Female,Asian,82000,85000,100000,10,not-a-date,3.0,2022-07-22,9,0
-E009,Hugo Silva,Operations,1,E003,Male,White,72000,70000,85000,8,2026-01-01,18.0,2026-05-01,35,15
-E010,Ivy Park,Executive,6,,Female,White,148000,140000,175000,30,2026-01-01,5.0,2018-04-01,12,25
-E011,Jack Reed,Product,2,E001,Male,White,,85000,100000,10,2026-01-01,3.0,2021-09-14,10,75
-E012,Kara Wu,Engineering,3,E002,Female,Asian,91000,,,12,2026-01-01,3.1,2022-02-28,8,5
-E013,Liam Fox,Engineering,4,E010,Male,White,115000,105000,130000,20,2026-01-01,4.2,2020-05-18,14,15
-E014,Lia Singh,Engineering,3,E001,Female,Asian,98000,90000,110000,15,2026-01-01,3.4,2021-12-01,11,10
-E015,Marcus Lee,Engineering,3,E010,Male,Black or African American,99000,90000,110000,15,2026-01-01,3.6,2023-03-07,10,10
-E016,Nina Ross,Sales,3,E004,Female,White,88000,85000,105000,12,2026-01-01,3.3,2022-10-12,9,5
-E017,Omar Haddad,Operations,2,E003,Male,White,76000,70000,85000,8,2026-01-01,3.0,2021-04-19,8,0
-E018,Priya Shah,Engineering,4,E010,Female,Asian,109000,105000,130000,20,2026-01-01,4.1,2019-11-30,13,15
-E019,Quinn Adams,Product,3,E001,Male,White,94000,90000,110000,15,2026-01-01,3.7,2022-06-06,10,10
-E020,Rosa Vega,Sales,2,E004,Female,Hispanic or Latino,79000,75000,95000,10,2026-01-01,3.2,2023-05-25,9,5
+Employee ID,Employee Name,Department,Work Location,Job Level,Manager ID,Gender,Race/Ethnicity,Salary,Range Min,Range Max,Bonus Target,Effective Date,Merit Increase %,Hire Date,Promotion Increase %,Equity Grant %
+E001,Alice Chen,Engineering,San Francisco,3,E010,Female,Asian,95000,90000,110000,15,2026-01-01,3.5,2022-03-15,10,10
+E002,Ben Ortiz,Engineering,San Francisco,4,E010,Male,Hispanic or Latino,108000,105000,130000,20,2026-01-01,4.0,2021-06-01,12,15
+E003,Carla Diaz,Product,New York,2,E001,Female,Hispanic or Latino,78000,85000,100000,10,2026-01-01,2.5,2023-01-10,8,5
+E004,Dev Patel,Engineering,San Francisco,5,E010,Male,Asian,132000,125000,155000,25,2026-01-01,4.5,2019-08-20,15,20
+E001,Duplicate Row,Engineering,Remote,3,E001,Female,Asian,96000,90000,110000,15,2026-01-01,3.0,2022-03-15,10,10
+E006,Evan Brooks,Engineering,Austin,3,E002,Male,White,112000,90000,110000,15,2027-01-01,3.2,2023-08-10,11,10
+E007,Fiona Ng,Sales,Boston,4,E004,Female,Asian,104000,105000,130000,,2026-01-01,3.8,2020-11-05,10,5
+E008,Grace Kim,Product,New York,2,E001,Female,Asian,82000,85000,100000,10,not-a-date,3.0,2022-07-22,9,0
+E009,Hugo Silva,Operations,Remote,1,E003,Male,White,72000,70000,85000,8,2026-01-01,18.0,2026-05-01,35,15
+E010,Ivy Park,Executive,Boston,6,,Female,White,148000,140000,175000,30,2026-01-01,5.0,2018-04-01,12,25
+E011,Jack Reed,Product,New York,2,E001,Male,White,,85000,100000,10,2026-01-01,3.0,2021-09-14,10,75
+E012,Kara Wu,Engineering,San Francisco,3,E002,Female,Asian,91000,,,12,2026-01-01,3.1,2022-02-28,8,5
+E013,Liam Fox,Engineering,San Francisco,4,E010,Male,White,115000,105000,130000,20,2026-01-01,4.2,2020-05-18,14,15
+E014,Lia Singh,Engineering,Remote,3,E001,Female,Asian,98000,90000,110000,15,2026-01-01,3.4,2021-12-01,11,10
+E015,Marcus Lee,Engineering,Austin,3,E010,Male,Black or African American,99000,90000,110000,15,2026-01-01,3.6,2023-03-07,10,10
+E016,Nina Ross,Sales,Boston,3,E004,Female,White,88000,85000,105000,12,2026-01-01,3.3,2022-10-12,9,5
+E017,Omar Haddad,Operations,Chicago,2,E003,Male,White,76000,70000,85000,8,2026-01-01,3.0,2021-04-19,8,0
+E018,Priya Shah,Engineering,San Francisco,4,E010,Female,Asian,109000,105000,130000,20,2026-01-01,4.1,2019-11-30,13,15
+E019,Quinn Adams,Product,New York,3,E001,Male,White,94000,90000,110000,15,2026-01-01,3.7,2022-06-06,10,10
+E020,Rosa Vega,Sales,Remote,2,E004,Female,Hispanic or Latino,79000,75000,95000,10,2026-01-01,3.2,2023-05-25,9,5

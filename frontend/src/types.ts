@@ -156,6 +156,18 @@ export interface NewHireMeritFlag {
   reason: string;
 }
 
+export interface MeritCompaFlag {
+  row_number: number;
+  employee_id: string | null;
+  employee_name: string | null;
+  department: string | null;
+  compa_ratio: number;
+  merit_increase: number;
+  file_average_merit: number;
+  flag_type: string;
+  reason: string;
+}
+
 export interface UnusualCompChangeRecord {
   row_number: number;
   employee_id: string | null;
@@ -180,6 +192,7 @@ export interface AnalysisSummary {
   valid_rows: number;
   below_minimum: number;
   above_maximum: number;
+  new_hires_below_range?: number;
   duplicate_ids: number;
   missing_data: number;
   compression_issues: number;
@@ -190,11 +203,15 @@ export interface AnalysisSummary {
   invalid_effective_dates: number;
   outlier_merit_increases: number;
   new_hire_merit_flags: number;
+  merit_compa_flags?: number;
   unusual_comp_changes: number;
   equity_grant_outliers: number;
   pay_equity_gaps: number;
   tenure_pay_flags: number;
   location_pay_gaps: number;
+  bonus_target_outliers?: number;
+  peer_spread_flags?: number;
+  post_merit_compa_rows?: number;
 }
 
 export interface PayEquityGap {
@@ -299,6 +316,84 @@ export interface LocationPayReport {
   disclaimer: string;
 }
 
+export interface DepartmentMeritStats {
+  department: string;
+  headcount: number;
+  employees_with_merit: number;
+  average_merit_percent: number | null;
+  projected_merit_pool: number;
+  payroll_base: number;
+}
+
+export interface MeritByDepartmentReport {
+  available: boolean;
+  departments: DepartmentMeritStats[];
+  file_average_merit: number | null;
+  disclaimer: string;
+}
+
+export interface BonusTargetOutlierRecord {
+  row_number: number;
+  employee_id: string | null;
+  employee_name: string | null;
+  department: string | null;
+  job_level: string | null;
+  bonus_target: number;
+  level_median_bonus: number | null;
+  reason: string;
+}
+
+export interface BonusTargetReview {
+  available: boolean;
+  outliers: BonusTargetOutlierRecord[];
+  disclaimer: string;
+}
+
+export interface PostMeritCompaRecord {
+  row_number: number;
+  employee_id: string | null;
+  employee_name: string | null;
+  department: string | null;
+  job_level: string | null;
+  salary: number;
+  merit_increase: number;
+  current_compa_ratio: number;
+  projected_compa_ratio: number;
+  compa_change: number;
+  projected_salary: number;
+}
+
+export interface PostMeritCompaReport {
+  available: boolean;
+  employees: PostMeritCompaRecord[];
+  average_current_compa: number | null;
+  average_projected_compa: number | null;
+  employees_below_90_after: number;
+  employees_above_110_after: number;
+  disclaimer: string;
+}
+
+export interface PeerSpreadFlag {
+  row_number: number;
+  employee_id: string | null;
+  employee_name: string | null;
+  job_level: string | null;
+  department: string | null;
+  salary: number;
+  group_min_salary: number;
+  group_max_salary: number;
+  spread_percent: number;
+  headcount: number;
+  reason: string;
+}
+
+export interface PeerSpreadReport {
+  available: boolean;
+  flags: PeerSpreadFlag[];
+  spread_threshold: number;
+  disclaimer: string;
+}
+
 export interface AnalysisResult {
   summary: AnalysisSummary;
   column_mapping: ColumnMapping;
@@ -316,12 +411,17 @@ export interface AnalysisResult {
   invalid_effective_dates: InvalidEffectiveDateRecord[];
   outlier_merit_increases: OutlierMeritIncreaseRecord[];
   new_hire_merit_flags: NewHireMeritFlag[];
+  merit_compa_flags: MeritCompaFlag[];
   unusual_comp_changes: UnusualCompChangeRecord[];
   equity_grants: EquityGrantRecord[];
   compa_ratios: CompaRatioRecord[];
   pay_equity: PayEquityReport;
   tenure: TenureReport;
   location_pay: LocationPayReport;
+  merit_by_department: MeritByDepartmentReport;
+  bonus_target_review: BonusTargetReview;
+  post_merit_compa: PostMeritCompaReport;
+  peer_spread: PeerSpreadReport;
   insights: AnalysisInsights;
   warnings: string[];
 }
@@ -353,15 +453,18 @@ export type AnalysisTab =
   | "duplicate_ids"
   | "range_penetration"
   | "compression"
+  | "peer_spread"
   | "managers_below_reports"
   | "missing_bonus_targets"
   | "missing_salary_ranges"
   | "invalid_effective_dates"
   | "outlier_merit_increases"
   | "new_hire_merit_flags"
+  | "merit_compa_flags"
   | "equity_grants"
   | "unusual_comp_changes"
   | "compa_ratio"
+  | "post_merit_compa"
   | "pay_equity"
   | "tenure"
   | "location_pay"

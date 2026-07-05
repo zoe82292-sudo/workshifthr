@@ -68,11 +68,15 @@ function normalizeSummary(raw: Partial<AnalysisSummary> | undefined): AnalysisSu
     invalid_effective_dates: raw?.invalid_effective_dates ?? 0,
     outlier_merit_increases: raw?.outlier_merit_increases ?? 0,
     new_hire_merit_flags: raw?.new_hire_merit_flags ?? 0,
+    merit_compa_flags: raw?.merit_compa_flags ?? 0,
     unusual_comp_changes: raw?.unusual_comp_changes ?? 0,
     equity_grant_outliers: raw?.equity_grant_outliers ?? 0,
     pay_equity_gaps: raw?.pay_equity_gaps ?? 0,
     tenure_pay_flags: raw?.tenure_pay_flags ?? 0,
     location_pay_gaps: raw?.location_pay_gaps ?? 0,
+    bonus_target_outliers: raw?.bonus_target_outliers ?? 0,
+    peer_spread_flags: raw?.peer_spread_flags ?? 0,
+    post_merit_compa_rows: raw?.post_merit_compa_rows ?? 0,
   };
 }
 
@@ -106,6 +110,36 @@ const EMPTY_LOCATION_PAY = {
   disclaimer: "",
 };
 
+const EMPTY_MERIT_BY_DEPT = {
+  available: false,
+  departments: [],
+  file_average_merit: null,
+  disclaimer: "",
+};
+
+const EMPTY_BONUS_REVIEW = {
+  available: false,
+  outliers: [],
+  disclaimer: "",
+};
+
+const EMPTY_POST_MERIT = {
+  available: false,
+  employees: [],
+  average_current_compa: null,
+  average_projected_compa: null,
+  employees_below_90_after: 0,
+  employees_above_110_after: 0,
+  disclaimer: "",
+};
+
+const EMPTY_PEER_SPREAD = {
+  available: false,
+  flags: [],
+  spread_threshold: 15,
+  disclaimer: "",
+};
+
 function normalizeResult(raw: AnalysisResult): AnalysisResult {
   return {
     ...raw,
@@ -120,6 +154,10 @@ function normalizeResult(raw: AnalysisResult): AnalysisResult {
     pay_equity: raw.pay_equity ?? EMPTY_PAY_EQUITY,
     tenure: raw.tenure ?? EMPTY_TENURE,
     location_pay: raw.location_pay ?? EMPTY_LOCATION_PAY,
+    merit_by_department: raw.merit_by_department ?? EMPTY_MERIT_BY_DEPT,
+    bonus_target_review: raw.bonus_target_review ?? EMPTY_BONUS_REVIEW,
+    post_merit_compa: raw.post_merit_compa ?? EMPTY_POST_MERIT,
+    peer_spread: raw.peer_spread ?? EMPTY_PEER_SPREAD,
     insights: raw.insights ?? EMPTY_INSIGHTS,
     warnings: raw.warnings ?? [],
     managers_below_reports: raw.managers_below_reports ?? [],
@@ -128,6 +166,7 @@ function normalizeResult(raw: AnalysisResult): AnalysisResult {
     invalid_effective_dates: raw.invalid_effective_dates ?? [],
     outlier_merit_increases: raw.outlier_merit_increases ?? [],
     new_hire_merit_flags: raw.new_hire_merit_flags ?? [],
+    merit_compa_flags: raw.merit_compa_flags ?? [],
     unusual_comp_changes: raw.unusual_comp_changes ?? [],
     equity_grants: raw.equity_grants ?? [],
     detected_columns: raw.detected_columns ?? [],

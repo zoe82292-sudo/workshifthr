@@ -144,6 +144,13 @@ def _build_executive_summary(
             f"{_plural(summary.below_minimum, 'is', 'are')} below range minimum, requiring "
             f"${cost_metrics.total_gap_to_minimum:,.0f} to reach the range floor."
         )
+        if summary.new_hires_below_range:
+            bullets.append(
+                f"{summary.new_hires_below_range} "
+                f"{_plural(summary.new_hires_below_range, 'employee')} "
+                f"hired within the last year {_plural(summary.new_hires_below_range, 'is', 'are')} "
+                "still below range minimum — review starting placement."
+            )
     else:
         bullets.append("No employees were paid below their assigned range minimum.")
 
@@ -184,6 +191,14 @@ def _build_executive_summary(
             "equity / LTI grant compared to the rest of the file."
         )
 
+    if summary.merit_compa_flags:
+        bullets.append(
+            f"{summary.merit_compa_flags} "
+            f"{_plural(summary.merit_compa_flags, 'employee', 'employees')} "
+            f"{_plural(summary.merit_compa_flags, 'has', 'have')} a merit increase that may not "
+            "align with compa-ratio positioning — review under-correction and over-rewarding cases."
+        )
+
     if compa_ratio.average_compa_ratio is not None:
         bullets.append(
             f"Average compa-ratio is {compa_ratio.average_compa_ratio:.1f}% "
@@ -195,6 +210,47 @@ def _build_executive_summary(
         bullets.append(
             f"Uploaded merit data implies a projected merit pool of "
             f"${budget_impact.projected_merit_pool:,.0f}."
+        )
+
+    if result.merit_by_department.available and len(result.merit_by_department.departments) > 1:
+        ranked = sorted(
+            [
+                dept
+                for dept in result.merit_by_department.departments
+                if dept.average_merit_percent is not None and dept.employees_with_merit > 0
+            ],
+            key=lambda dept: dept.average_merit_percent or 0,
+            reverse=True,
+        )
+        if len(ranked) >= 2:
+            high = ranked[0]
+            low = ranked[-1]
+            bullets.append(
+                f"Merit by department: {high.department} averages {high.average_merit_percent}% vs "
+                f"{low.department} at {low.average_merit_percent}%."
+            )
+
+    if result.post_merit_compa.available and result.post_merit_compa.average_projected_compa is not None:
+        current = result.post_merit_compa.average_current_compa
+        projected = result.post_merit_compa.average_projected_compa
+        if current is not None and projected != current:
+            bullets.append(
+                f"Average compa-ratio moves from {current:.1f}% to {projected:.1f}% after uploaded "
+                f"merit increases ({result.post_merit_compa.employees_below_90_after} employees "
+                f"would remain below 90%)."
+            )
+
+    if summary.peer_spread_flags:
+        bullets.append(
+            f"{summary.peer_spread_flags} peer pay spread "
+            f"{_plural(summary.peer_spread_flags, 'flag', 'flags')} — same level and department "
+            "groups with more than 15% pay spread."
+        )
+
+    if summary.bonus_target_outliers:
+        bullets.append(
+            f"{summary.bonus_target_outliers} bonus target "
+            f"{_plural(summary.bonus_target_outliers, 'outlier', 'outliers')} vs. same job level."
         )
 
     if result.pay_equity.available:
@@ -226,6 +282,21 @@ def _build_executive_summary(
                 "Pay equity groups were detected, but no reportable median gaps met the "
                 "minimum group size threshold."
             )
+
+    if result.tenure.available and summary.tenure_pay_flags:
+        bullets.append(
+            f"{summary.tenure_pay_flags} tenure pay "
+            f"{_plural(summary.tenure_pay_flags, 'flag', 'flags')} "
+            f"{_plural(summary.tenure_pay_flags, 'was', 'were')} found — review short-tenure "
+            "high pay and long-tenure low pay cases."
+        )
+
+    if result.location_pay.available and summary.location_pay_gaps:
+        bullets.append(
+            f"{summary.location_pay_gaps} reportable location pay "
+            f"{_plural(summary.location_pay_gaps, 'gap', 'gaps')} "
+            f"{_plural(summary.location_pay_gaps, 'was', 'were')} detected between offices or cities."
+        )
 
     issue_count = (
         summary.below_minimum

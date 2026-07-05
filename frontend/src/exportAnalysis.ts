@@ -79,6 +79,7 @@ function overviewRows(result: AnalysisResult, options?: ExportOptions): Array<Ar
     ["Invalid effective dates", summary.invalid_effective_dates],
     ["Outlier merit increases", summary.outlier_merit_increases],
     ["New-hire merit flags", summary.new_hire_merit_flags ?? 0],
+    ["Merit vs compa flags", summary.merit_compa_flags ?? 0],
     ["Unusual comp changes", summary.unusual_comp_changes ?? 0],
     ["Equity grant outliers", summary.equity_grant_outliers ?? 0],
     ["Pay equity gaps", summary.pay_equity_gaps],

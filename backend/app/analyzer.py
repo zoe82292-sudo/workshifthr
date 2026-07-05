@@ -15,6 +15,12 @@ from app.columns import (
     normalize_upload_dataframe,
     resolve_column_mapping,
 )
+from app.comp_extensions import (
+    build_bonus_target_review,
+    build_merit_by_department,
+    build_peer_spread_report,
+    build_post_merit_compa,
+)
 from app.equity import build_pay_equity_report
 from app.tenure_location import build_location_pay_report, build_tenure_report
 from app.insights import build_insights, empty_insights
@@ -33,6 +39,11 @@ from app.models import (
     LocationPayReport,
     MissingBonusTargetRecord,
     MissingSalaryRangeRecord,
+    MeritByDepartmentReport,
+    MeritCompaFlag,
+    BonusTargetReview,
+    PeerSpreadReport,
+    PostMeritCompaReport,
     NewHireMeritFlag,
     OutlierMeritIncreaseRecord,
     PayEquityReport,
@@ -44,6 +55,10 @@ from app.models import (
 MERIT_OUTLIER_IQR_MULTIPLIER = 1.5
 PLANNED_EFFECTIVE_HORIZON_MONTHS = 18
 NEW_HIRE_TENURE_DAYS = 90
+NEW_HIRE_RANGE_DAYS = 365
+LOW_COMPA_THRESHOLD = 90.0
+HIGH_COMPA_THRESHOLD = 110.0
+MERIT_COMPA_SPREAD = 1.0
 
 
 def _looks_like_export_file(content: bytes, filename: str) -> bool:
@@ -327,12 +342,17 @@ def _empty_result(
         invalid_effective_dates=[],
         outlier_merit_increases=[],
         new_hire_merit_flags=[],
+        merit_compa_flags=[],
         unusual_comp_changes=[],
         equity_grants=[],
         compa_ratios=[],
         pay_equity=PayEquityReport(available=False),
         tenure=TenureReport(available=False),
         location_pay=LocationPayReport(available=False),
+        merit_by_department=MeritByDepartmentReport(available=False),
+        bonus_target_review=BonusTargetReview(available=False),
+        post_merit_compa=PostMeritCompaReport(available=False),
+        peer_spread=PeerSpreadReport(available=False),
         insights=empty_insights(),
         warnings=warnings,
     )
@@ -487,6 +507,7 @@ def analyze_file(
         iqr_multiplier=analysis_options.merit_iqr_multiplier,
     )
     new_hire_merit_flags = _find_new_hire_merit_flags(prepared, mapping, warnings)
+    merit_compa_flags = _find_merit_compa_flags(range_penetration, mapping, warnings)
     unusual_comp_changes = _find_unusual_comp_changes(
         prepared,
         mapping,
@@ -499,6 +520,10 @@ def analyze_file(
     pay_equity = build_pay_equity_report(prepared, mapping, warnings)
     tenure = build_tenure_report(prepared, mapping, warnings)
     location_pay = build_location_pay_report(prepared, mapping, warnings)
+    merit_by_department = build_merit_by_department(range_penetration)
+    bonus_target_review = build_bonus_target_review(prepared, mapping, warnings)
+    post_merit_compa = build_post_merit_compa(range_penetration, mapping)
+    peer_spread = build_peer_spread_report(prepared, mapping, warnings)
 
     valid_rows = len(prepared) - len(missing_data)
     average_penetration = (
@@ -535,12 +560,17 @@ def analyze_file(
 
     compa_ratios.sort(key=lambda item: item.compa_ratio)
 
+    new_hires_below_range = _count_new_hires_below_minimum(
+        below_minimum, prepared, mapping
+    )
+
     result = AnalysisResult(
         summary=AnalysisSummary(
             total_rows=len(prepared),
             valid_rows=valid_rows,
             below_minimum=len(below_minimum),
             above_maximum=len(above_maximum),
+            new_hires_below_range=new_hires_below_range,
             duplicate_ids=len(duplicate_ids),
             missing_data=len(missing_data),
             compression_issues=len(compression),
@@ -551,11 +581,15 @@ def analyze_file(
             invalid_effective_dates=len(invalid_effective_dates),
             outlier_merit_increases=len(outlier_merit_increases),
             new_hire_merit_flags=len(new_hire_merit_flags),
+            merit_compa_flags=len(merit_compa_flags),
             unusual_comp_changes=len(unusual_comp_changes),
             equity_grant_outliers=equity_grant_outliers,
             pay_equity_gaps=len(pay_equity.gender_gaps) + len(pay_equity.race_gaps),
             tenure_pay_flags=len(tenure.flags),
             location_pay_gaps=len(location_pay.location_gaps),
+            bonus_target_outliers=len(bonus_target_review.outliers),
+            peer_spread_flags=len(peer_spread.flags),
+            post_merit_compa_rows=len(post_merit_compa.employees),
         ),
         column_mapping=ColumnMapping(**mapping),
         detected_columns=list(df.columns),
@@ -576,12 +610,17 @@ def analyze_file(
         invalid_effective_dates=invalid_effective_dates,
         outlier_merit_increases=outlier_merit_increases,
         new_hire_merit_flags=new_hire_merit_flags,
+        merit_compa_flags=merit_compa_flags,
         unusual_comp_changes=unusual_comp_changes,
         equity_grants=equity_grants,
         compa_ratios=compa_ratios,
         pay_equity=pay_equity,
         tenure=tenure,
         location_pay=location_pay,
+        merit_by_department=merit_by_department,
+        bonus_target_review=bonus_target_review,
+        post_merit_compa=post_merit_compa,
+        peer_spread=peer_spread,
         insights=empty_insights(),
         warnings=warnings,
     )
@@ -936,6 +975,102 @@ def _find_percent_outliers(
             )
 
     return records
+
+
+def _find_merit_compa_flags(
+    range_penetration: list[EmployeeRecord],
+    mapping: dict[str, str | None],
+    warnings: list[str],
+) -> list[MeritCompaFlag]:
+    merit_col = mapping.get("merit_increase")
+    if not merit_col:
+        return []
+
+    eligible = [
+        employee
+        for employee in range_penetration
+        if employee.merit_increase is not None and employee.compa_ratio is not None
+    ]
+    if len(eligible) < 4:
+        if eligible:
+            warnings.append(
+                "Merit vs. compa alignment checks require at least 4 employees with both "
+                "merit increase and compa-ratio data."
+            )
+        return []
+
+    average_merit = sum(employee.merit_increase for employee in eligible) / len(eligible)
+    records: list[MeritCompaFlag] = []
+
+    for employee in eligible:
+        merit = employee.merit_increase
+        compa = employee.compa_ratio
+        assert merit is not None and compa is not None
+
+        if compa <= LOW_COMPA_THRESHOLD and merit < average_merit - MERIT_COMPA_SPREAD:
+            records.append(
+                MeritCompaFlag(
+                    row_number=employee.row_number,
+                    employee_id=employee.employee_id,
+                    employee_name=employee.employee_name,
+                    department=employee.department,
+                    compa_ratio=compa,
+                    merit_increase=merit,
+                    file_average_merit=round(average_merit, 2),
+                    flag_type="under_correction",
+                    reason=(
+                        f"Compa-ratio {compa}% is below {LOW_COMPA_THRESHOLD:.0f}% but merit "
+                        f"({merit}%) is below the file average ({average_merit:.1f}%) — "
+                        "consider a larger increase to close the gap."
+                    ),
+                )
+            )
+        elif compa >= HIGH_COMPA_THRESHOLD and merit > average_merit + MERIT_COMPA_SPREAD:
+            records.append(
+                MeritCompaFlag(
+                    row_number=employee.row_number,
+                    employee_id=employee.employee_id,
+                    employee_name=employee.employee_name,
+                    department=employee.department,
+                    compa_ratio=compa,
+                    merit_increase=merit,
+                    file_average_merit=round(average_merit, 2),
+                    flag_type="over_rewarding",
+                    reason=(
+                        f"Compa-ratio {compa}% is above {HIGH_COMPA_THRESHOLD:.0f}% but merit "
+                        f"({merit}%) exceeds the file average ({average_merit:.1f}%) — "
+                        "verify alignment with pay-for-performance guidance."
+                    ),
+                )
+            )
+
+    return sorted(records, key=lambda item: item.compa_ratio)
+
+
+def _count_new_hires_below_minimum(
+    below_minimum: list[EmployeeRecord],
+    df: pd.DataFrame,
+    mapping: dict[str, str | None],
+) -> int:
+    hire_col = mapping.get("hire_date")
+    if not hire_col or hire_col not in df.columns or not below_minimum:
+        return 0
+
+    below_rows = {employee.row_number for employee in below_minimum}
+    today = pd.Timestamp(datetime.now().date())
+    count = 0
+
+    for index, row in df.iterrows():
+        row_number = int(index) + 2
+        if row_number not in below_rows:
+            continue
+        parsed = pd.to_datetime(row.get(hire_col), errors="coerce")
+        if pd.isna(parsed):
+            continue
+        if 0 <= (today - parsed).days <= NEW_HIRE_RANGE_DAYS:
+            count += 1
+
+    return count
 
 
 def _find_unusual_comp_changes(

@@ -22,7 +22,7 @@ export function OnboardingPanel({ hasResult }: OnboardingPanelProps) {
         <div>
           <h2>Get started</h2>
           <p className="onboarding-panel__copy">
-            Three steps to your first comp review — most teams finish in under five minutes.
+            Two steps to your first comp review — upload your HRIS file as-is, no template needed.
           </p>
         </div>
         <button
@@ -38,17 +38,15 @@ export function OnboardingPanel({ hasResult }: OnboardingPanelProps) {
       </div>
       <ol className="onboarding-steps">
         <li className={stepUpload ? "onboarding-step onboarding-step--done" : "onboarding-step"}>
-          <strong>Download the template</strong>
+          <strong>Upload your HRIS export</strong>
           <span>
-            Use our column layout or your HRIS export with employee ID, salary, range min/max.{" "}
+            Drop your .xlsx or .csv as exported from Workday, UKG, ADP, or your comp spreadsheet —
+            columns are detected automatically.{" "}
             <a href="/api/sample-template" download>
-              Download template
-            </a>
+              Sample file
+            </a>{" "}
+            optional.
           </span>
-        </li>
-        <li className={stepUpload ? "onboarding-step onboarding-step--done" : "onboarding-step"}>
-          <strong>Upload your spreadsheet</strong>
-          <span>Drop an .xlsx or .csv below, map columns if needed, then run analysis.</span>
         </li>
         <li className={stepUpload ? "onboarding-step onboarding-step--done" : "onboarding-step"}>
           <strong>Export for leadership</strong>
