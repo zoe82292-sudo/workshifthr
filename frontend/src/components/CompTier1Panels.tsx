@@ -1,3 +1,4 @@
+import { TrialName } from "../trialDisplay";
 import type {
   CompaPenetrationSummary,
   CurrencyReport,
@@ -133,7 +134,7 @@ export function MeritMatrixPanel({ report }: { report: MeritMatrixReport }) {
             <tbody>
               {report.flags.map((row) => (
                 <tr key={row.row_number}>
-                  <td>{row.employee_name ?? row.employee_id ?? "—"}</td>
+                  <td><TrialName value={row.employee_name} fallback={row.employee_id ?? "—"} /></td>
                   <td>{row.department ?? "—"}</td>
                   <td>{row.job_level ?? "—"}</td>
                   <td>{row.compa_ratio}%</td>
@@ -263,7 +264,7 @@ export function TotalCashCompPanel({ report }: { report: TotalCashCompReport }) 
           <tbody>
             {report.employees.map((row) => (
               <tr key={row.row_number}>
-                <td>{row.employee_name ?? row.employee_id ?? "—"}</td>
+                <td><TrialName value={row.employee_name} fallback={row.employee_id ?? "—"} /></td>
                 <td>{row.department ?? "—"}</td>
                 <td>{formatCurrency(row.base_salary)}</td>
                 <td>{row.bonus_target_percent}%</td>
@@ -311,7 +312,7 @@ export function NewHirePlacementPanel({ report }: { report: NewHirePlacementRepo
           <tbody>
             {report.employees.map((row) => (
               <tr key={row.row_number}>
-                <td>{row.employee_name ?? row.employee_id ?? "—"}</td>
+                <td><TrialName value={row.employee_name} fallback={row.employee_id ?? "—"} /></td>
                 <td>{row.hire_date ?? "—"}</td>
                 <td>{row.tenure_days}</td>
                 <td>{formatCurrency(row.salary)}</td>
@@ -584,7 +585,7 @@ export function PerformanceMeritPanel({ report }: { report: PerformanceMeritRepo
           <tbody>
             {report.flags.map((row) => (
               <tr key={row.row_number}>
-                <td>{row.employee_name ?? row.employee_id ?? "—"}</td>
+                <td><TrialName value={row.employee_name} fallback={row.employee_id ?? "—"} /></td>
                 <td>{row.performance_rating}</td>
                 <td>{row.merit_increase}%</td>
                 <td>{row.file_average_merit}%</td>

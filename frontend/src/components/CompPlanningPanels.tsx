@@ -1,3 +1,4 @@
+import { TrialName } from "../trialDisplay";
 import type {
   BonusTargetReview,
   MeritByDepartmentReport,
@@ -111,7 +112,7 @@ export function PostMeritCompaPanel({ report }: { report: PostMeritCompaReport }
           <tbody>
             {report.employees.map((row) => (
               <tr key={row.row_number}>
-                <td>{row.employee_name ?? row.employee_id ?? "—"}</td>
+                <td><TrialName value={row.employee_name} fallback={row.employee_id ?? "—"} /></td>
                 <td>{row.department ?? "—"}</td>
                 <td>{row.job_level ?? "—"}</td>
                 <td>{formatCurrency(row.salary)}</td>
@@ -214,7 +215,7 @@ export function BonusTargetOutliersPanel({ review }: { review: BonusTargetReview
             {review.outliers.map((row) => (
               <tr key={row.row_number}>
                 <td>{row.row_number}</td>
-                <td>{row.employee_name ?? row.employee_id ?? "—"}</td>
+                <td><TrialName value={row.employee_name} fallback={row.employee_id ?? "—"} /></td>
                 <td>{row.job_level ?? "—"}</td>
                 <td>{row.department ?? "—"}</td>
                 <td>{row.bonus_target}%</td>

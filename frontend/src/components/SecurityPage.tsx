@@ -17,7 +17,7 @@ export function SecurityPage() {
           after analysis unless you explicitly save a run to history
         </li>
         <li>
-          <strong>Free trial available</strong> — try one file (up to 500 rows) without purchase;
+          <strong>Free trial available</strong> — try one file (up to 250 rows) without purchase;
           trial exports are watermarked
         </li>
         <li>

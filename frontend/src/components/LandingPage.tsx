@@ -108,30 +108,33 @@ const TRUST_POINTS = [
 
 const SAMPLE_REVIEW = MARKETING_DEMO_DATA;
 
-const STEPS = [
-  {
-    title: "Try or purchase",
-    copy: "Upload up to 500 rows free, or pick monthly, annual, or a one-time Cycle Pass — login details appear instantly after checkout.",
-  },
-  {
-    title: "Upload your file",
-    copy: "Drop one or more Excel or CSV files — columns are detected automatically and merged on Employee ID.",
-  },
-  {
-    title: "Add your team",
-    copy: "Share the org password with authorized HR and comp teammates — each signs in with their own work email.",
-  },
-  {
-    title: "Act on findings",
-    copy: "Review flagged issues, budget impact, pay equity, tenure, location pay, equity grants, and export reports.",
-  },
-];
+function buildSteps(trialMaxRows: number) {
+  return [
+    {
+      title: "Try or purchase",
+      copy: `Upload up to ${trialMaxRows.toLocaleString()} rows free (one analyze per day), or pick monthly, annual, or a one-time Cycle Pass — login details appear instantly after checkout.`,
+    },
+    {
+      title: "Upload your file",
+      copy: "Drop one or more Excel or CSV files — columns are detected automatically and merged on Employee ID.",
+    },
+    {
+      title: "Add your team",
+      copy: "Share the org password with authorized HR and comp teammates — each signs in with their own work email.",
+    },
+    {
+      title: "Act on findings",
+      copy: "Review flagged issues, budget impact, pay equity, tenure, location pay, equity grants, and export reports.",
+    },
+  ];
+}
 
-const FAQ_BASE: Array<{ q: string; a: string }> = [
-  {
-    q: "Can I try it on my own file before paying?",
-    a: "Yes — use Try free with your file on the homepage. Upload one Excel or CSV (up to 500 rows), run the full analysis, and export watermarked PDF/Excel reports. Purchase a plan for unlimited rows, multi-file merge, team access, and unwatermarked exports.",
-  },
+function buildFaqBase(trialMaxRows: number): Array<{ q: string; a: string }> {
+  return [
+    {
+      q: "Can I try it on my own file before paying?",
+      a: `Yes — use Try free with your file on the homepage. Upload one Excel or CSV (up to ${trialMaxRows.toLocaleString()} rows, one analyze per day), run the full analysis, and export watermarked PDF/Excel reports. Employee names are blurred in the trial UI. Purchase a plan for unlimited rows, multi-file merge, team access, full names, and unwatermarked exports.`,
+    },
   {
     q: "Do you connect to Workday or other HRIS systems?",
     a: "Not today — ShiftWorksHR works with spreadsheet exports you download from your HRIS or comp tool. Export to Excel or CSV, upload as-is, and columns are detected automatically. No API integration or IT project required.",
@@ -156,11 +159,12 @@ const FAQ_BASE: Array<{ q: string; a: string }> = [
     q: "How is this different from a full comp platform?",
     a: "ShiftWorksHR complements the tools you already have — it’s built for the spreadsheet work every comp cycle still runs through. You get fast flags, budget impact, and leadership-ready exports without a long rollout or enterprise price tag. Many teams use it for merit season; others pair it with their HRIS or comp platform for a focused first-pass review.",
   },
-];
+  ];
+}
 
-function buildFaq(scrollTo: (id: string) => void): Array<{ q: string; a: ReactNode }> {
+function buildFaq(scrollTo: (id: string) => void, trialMaxRows: number): Array<{ q: string; a: ReactNode }> {
   return [
-    ...FAQ_BASE.map((item) => ({ q: item.q, a: item.a as ReactNode })),
+    ...buildFaqBase(trialMaxRows).map((item) => ({ q: item.q, a: item.a as ReactNode })),
     {
       q: "Can I try it before buying?",
       a: (
@@ -253,7 +257,7 @@ export function LandingPage({
   onLogin,
   showLogin,
   trialAvailable = false,
-  trialMaxRows = 500,
+  trialMaxRows = 250,
   onTryTrial,
   onTryDemo,
 }: LandingPageProps) {
@@ -276,7 +280,8 @@ export function LandingPage({
     window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
   }
 
-  const faqItems = buildFaq(scrollTo);
+  const faqItems = buildFaq(scrollTo, trialMaxRows);
+  const steps = buildSteps(trialMaxRows);
 
   return (
     <div className="landing-page">
@@ -369,8 +374,9 @@ export function LandingPage({
           </div>
           {trialAvailable ? (
             <p className="landing-hero-trial-note">
-              Free trial: one file, up to {trialMaxRows.toLocaleString()} rows — no credit card.
-              Exports include a trial watermark until you purchase.
+              Free trial: one file, up to {trialMaxRows.toLocaleString()} rows, one analyze per day —
+              no credit card. Names are blurred in the UI; exports include a trial watermark until
+              you purchase.
             </p>
           ) : null}
         </div>
@@ -558,7 +564,7 @@ export function LandingPage({
           <p>From purchase to insights in four steps.</p>
         </div>
         <div className="landing-step-grid">
-          {STEPS.map((step, index) => (
+          {steps.map((step, index) => (
             <article className="landing-step panel" key={step.title}>
               <span className="landing-step-number">{index + 1}</span>
               <h3>{step.title}</h3>

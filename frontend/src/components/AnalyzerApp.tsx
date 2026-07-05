@@ -73,7 +73,7 @@ type AnalyzerAppProps = {
 export function AnalyzerApp({
   authRequired,
   trialMode = false,
-  trialMaxRows = 500,
+  trialMaxRows = 250,
   trialMaxFiles = 1,
   userEmail,
   userOrganization,
@@ -443,7 +443,7 @@ export function AnalyzerApp({
             <div className="session-bar">
               <div className="session-user">
                 <span className="session-org">Free trial</span>
-                <span className="session-email">Up to {trialMaxRows.toLocaleString()} rows · watermarked exports</span>
+                <span className="session-email">Up to {trialMaxRows.toLocaleString()} rows · 1 analyze/day · names blurred</span>
               </div>
               <a className="button button-primary button-small" href="/#pricing">
                 Upgrade

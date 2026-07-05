@@ -1,3 +1,4 @@
+import { TrialName } from "../trialDisplay";
 import type { LocationPayReport, TenureReport } from "../types";
 
 function formatCurrency(value: number | null | undefined) {
@@ -213,7 +214,7 @@ export function TenurePanel({ report }: { report: TenureReport }) {
                 {report.flags.map((flag) => (
                   <tr key={`${flag.row_number}-${flag.flag_type}`}>
                     <td>{flag.row_number}</td>
-                    <td>{flag.employee_name ?? flag.employee_id ?? "—"}</td>
+                    <td><TrialName value={flag.employee_name} fallback={flag.employee_id ?? "—"} /></td>
                     <td>{flag.hire_date ?? "—"}</td>
                     <td>{flag.tenure_years}</td>
                     <td>{formatCurrency(flag.salary)}</td>
@@ -256,7 +257,7 @@ export function TenurePanel({ report }: { report: TenureReport }) {
               <tbody>
                 {report.employees.slice(0, 100).map((row) => (
                   <tr key={row.row_number}>
-                    <td>{row.employee_name ?? row.employee_id ?? "—"}</td>
+                    <td><TrialName value={row.employee_name} fallback={row.employee_id ?? "—"} /></td>
                     <td>{row.location ?? "—"}</td>
                     <td>{row.department ?? "—"}</td>
                     <td>{row.job_level ?? "—"}</td>

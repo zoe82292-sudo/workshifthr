@@ -1,5 +1,6 @@
 import type { AnalysisResult, AnalysisTab } from "../types";
 import { useTablePagination, TablePagination } from "./TablePagination";
+import { TrialName, useTrialDisplay } from "../trialDisplay";
 import type { ReactNode } from "react";
 
 interface ReviewQueuePanelProps {
@@ -43,12 +44,19 @@ export function ReviewQueuePanel({
   search = "",
 }: ReviewQueuePanelProps) {
   const queue = result.review_queue;
+  const trialMode = useTrialDisplay();
   const query = search.trim().toLowerCase();
 
   const filtered = queue.items.filter((item) => {
     if (departmentFilter && (item.department ?? "") !== departmentFilter) return false;
     if (!query) return true;
-    const haystack = [item.employee_id, item.employee_name, item.category, item.reason, item.department]
+    const haystack = [
+      item.employee_id,
+      trialMode ? null : item.employee_name,
+      item.category,
+      item.reason,
+      item.department,
+    ]
       .filter(Boolean)
       .join(" ")
       .toLowerCase();
@@ -103,7 +111,7 @@ export function ReviewQueuePanel({
                         <span className={severityClass(item.severity)}>{item.severity}</span>
                       </td>
                       <td>{item.category}</td>
-                      <td>{item.employee_name ?? item.employee_id ?? "—"}</td>
+                      <td><TrialName value={item.employee_name} fallback={item.employee_id ?? "—"} /></td>
                       <td>{item.department ?? "—"}</td>
                       <td>{item.reason}</td>
                       <td>
@@ -130,7 +138,7 @@ export function ReviewQueuePanel({
                     <span className={severityClass(item.severity)}>{item.severity}</span>
                     <strong>{item.category}</strong>
                   </div>
-                  <p>{item.employee_name ?? item.employee_id ?? "—"}</p>
+                  <p><TrialName value={item.employee_name} fallback={item.employee_id ?? "—"} /></p>
                   {item.department ? <p className="mobile-data-card__meta">{item.department}</p> : null}
                   <p className="mobile-data-card__reason">{item.reason}</p>
                   <button

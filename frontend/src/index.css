@@ -3631,6 +3631,14 @@ a:focus-visible {
   font-size: 0.88rem;
 }
 
+.trial-blurred-text {
+  filter: blur(5px);
+  user-select: none;
+  pointer-events: none;
+  display: inline-block;
+  max-width: 100%;
+}
+
 .trial-export-banner {
   margin-bottom: 16px;
 }

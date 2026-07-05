@@ -41,6 +41,7 @@ import {
 import { LocationPayPanel, TenurePanel } from "./TenureLocationPanels";
 import { useMemo, useState, useCallback, useEffect, type ReactNode } from "react";
 import { TablePagination, useTablePagination } from "./TablePagination";
+import { TrialDisplayProvider, TrialName, useTrialDisplay } from "../trialDisplay";
 
 interface ResultsDashboardProps {
   result: AnalysisResult;
@@ -104,6 +105,7 @@ function EmployeeTable({
   excludedIds?: Set<string>;
   onDepartmentSelect?: (department: string) => void;
 }) {
+  const trialMode = useTrialDisplay();
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
     return rows.filter((row) => {
@@ -120,7 +122,7 @@ function EmployeeTable({
       if (!query) return true;
       const haystack = [
         row.employee_id,
-        row.employee_name,
+        trialMode ? null : row.employee_name,
         row.department,
         row.job_level,
       ]
@@ -129,7 +131,7 @@ function EmployeeTable({
         .toLowerCase();
       return haystack.includes(query);
     });
-  }, [rows, departmentFilter, search, excludeNonCore, excludedIds]);
+  }, [rows, departmentFilter, search, excludeNonCore, excludedIds, trialMode]);
 
   const { sortedRows, toggleSort, sortLabel } = useSortableRows(filtered, "row_number");
   const pagination = useTablePagination(sortedRows);
@@ -218,7 +220,7 @@ function EmployeeTable({
             <tr key={`${row.row_number}-${row.employee_id}`}>
               <td>{row.row_number}</td>
               <td>{row.employee_id ?? "—"}</td>
-              <td>{row.employee_name ?? "—"}</td>
+              <td><TrialName value={row.employee_name} /></td>
               <td>
                 {row.department ? (
                   <button
@@ -297,7 +299,11 @@ export function ResultsDashboard({
   const hasExcludedEmployees = excludedIds.size > 0;
 
   const exportOptions = useMemo(
-    () => ({ targetMeritPercent, anonymize: anonymizeExports, trialMode }),
+    () => ({
+      targetMeritPercent,
+      anonymize: anonymizeExports || trialMode,
+      trialMode,
+    }),
     [targetMeritPercent, anonymizeExports, trialMode],
   );
 
@@ -311,11 +317,13 @@ export function ResultsDashboard({
       }
       if (!query) return true;
       return textMatchesSearch(
-        [issue.issue_type, issue.description, issue.employee_name, issue.employee_id],
+        trialMode
+          ? [issue.issue_type, issue.description, issue.employee_id]
+          : [issue.issue_type, issue.description, issue.employee_name, issue.employee_id],
         query,
       );
     });
-  }, [departmentFilter, departmentLookup, result.compression, search]);
+  }, [departmentFilter, departmentLookup, result.compression, search, trialMode]);
 
   const filteredManagers = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -327,11 +335,13 @@ export function ResultsDashboard({
       }
       if (!query) return true;
       return textMatchesSearch(
-        [issue.manager_id, issue.manager_name, issue.report_id, issue.report_name],
+        trialMode
+          ? [issue.manager_id, issue.report_id]
+          : [issue.manager_id, issue.manager_name, issue.report_id, issue.report_name],
         query,
       );
     });
-  }, [departmentFilter, departmentLookup, result.managers_below_reports, search]);
+  }, [departmentFilter, departmentLookup, result.managers_below_reports, search, trialMode]);
 
   const filteredCompaRatios = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -343,9 +353,12 @@ export function ResultsDashboard({
         return false;
       }
       if (!query) return true;
-      return textMatchesSearch([row.employee_id, row.employee_name], query);
+      return textMatchesSearch(
+        trialMode ? [row.employee_id] : [row.employee_id, row.employee_name],
+        query,
+      );
     });
-  }, [departmentFilter, departmentLookup, result.compa_ratios, search]);
+  }, [departmentFilter, departmentLookup, result.compa_ratios, search, trialMode]);
 
   const filteredDuplicateIds = useMemo(() => {
     if (!departmentFilter) return result.duplicate_ids;
@@ -371,10 +384,13 @@ export function ResultsDashboard({
           return false;
         }
         if (!query) return true;
-        return textMatchesSearch([row.employee_id, row.employee_name], query);
+        return textMatchesSearch(
+          trialMode ? [row.employee_id] : [row.employee_id, row.employee_name],
+          query,
+        );
       });
     },
-    [departmentFilter, departmentLookup, excludeNonCore, excludedIds, search],
+    [departmentFilter, departmentLookup, excludeNonCore, excludedIds, search, trialMode],
   );
 
   const filteredEquityGrants = useMemo(() => {
@@ -384,9 +400,14 @@ export function ResultsDashboard({
         return false;
       }
       if (!query) return true;
-      return textMatchesSearch([row.employee_id, row.employee_name, row.department], query);
+      return textMatchesSearch(
+        trialMode
+          ? [row.employee_id, row.department]
+          : [row.employee_id, row.employee_name, row.department],
+        query,
+      );
     });
-  }, [departmentFilter, result.equity_grants, search]);
+  }, [departmentFilter, result.equity_grants, search, trialMode]);
 
   const filteredMeritCompaFlags = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -398,11 +419,13 @@ export function ResultsDashboard({
       }
       if (!query) return true;
       return textMatchesSearch(
-        [row.employee_id, row.employee_name, row.department, row.flag_type],
+        trialMode
+          ? [row.employee_id, row.department, row.flag_type]
+          : [row.employee_id, row.employee_name, row.department, row.flag_type],
         query,
       );
     });
-  }, [departmentFilter, departmentLookup, result.merit_compa_flags, search]);
+  }, [departmentFilter, departmentLookup, result.merit_compa_flags, search, trialMode]);
 
   const equityGrantOutliers = useMemo(
     () => (result.equity_grants ?? []).filter((row) => row.is_outlier).length,
@@ -470,12 +493,14 @@ export function ResultsDashboard({
   }
 
   return (
+    <TrialDisplayProvider trialMode={trialMode}>
     <>
       {trialMode ? (
         <div className="alert alert-info trial-export-banner">
-          <strong>Free trial export.</strong> PDF and Excel downloads include a trial watermark.
-          <a href="/#pricing"> Upgrade</a> for unlimited rows, multi-file merge, team access, and
-          full exports.
+          <strong>Free trial.</strong> Employee names are blurred below. PDF and Excel downloads
+          include a trial watermark.
+          <a href="/#pricing"> Upgrade</a> for unlimited rows, full names, multi-file merge, and
+          unwatermarked exports.
         </div>
       ) : null}
       <div className="panel-header" style={{ marginBottom: 16 }}>
@@ -484,10 +509,11 @@ export function ResultsDashboard({
           <label className="legal-consent-checkbox export-anonymize-toggle">
             <input
               type="checkbox"
-              checked={anonymizeExports}
+              checked={anonymizeExports || trialMode}
+              disabled={trialMode}
               onChange={(event) => setAnonymizeExports(event.target.checked)}
             />
-            <span>Anonymize names in exports</span>
+            <span>{trialMode ? "Names hidden in trial exports" : "Anonymize names in exports"}</span>
           </label>
           {authRequired && fileName ? (
             <button
@@ -818,7 +844,7 @@ export function ResultsDashboard({
                           <span className="pill pill-warning">{issue.issue_type}</span>
                         </td>
                         <td>{issue.description}</td>
-                        <td>{issue.employee_name ?? issue.employee_id ?? "—"}</td>
+                        <td><TrialName value={issue.employee_name} fallback={issue.employee_id ?? "—"} /></td>
                         <td>{issue.row_number ?? "—"}</td>
                       </tr>
                     ))}
@@ -855,11 +881,13 @@ export function ResultsDashboard({
                       <tr key={`${issue.row_number}-${issue.report_id}`}>
                         <td>{issue.row_number}</td>
                         <td>
-                          {issue.manager_name ?? issue.manager_id} ({issue.manager_id})
+                          <TrialName value={issue.manager_name} fallback={issue.manager_id ?? "—"} /> (
+                          {issue.manager_id})
                         </td>
                         <td>{formatCurrency(issue.manager_salary)}</td>
                         <td>
-                          {issue.report_name ?? issue.report_id} ({issue.report_id})
+                          <TrialName value={issue.report_name} fallback={issue.report_id ?? "—"} /> (
+                          {issue.report_id})
                         </td>
                         <td>{formatCurrency(issue.report_salary)}</td>
                         <td>{formatCurrency(issue.pay_gap)}</td>
@@ -902,7 +930,7 @@ export function ResultsDashboard({
                             <tr key={row.row_number}>
                               <td>{row.row_number}</td>
                               <td>{row.employee_id ?? "—"}</td>
-                              <td>{row.employee_name ?? "—"}</td>
+                              <td><TrialName value={row.employee_name} /></td>
                             </tr>
                           ))}
                         </tbody>
@@ -943,7 +971,7 @@ export function ResultsDashboard({
                       <tr key={row.row_number}>
                         <td>{row.row_number}</td>
                         <td>{row.employee_id ?? "—"}</td>
-                        <td>{row.employee_name ?? "—"}</td>
+                        <td><TrialName value={row.employee_name} /></td>
                         <td>{row.missing_fields.join(", ")}</td>
                       </tr>
                     ))}
@@ -977,7 +1005,7 @@ export function ResultsDashboard({
                       <tr key={row.row_number}>
                         <td>{row.row_number}</td>
                         <td>{row.employee_id ?? "—"}</td>
-                        <td>{row.employee_name ?? "—"}</td>
+                        <td><TrialName value={row.employee_name} /></td>
                         <td>{row.effective_date ?? "—"}</td>
                         <td>{row.reason}</td>
                       </tr>
@@ -1012,7 +1040,7 @@ export function ResultsDashboard({
                       <tr key={row.row_number}>
                         <td>{row.row_number}</td>
                         <td>{row.employee_id ?? "—"}</td>
-                        <td>{row.employee_name ?? "—"}</td>
+                        <td><TrialName value={row.employee_name} /></td>
                         <td>{row.merit_increase}%</td>
                         <td>{row.reason}</td>
                       </tr>
@@ -1049,7 +1077,7 @@ export function ResultsDashboard({
                       <tr key={row.row_number}>
                         <td>{row.row_number}</td>
                         <td>{row.employee_id ?? "—"}</td>
-                        <td>{row.employee_name ?? "—"}</td>
+                        <td><TrialName value={row.employee_name} /></td>
                         <td>{row.hire_date ?? "—"}</td>
                         <td>{row.tenure_days ?? "—"}</td>
                         <td>{row.merit_increase != null ? `${row.merit_increase}%` : "—"}</td>
@@ -1098,7 +1126,7 @@ export function ResultsDashboard({
                         <tr key={row.row_number}>
                           <td>{row.row_number}</td>
                           <td>{row.employee_id ?? "—"}</td>
-                          <td>{row.employee_name ?? "—"}</td>
+                          <td><TrialName value={row.employee_name} /></td>
                           <td>{row.department ?? "—"}</td>
                           <td>{row.compa_ratio}%</td>
                           <td>{row.merit_increase}%</td>
@@ -1161,7 +1189,7 @@ export function ResultsDashboard({
                         <tr key={row.row_number}>
                           <td>{row.row_number}</td>
                           <td>{row.employee_id ?? "—"}</td>
-                          <td>{row.employee_name ?? "—"}</td>
+                          <td><TrialName value={row.employee_name} /></td>
                           <td>
                             {row.department ? (
                               <button
@@ -1219,7 +1247,7 @@ export function ResultsDashboard({
                       <tr key={`${row.row_number}-${row.change_type}`}>
                         <td>{row.row_number}</td>
                         <td>{row.employee_id ?? "—"}</td>
-                        <td>{row.employee_name ?? "—"}</td>
+                        <td><TrialName value={row.employee_name} /></td>
                         <td>{row.value_percent}%</td>
                         <td>{row.reason}</td>
                       </tr>
@@ -1255,7 +1283,7 @@ export function ResultsDashboard({
                       <tr key={row.row_number}>
                         <td>{row.row_number}</td>
                         <td>{row.employee_id ?? "—"}</td>
-                        <td>{row.employee_name ?? "—"}</td>
+                        <td><TrialName value={row.employee_name} /></td>
                         <td>{formatCurrency(row.salary)}</td>
                         <td>{formatCurrency(row.range_midpoint)}</td>
                         <td>{row.compa_ratio}%</td>
@@ -1346,7 +1374,7 @@ export function ResultsDashboard({
                       <tr key={row.row_number}>
                         <td>{row.row_number}</td>
                         <td>{row.employee_id ?? "—"}</td>
-                        <td>{row.employee_name ?? "—"}</td>
+                        <td><TrialName value={row.employee_name} /></td>
                         <td>{row.missing_fields.join(", ")}</td>
                       </tr>
                     ))}
@@ -1359,5 +1387,6 @@ export function ResultsDashboard({
       ) : null}
       </div>
     </>
+    </TrialDisplayProvider>
   );
 }

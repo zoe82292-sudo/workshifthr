@@ -28,8 +28,11 @@ def trial_client(monkeypatch) -> TestClient:
         ),
     )
     monkeypatch.setenv("TRIAL_ENABLED", "true")
-    monkeypatch.setenv("TRIAL_MAX_ROWS", "500")
+    monkeypatch.delenv("TRIAL_MAX_ROWS", raising=False)
     invalidate_credentials_cache()
+    from app import trial as trial_module
+
+    trial_module._trial_buckets.clear()
     from app.main import app
 
     return TestClient(app)
@@ -65,6 +68,23 @@ def test_trial_analyze_without_auth(trial_client: TestClient) -> None:
     payload = response.json()
     assert payload["trial_mode"] is True
     assert payload["summary"]["total_rows"] > 0
+
+
+def test_trial_analyze_limit_per_day(trial_client: TestClient) -> None:
+    with SAMPLE_FILE.open("rb") as handle:
+        first = trial_client.post(
+            "/api/analyze",
+            files={"file": ("compensation-sample.csv", handle.read(), "text/csv")},
+        )
+    assert first.status_code == 200
+
+    with SAMPLE_FILE.open("rb") as handle:
+        second = trial_client.post(
+            "/api/analyze",
+            files={"file": ("compensation-sample.csv", handle.read(), "text/csv")},
+        )
+    assert second.status_code == 429
+    assert "today" in second.json()["detail"].lower()
 
 
 def test_trial_rejects_batch_preview(trial_client: TestClient) -> None:

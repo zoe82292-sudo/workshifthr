@@ -280,7 +280,7 @@ export async function checkAuthStatus(): Promise<AuthStatus> {
     return {
       auth_enabled: false,
       trial_enabled: false,
-      trial_max_rows: 500,
+      trial_max_rows: 250,
       trial_max_files: 1,
     };
   }
