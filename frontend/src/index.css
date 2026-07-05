@@ -1927,6 +1927,12 @@ a:focus-visible {
   font-weight: 600;
 }
 
+.sample-analysis-embed__loading {
+  color: var(--text-muted);
+  padding: 24px 0;
+  text-align: center;
+}
+
 .product-demo {
   background: linear-gradient(180deg, #fbfaf7 0%, #f6f3ed 100%);
 }
@@ -3599,38 +3605,6 @@ a:focus-visible {
   font-size: 0.92rem;
 }
 
-.landing-social-proof {
-  background: linear-gradient(180deg, rgba(240, 247, 242, 0.65), transparent);
-}
-
-.landing-testimonial-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-}
-
-.landing-testimonial {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-height: 100%;
-}
-
-.landing-testimonial p {
-  margin: 0;
-  font-size: 1rem;
-  line-height: 1.55;
-}
-
-.landing-testimonial footer {
-  margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  color: var(--text-muted);
-  font-size: 0.88rem;
-}
-
 .trial-blurred-text {
   filter: blur(5px);
   user-select: none;
@@ -3659,12 +3633,6 @@ a:focus-visible {
   .legal-footer,
   .security-summary-intro button {
     display: none !important;
-  }
-}
-
-@media (max-width: 900px) {
-  .landing-testimonial-grid {
-    grid-template-columns: 1fr;
   }
 }
 

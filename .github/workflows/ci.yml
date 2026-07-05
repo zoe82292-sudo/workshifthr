@@ -23,6 +23,11 @@ jobs:
       - name: Run backend tests
         run: pytest backend/tests -q
 
+      - name: Verify demo snapshot matches analyzer
+        run: |
+          python scripts/sync_demo_snapshot.py
+          git diff --exit-code frontend/src/data/demo-analysis.snapshot.json
+
       - uses: actions/setup-node@v4
         with:
           node-version: "22"

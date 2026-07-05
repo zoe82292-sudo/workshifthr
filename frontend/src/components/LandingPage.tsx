@@ -3,10 +3,9 @@ import { Link } from "react-router-dom";
 import { checkBillingStatus, type PlanId } from "../api";
 import { BrandLogo } from "./BrandLogo";
 import { CheckoutButton } from "./CheckoutButton";
-import { ProductDemoShowcase } from "./ProductDemoShowcase";
+import { LandingSamplePreview } from "./SampleAnalysisEmbed";
 import { LegalConsentLinks } from "./LegalConsentLinks";
 import { LegalFooter } from "./LegalFooter";
-import { MARKETING_DEMO_DATA } from "../data/marketingDemoData";
 import { LoginForm } from "./LoginForm";
 
 const CONTACT_EMAIL = "hello@shiftworkshr.com";
@@ -20,30 +19,33 @@ type LandingPageProps = {
   onTryDemo?: () => void;
 };
 
-const SOCIAL_PROOF = {
-  stat: "15+",
-  statLabel: "merit cycles reviewed in beta",
-  quotes: [
+const TRUST_POINTS = [
+  { stat: "< 30 sec", label: "Typical time to first insights" },
+  { stat: "HR teams", label: "Built for comp spreadsheet QA" },
+  { stat: "$249", label: "Cycle pass vs. $10k+ platforms" },
+  { stat: "Same day", label: "Export from HRIS and analyze" },
+];
+
+function buildSteps(trialMaxRows: number) {
+  return [
     {
-      quote:
-        "We used to burn two days building comp QA formulas before every leadership readout. ShiftWorksHR got us to a first-pass review in under an hour.",
-      role: "Comp analyst",
-      context: "Mid-size technology company",
+      title: "Try or purchase",
+      copy: `Upload up to ${trialMaxRows.toLocaleString()} rows free (one analyze per day), or pick monthly, annual, or a one-time Cycle Pass — login details appear instantly after checkout.`,
     },
     {
-      quote:
-        "The review queue alone paid for the cycle pass — it told us exactly which employees to look at first before merit committee.",
-      role: "Total rewards manager",
-      context: "Professional services firm (~400 employees)",
+      title: "Upload your file",
+      copy: "Drop one or more Excel or CSV files — columns are detected automatically and merged on Employee ID.",
     },
     {
-      quote:
-        "I run this on client exports before deliverables. The Excel and PDF exports are presentation-ready without extra formatting.",
-      role: "Independent comp consultant",
-      context: "Multiple client engagements",
+      title: "Add your team",
+      copy: "Share the org password with authorized HR and comp teammates — each signs in with their own work email.",
     },
-  ],
-};
+    {
+      title: "Act on findings",
+      copy: "Review flagged issues, budget impact, pay equity, tenure, location pay, equity grants, and export reports.",
+    },
+  ];
+}
 
 const FEATURES = [
   {
@@ -99,66 +101,36 @@ const AUDIENCES = [
   },
 ];
 
-const TRUST_POINTS = [
-  { stat: "< 30 sec", label: "Typical time to first insights" },
-  { stat: "15+", label: "Merit cycles in beta" },
-  { stat: "$249", label: "Cycle pass vs. $10k+ platforms" },
-  { stat: "Same day", label: "Export from HRIS and analyze" },
-];
-
-const SAMPLE_REVIEW = MARKETING_DEMO_DATA;
-
-function buildSteps(trialMaxRows: number) {
-  return [
-    {
-      title: "Try or purchase",
-      copy: `Upload up to ${trialMaxRows.toLocaleString()} rows free (one analyze per day), or pick monthly, annual, or a one-time Cycle Pass — login details appear instantly after checkout.`,
-    },
-    {
-      title: "Upload your file",
-      copy: "Drop one or more Excel or CSV files — columns are detected automatically and merged on Employee ID.",
-    },
-    {
-      title: "Add your team",
-      copy: "Share the org password with authorized HR and comp teammates — each signs in with their own work email.",
-    },
-    {
-      title: "Act on findings",
-      copy: "Review flagged issues, budget impact, pay equity, tenure, location pay, equity grants, and export reports.",
-    },
-  ];
-}
-
 function buildFaqBase(trialMaxRows: number): Array<{ q: string; a: string }> {
   return [
     {
       q: "Can I try it on my own file before paying?",
       a: `Yes — use Try free with your file on the homepage. Upload one Excel or CSV (up to ${trialMaxRows.toLocaleString()} rows, one analyze per day), run the full analysis, and export watermarked PDF/Excel reports. Employee names are blurred in the trial UI. Purchase a plan for unlimited rows, multi-file merge, team access, full names, and unwatermarked exports.`,
     },
-  {
-    q: "Do you connect to Workday or other HRIS systems?",
-    a: "Not today — ShiftWorksHR works with spreadsheet exports you download from your HRIS or comp tool. Export to Excel or CSV, upload as-is, and columns are detected automatically. No API integration or IT project required.",
-  },
-  {
-    q: "Can I upload more than one file?",
-    a: "Yes — up to 5 files per analysis. Map Employee ID on each file, then ShiftWorksHR merges rows by ID. Salary can live in one export, ranges in another, and merit or hire date in a third — useful when HRIS data is split across downloads.",
-  },
-  {
-    q: "What file format do I need?",
-    a: "Excel (.xlsx) or CSV up to 25 MB — upload your HRIS or comp export as-is; no template required. Columns are detected automatically from headers or data patterns. Gender and race unlock pay equity; hire date and location unlock tenure and location pay; merit and bonus columns unlock budget and compa projections.",
-  },
-  {
-    q: "Is my compensation data stored?",
-    a: "Uploads are processed in memory and not kept after analysis by default. If you click Save to history while signed in, that run is stored as JSON on our server for your account only (up to 25 saved runs, deletable anytime). See our Security page for details.",
-  },
-  {
-    q: "How do teammates get access?",
-    a: "One organization, one shared password. After purchase, each authorized person signs in with their work email and that password. Add teammates anytime from Team access in the analyzer.",
-  },
-  {
-    q: "How is this different from a full comp platform?",
-    a: "ShiftWorksHR complements the tools you already have — it’s built for the spreadsheet work every comp cycle still runs through. You get fast flags, budget impact, and leadership-ready exports without a long rollout or enterprise price tag. Many teams use it for merit season; others pair it with their HRIS or comp platform for a focused first-pass review.",
-  },
+    {
+      q: "Do you connect to Workday or other HRIS systems?",
+      a: "Not today — ShiftWorksHR works with spreadsheet exports you download from your HRIS or comp tool. Export to Excel or CSV, upload as-is, and columns are detected automatically. No API integration or IT project required.",
+    },
+    {
+      q: "Can I upload more than one file?",
+      a: "Yes — up to 5 files per analysis. Map Employee ID on each file, then ShiftWorksHR merges rows by ID. Salary can live in one export, ranges in another, and merit or hire date in a third — useful when HRIS data is split across downloads.",
+    },
+    {
+      q: "What file format do I need?",
+      a: "Excel (.xlsx) or CSV up to 25 MB — upload your HRIS or comp export as-is; no template required. Columns are detected automatically from headers or data patterns. Gender and race unlock pay equity; hire date and location unlock tenure and location pay; merit and bonus columns unlock budget and compa projections.",
+    },
+    {
+      q: "Is my compensation data stored?",
+      a: "Uploads are processed in memory and not kept after analysis by default. If you click Save to history while signed in, that run is stored as JSON on our server for your account only (up to 25 saved runs, deletable anytime). See our Security page for details.",
+    },
+    {
+      q: "How do teammates get access?",
+      a: "One organization, one shared password. After purchase, each authorized person signs in with their work email and that password. Add teammates anytime from Team access in the analyzer.",
+    },
+    {
+      q: "How is this different from a full comp platform?",
+      a: "ShiftWorksHR complements the tools you already have — it's built for the spreadsheet work every comp cycle still runs through. You get fast flags, budget impact, and leadership-ready exports without a long rollout or enterprise price tag. Many teams use it for merit season; others pair it with their HRIS or comp platform for a focused first-pass review.",
+    },
   ];
 }
 
@@ -409,49 +381,12 @@ export function LandingPage({
           <span className="hero-badge">Sample analysis</span>
           <h2>See what you get before you buy</h2>
           <p>
-            Real output from our bundled sample file ({SAMPLE_REVIEW.summary.valid_rows}{" "}
-            employees). Scroll the preview below or open the full analyzer for every tab and
-            export.
+            Live output from our sample compensation file — the same results dashboard customers
+            see after upload. Scroll every tab, filter, and export below.
           </p>
         </div>
 
-        <div className="landing-preview-stats" aria-label="Sample analysis highlights">
-          <article className="landing-preview-stat">
-            <strong className="landing-preview-stat__value">
-              {SAMPLE_REVIEW.summary.below_minimum}
-            </strong>
-            <span className="landing-preview-stat__label">Below range minimum</span>
-            <span className="landing-preview-stat__meta">
-              ${SAMPLE_REVIEW.insights.cost_metrics.total_gap_to_minimum.toLocaleString()} to floor
-            </span>
-          </article>
-          <article className="landing-preview-stat">
-            <strong className="landing-preview-stat__value">
-              {SAMPLE_REVIEW.summary.compression_issues + SAMPLE_REVIEW.summary.managers_below_reports}
-            </strong>
-            <span className="landing-preview-stat__label">Structural issues</span>
-            <span className="landing-preview-stat__meta">
-              {SAMPLE_REVIEW.summary.compression_issues} compression ·{" "}
-              {SAMPLE_REVIEW.summary.managers_below_reports} inversions
-            </span>
-          </article>
-          <article className="landing-preview-stat">
-            <strong className="landing-preview-stat__value">
-              ${Math.round(SAMPLE_REVIEW.insights.budget_impact.total_budget_impact / 1000)}k
-            </strong>
-            <span className="landing-preview-stat__label">Budget exposure</span>
-            <span className="landing-preview-stat__meta">Adjustments + projected merit pool</span>
-          </article>
-        </div>
-
-        <figure
-          className="product-demo-frame"
-          aria-label="ShiftWorksHR sample analysis with overview, flagged issues, pay equity, and budget tabs"
-        >
-          <div className="product-demo-frame__scroll">
-            <ProductDemoShowcase variant="embedded" />
-          </div>
-        </figure>
+        <LandingSamplePreview />
 
         <div className="landing-preview-actions">
           <Link className="button button-primary" to="/sample-preview">
@@ -471,28 +406,6 @@ export function LandingPage({
           Sample file for illustration. {trialAvailable ? "Use Try free with your file" : "Upload your own export after purchase"}{" "}
           to confirm column mapping on your HRIS export.
         </p>
-      </section>
-
-      <section className="landing-section landing-social-proof" id="social-proof">
-        <div className="landing-section-header">
-          <span className="hero-badge">Early customers</span>
-          <h2>Trusted during merit season beta</h2>
-          <p>
-            Used in <strong>{SOCIAL_PROOF.stat}</strong> {SOCIAL_PROOF.statLabel}. Feedback from
-            comp practitioners who ran real cycle prep — roles only, not endorsements.
-          </p>
-        </div>
-        <div className="landing-testimonial-grid">
-          {SOCIAL_PROOF.quotes.map((item) => (
-            <blockquote className="landing-testimonial panel" key={item.role}>
-              <p>&ldquo;{item.quote}&rdquo;</p>
-              <footer>
-                <strong>{item.role}</strong>
-                <span>{item.context}</span>
-              </footer>
-            </blockquote>
-          ))}
-        </div>
       </section>
 
       <section className="landing-section" id="features">

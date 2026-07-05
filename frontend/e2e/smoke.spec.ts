@@ -5,10 +5,10 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const sampleCsv = path.resolve(__dirname, "../../sample-data/compensation-sample.csv");
 
-test("landing page loads with pricing and social proof", async ({ page }) => {
+test("landing page loads with pricing and sample preview", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: /find pay issues before leadership review/i })).toBeVisible();
-  await expect(page.getByRole("heading", { name: /trusted during merit season beta/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /see what you get before you buy/i })).toBeVisible();
   await page.locator("#pricing").scrollIntoViewIfNeeded();
   await expect(page.getByText("Cycle Pass")).toBeVisible();
 });

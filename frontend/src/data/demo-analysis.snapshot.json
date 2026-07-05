@@ -1,0 +1,3395 @@
+{
+  "summary": {
+    "total_rows": 20,
+    "valid_rows": 18,
+    "below_minimum": 3,
+    "above_maximum": 1,
+    "new_hires_below_range": 0,
+    "duplicate_ids": 1,
+    "missing_data": 2,
+    "compression_issues": 4,
+    "average_penetration": 22.3,
+    "managers_below_reports": 2,
+    "missing_bonus_targets": 1,
+    "missing_salary_ranges": 1,
+    "invalid_effective_dates": 1,
+    "outlier_merit_increases": 1,
+    "new_hire_merit_flags": 1,
+    "merit_compa_flags": 2,
+    "unusual_comp_changes": 2,
+    "equity_grant_outliers": 1,
+    "pay_equity_gaps": 2,
+    "tenure_pay_flags": 0,
+    "location_pay_gaps": 0,
+    "bonus_target_outliers": 3,
+    "peer_spread_flags": 6,
+    "post_merit_compa_rows": 18,
+    "merit_matrix_flags": 6,
+    "range_structure_issues": 5,
+    "new_hire_placement_flags": 0,
+    "geo_pay_policy_flags": 0,
+    "midpoint_progression_issues": 0,
+    "review_queue_items": 35,
+    "performance_merit_flags": 0
+  },
+  "column_mapping": {
+    "employee_id": "Employee ID",
+    "employee_name": "Employee Name",
+    "salary": "Salary",
+    "range_min": "Range Min",
+    "range_max": "Range Max",
+    "range_midpoint": null,
+    "job_level": "Job Level",
+    "department": "Department",
+    "location": "Work Location",
+    "manager_id": "Manager ID",
+    "bonus_target": "Bonus Target",
+    "effective_date": "Effective Date",
+    "hire_date": "Hire Date",
+    "merit_increase": "Merit Increase %",
+    "promotion_increase": "Promotion Increase %",
+    "equity_grant": "Equity Grant %",
+    "gender": "Gender",
+    "race_ethnicity": "Race/Ethnicity",
+    "employee_type": null,
+    "pay_zone": null,
+    "geo_differential": null,
+    "currency": null,
+    "performance_rating": null
+  },
+  "detected_columns": [
+    "Employee ID",
+    "Employee Name",
+    "Department",
+    "Work Location",
+    "Job Level",
+    "Manager ID",
+    "Gender",
+    "Race/Ethnicity",
+    "Salary",
+    "Range Min",
+    "Range Max",
+    "Bonus Target",
+    "Effective Date",
+    "Merit Increase %",
+    "Hire Date",
+    "Promotion Increase %",
+    "Equity Grant %"
+  ],
+  "missing_required_columns": [],
+  "below_minimum": [
+    {
+      "row_number": 4,
+      "employee_id": "E003",
+      "employee_name": "Carla Diaz",
+      "salary": 78000.0,
+      "range_min": 85000.0,
+      "range_max": 100000.0,
+      "job_level": "2",
+      "department": "Product",
+      "range_penetration": -46.7,
+      "penetration_band": "below_range",
+      "compa_ratio": 84.3,
+      "merit_increase": 2.5,
+      "gap_to_minimum": 7000.0,
+      "missing_fields": []
+    },
+    {
+      "row_number": 8,
+      "employee_id": "E007",
+      "employee_name": "Fiona Ng",
+      "salary": 104000.0,
+      "range_min": 105000.0,
+      "range_max": 130000.0,
+      "job_level": "4",
+      "department": "Sales",
+      "range_penetration": -4.0,
+      "penetration_band": "below_range",
+      "compa_ratio": 88.5,
+      "merit_increase": 3.8,
+      "gap_to_minimum": 1000.0,
+      "missing_fields": []
+    },
+    {
+      "row_number": 9,
+      "employee_id": "E008",
+      "employee_name": "Grace Kim",
+      "salary": 82000.0,
+      "range_min": 85000.0,
+      "range_max": 100000.0,
+      "job_level": "2",
+      "department": "Product",
+      "range_penetration": -20.0,
+      "penetration_band": "below_range",
+      "compa_ratio": 88.6,
+      "merit_increase": 3.0,
+      "gap_to_minimum": 3000.0,
+      "missing_fields": []
+    }
+  ],
+  "above_maximum": [
+    {
+      "row_number": 7,
+      "employee_id": "E006",
+      "employee_name": "Evan Brooks",
+      "salary": 112000.0,
+      "range_min": 90000.0,
+      "range_max": 110000.0,
+      "job_level": "3",
+      "department": "Engineering",
+      "range_penetration": 110.0,
+      "penetration_band": "above_range",
+      "compa_ratio": 112.0,
+      "merit_increase": 3.2,
+      "gap_to_minimum": 0.0,
+      "missing_fields": []
+    }
+  ],
+  "duplicate_ids": [
+    {
+      "employee_id": "E001",
+      "count": 2,
+      "rows": [
+        2,
+        6
+      ]
+    }
+  ],
+  "range_penetration": [
+    {
+      "row_number": 7,
+      "employee_id": "E006",
+      "employee_name": "Evan Brooks",
+      "salary": 112000.0,
+      "range_min": 90000.0,
+      "range_max": 110000.0,
+      "job_level": "3",
+      "department": "Engineering",
+      "range_penetration": 110.0,
+      "penetration_band": "above_range",
+      "compa_ratio": 112.0,
+      "merit_increase": 3.2,
+      "gap_to_minimum": 0.0,
+      "missing_fields": []
+    },
+    {
+      "row_number": 16,
+      "employee_id": "E015",
+      "employee_name": "Marcus Lee",
+      "salary": 99000.0,
+      "range_min": 90000.0,
+      "range_max": 110000.0,
+      "job_level": "3",
+      "department": "Engineering",
+      "range_penetration": 45.0,
+      "penetration_band": "mid_range",
+      "compa_ratio": 99.0,
+      "merit_increase": 3.6,
+      "gap_to_minimum": 0.0,
+      "missing_fields": []
+    },
+    {
+      "row_number": 14,
+      "employee_id": "E013",
+      "employee_name": "Liam Fox",
+      "salary": 115000.0,
+      "range_min": 105000.0,
+      "range_max": 130000.0,
+      "job_level": "4",
+      "department": "Engineering",
+      "range_penetration": 40.0,
+      "penetration_band": "mid_range",
+      "compa_ratio": 97.9,
+      "merit_increase": 4.2,
+      "gap_to_minimum": 0.0,
+      "missing_fields": []
+    },
+    {
+      "row_number": 15,
+      "employee_id": "E014",
+      "employee_name": "Lia Singh",
+      "salary": 98000.0,
+      "range_min": 90000.0,
+      "range_max": 110000.0,
+      "job_level": "3",
+      "department": "Engineering",
+      "range_penetration": 40.0,
+      "penetration_band": "mid_range",
+      "compa_ratio": 98.0,
+      "merit_increase": 3.4,
+      "gap_to_minimum": 0.0,
+      "missing_fields": []
+    },
+    {
+      "row_number": 18,
+      "employee_id": "E017",
+      "employee_name": "Omar Haddad",
+      "salary": 76000.0,
+      "range_min": 70000.0,
+      "range_max": 85000.0,
+      "job_level": "2",
+      "department": "Operations",
+      "range_penetration": 40.0,
+      "penetration_band": "mid_range",
+      "compa_ratio": 98.1,
+      "merit_increase": 3.0,
+      "gap_to_minimum": 0.0,
+      "missing_fields": []
+    },
+    {
+      "row_number": 6,
+      "employee_id": "E001",
+      "employee_name": "Duplicate Row",
+      "salary": 96000.0,
+      "range_min": 90000.0,
+      "range_max": 110000.0,
+      "job_level": "3",
+      "department": "Engineering",
+      "range_penetration": 30.0,
+      "penetration_band": "mid_range",
+      "compa_ratio": 96.0,
+      "merit_increase": 3.0,
+      "gap_to_minimum": 0.0,
+      "missing_fields": []
+    },
+    {
+      "row_number": 2,
+      "employee_id": "E001",
+      "employee_name": "Alice Chen",
+      "salary": 95000.0,
+      "range_min": 90000.0,
+      "range_max": 110000.0,
+      "job_level": "3",
+      "department": "Engineering",
+      "range_penetration": 25.0,
+      "penetration_band": "mid_range",
+      "compa_ratio": 95.0,
+      "merit_increase": 3.5,
+      "gap_to_minimum": 0.0,
+      "missing_fields": []
+    },
+    {
+      "row_number": 5,
+      "employee_id": "E004",
+      "employee_name": "Dev Patel",
+      "salary": 132000.0,
+      "range_min": 125000.0,
+      "range_max": 155000.0,
+      "job_level": "5",
+      "department": "Engineering",
+      "range_penetration": 23.3,
+      "penetration_band": "bottom_quartile",
+      "compa_ratio": 94.3,
+      "merit_increase": 4.5,
+      "gap_to_minimum": 0.0,
+      "missing_fields": []
+    },
+    {
+      "row_number": 11,
+      "employee_id": "E010",
+      "employee_name": "Ivy Park",
+      "salary": 148000.0,
+      "range_min": 140000.0,
+      "range_max": 175000.0,
+      "job_level": "6",
+      "department": "Executive",
+      "range_penetration": 22.9,
+      "penetration_band": "bottom_quartile",
+      "compa_ratio": 94.0,
+      "merit_increase": 5.0,
+      "gap_to_minimum": 0.0,
+      "missing_fields": []
+    },
+    {
+      "row_number": 20,
+      "employee_id": "E019",
+      "employee_name": "Quinn Adams",
+      "salary": 94000.0,
+      "range_min": 90000.0,
+      "range_max": 110000.0,
+      "job_level": "3",
+      "department": "Product",
+      "range_penetration": 20.0,
+      "penetration_band": "bottom_quartile",
+      "compa_ratio": 94.0,
+      "merit_increase": 3.7,
+      "gap_to_minimum": 0.0,
+      "missing_fields": []
+    },
+    {
+      "row_number": 21,
+      "employee_id": "E020",
+      "employee_name": "Rosa Vega",
+      "salary": 79000.0,
+      "range_min": 75000.0,
+      "range_max": 95000.0,
+      "job_level": "2",
+      "department": "Sales",
+      "range_penetration": 20.0,
+      "penetration_band": "bottom_quartile",
+      "compa_ratio": 92.9,
+      "merit_increase": 3.2,
+      "gap_to_minimum": 0.0,
+      "missing_fields": []
+    },
+    {
+      "row_number": 19,
+      "employee_id": "E018",
+      "employee_name": "Priya Shah",
+      "salary": 109000.0,
+      "range_min": 105000.0,
+      "range_max": 130000.0,
+      "job_level": "4",
+      "department": "Engineering",
+      "range_penetration": 16.0,
+      "penetration_band": "bottom_quartile",
+      "compa_ratio": 92.8,
+      "merit_increase": 4.1,
+      "gap_to_minimum": 0.0,
+      "missing_fields": []
+    },
+    {
+      "row_number": 17,
+      "employee_id": "E016",
+      "employee_name": "Nina Ross",
+      "salary": 88000.0,
+      "range_min": 85000.0,
+      "range_max": 105000.0,
+      "job_level": "3",
+      "department": "Sales",
+      "range_penetration": 15.0,
+      "penetration_band": "bottom_quartile",
+      "compa_ratio": 92.6,
+      "merit_increase": 3.3,
+      "gap_to_minimum": 0.0,
+      "missing_fields": []
+    },
+    {
+      "row_number": 10,
+      "employee_id": "E009",
+      "employee_name": "Hugo Silva",
+      "salary": 72000.0,
+      "range_min": 70000.0,
+      "range_max": 85000.0,
+      "job_level": "1",
+      "department": "Operations",
+      "range_penetration": 13.3,
+      "penetration_band": "bottom_quartile",
+      "compa_ratio": 92.9,
+      "merit_increase": 18.0,
+      "gap_to_minimum": 0.0,
+      "missing_fields": []
+    },
+    {
+      "row_number": 3,
+      "employee_id": "E002",
+      "employee_name": "Ben Ortiz",
+      "salary": 108000.0,
+      "range_min": 105000.0,
+      "range_max": 130000.0,
+      "job_level": "4",
+      "department": "Engineering",
+      "range_penetration": 12.0,
+      "penetration_band": "bottom_quartile",
+      "compa_ratio": 91.9,
+      "merit_increase": 4.0,
+      "gap_to_minimum": 0.0,
+      "missing_fields": []
+    },
+    {
+      "row_number": 8,
+      "employee_id": "E007",
+      "employee_name": "Fiona Ng",
+      "salary": 104000.0,
+      "range_min": 105000.0,
+      "range_max": 130000.0,
+      "job_level": "4",
+      "department": "Sales",
+      "range_penetration": -4.0,
+      "penetration_band": "below_range",
+      "compa_ratio": 88.5,
+      "merit_increase": 3.8,
+      "gap_to_minimum": 1000.0,
+      "missing_fields": []
+    },
+    {
+      "row_number": 9,
+      "employee_id": "E008",
+      "employee_name": "Grace Kim",
+      "salary": 82000.0,
+      "range_min": 85000.0,
+      "range_max": 100000.0,
+      "job_level": "2",
+      "department": "Product",
+      "range_penetration": -20.0,
+      "penetration_band": "below_range",
+      "compa_ratio": 88.6,
+      "merit_increase": 3.0,
+      "gap_to_minimum": 3000.0,
+      "missing_fields": []
+    },
+    {
+      "row_number": 4,
+      "employee_id": "E003",
+      "employee_name": "Carla Diaz",
+      "salary": 78000.0,
+      "range_min": 85000.0,
+      "range_max": 100000.0,
+      "job_level": "2",
+      "department": "Product",
+      "range_penetration": -46.7,
+      "penetration_band": "below_range",
+      "compa_ratio": 84.3,
+      "merit_increase": 2.5,
+      "gap_to_minimum": 7000.0,
+      "missing_fields": []
+    }
+  ],
+  "compression": [
+    {
+      "issue_type": "overlap",
+      "description": "Top of range in level 3 ($112,000) overlaps median pay in level 4 ($108,500).",
+      "lower_level": "3",
+      "higher_level": "4",
+      "lower_salary": 112000.0,
+      "higher_salary": 108500.0,
+      "employee_id": null,
+      "employee_name": null,
+      "row_number": null
+    },
+    {
+      "issue_type": "employee_inversion",
+      "description": "Employee earns $112,000, which is equal to or above someone in a higher level (4).",
+      "lower_level": "3",
+      "higher_level": "4",
+      "lower_salary": 112000.0,
+      "higher_salary": 104000.0,
+      "employee_id": "E006",
+      "employee_name": "Evan Brooks",
+      "row_number": 7
+    },
+    {
+      "issue_type": "employee_inversion",
+      "description": "Employee earns $112,000, which is equal to or above someone in a higher level (4).",
+      "lower_level": "3",
+      "higher_level": "4",
+      "lower_salary": 112000.0,
+      "higher_salary": 108000.0,
+      "employee_id": "E006",
+      "employee_name": "Evan Brooks",
+      "row_number": 7
+    },
+    {
+      "issue_type": "employee_inversion",
+      "description": "Employee earns $112,000, which is equal to or above someone in a higher level (4).",
+      "lower_level": "3",
+      "higher_level": "4",
+      "lower_salary": 112000.0,
+      "higher_salary": 109000.0,
+      "employee_id": "E006",
+      "employee_name": "Evan Brooks",
+      "row_number": 7
+    }
+  ],
+  "missing_data": [
+    {
+      "row_number": 12,
+      "employee_id": "E011",
+      "employee_name": "Jack Reed",
+      "salary": null,
+      "range_min": 85000.0,
+      "range_max": 100000.0,
+      "job_level": "2",
+      "department": "Product",
+      "range_penetration": null,
+      "penetration_band": null,
+      "compa_ratio": null,
+      "merit_increase": 3.0,
+      "gap_to_minimum": null,
+      "missing_fields": [
+        "salary"
+      ]
+    },
+    {
+      "row_number": 13,
+      "employee_id": "E012",
+      "employee_name": "Kara Wu",
+      "salary": 91000.0,
+      "range_min": null,
+      "range_max": null,
+      "job_level": "3",
+      "department": "Engineering",
+      "range_penetration": null,
+      "penetration_band": null,
+      "compa_ratio": null,
+      "merit_increase": 3.1,
+      "gap_to_minimum": null,
+      "missing_fields": [
+        "range_min",
+        "range_max"
+      ]
+    }
+  ],
+  "managers_below_reports": [
+    {
+      "row_number": 7,
+      "manager_id": "E002",
+      "manager_name": "Ben Ortiz",
+      "manager_salary": 108000.0,
+      "report_id": "E006",
+      "report_name": "Evan Brooks",
+      "report_salary": 112000.0,
+      "pay_gap": 4000.0
+    },
+    {
+      "row_number": 15,
+      "manager_id": "E001",
+      "manager_name": "Duplicate Row",
+      "manager_salary": 96000.0,
+      "report_id": "E014",
+      "report_name": "Lia Singh",
+      "report_salary": 98000.0,
+      "pay_gap": 2000.0
+    }
+  ],
+  "missing_bonus_targets": [
+    {
+      "row_number": 8,
+      "employee_id": "E007",
+      "employee_name": "Fiona Ng"
+    }
+  ],
+  "missing_salary_ranges": [
+    {
+      "row_number": 13,
+      "employee_id": "E012",
+      "employee_name": "Kara Wu",
+      "missing_fields": [
+        "range_min",
+        "range_max"
+      ]
+    }
+  ],
+  "invalid_effective_dates": [
+    {
+      "row_number": 9,
+      "employee_id": "E008",
+      "employee_name": "Grace Kim",
+      "effective_date": null,
+      "reason": "Missing effective date"
+    }
+  ],
+  "outlier_merit_increases": [
+    {
+      "row_number": 10,
+      "employee_id": "E009",
+      "employee_name": "Hugo Silva",
+      "merit_increase": 18.0,
+      "reason": "Unusually high merit increase outside the expected range (1.6% to 5.5%)."
+    }
+  ],
+  "new_hire_merit_flags": [
+    {
+      "row_number": 10,
+      "employee_id": "E009",
+      "employee_name": "Hugo Silva",
+      "hire_date": "2026-05-01",
+      "tenure_days": 65,
+      "merit_increase": 18.0,
+      "reason": "Employee hired within 90 days has a 18.0% merit increase \u2014 verify eligibility."
+    }
+  ],
+  "merit_compa_flags": [
+    {
+      "row_number": 4,
+      "employee_id": "E003",
+      "employee_name": "Carla Diaz",
+      "department": "Product",
+      "compa_ratio": 84.3,
+      "merit_increase": 2.5,
+      "file_average_merit": 4.39,
+      "flag_type": "under_correction",
+      "reason": "Compa-ratio 84.3% is below 90% but merit (2.5%) is below the file average (4.4%) \u2014 consider a larger increase to close the gap."
+    },
+    {
+      "row_number": 9,
+      "employee_id": "E008",
+      "employee_name": "Grace Kim",
+      "department": "Product",
+      "compa_ratio": 88.6,
+      "merit_increase": 3.0,
+      "file_average_merit": 4.39,
+      "flag_type": "under_correction",
+      "reason": "Compa-ratio 88.6% is below 90% but merit (3.0%) is below the file average (4.4%) \u2014 consider a larger increase to close the gap."
+    }
+  ],
+  "unusual_comp_changes": [
+    {
+      "row_number": 12,
+      "employee_id": "E011",
+      "employee_name": "Jack Reed",
+      "change_type": "equity",
+      "value_percent": 75.0,
+      "reason": "Unusually high equity change outside the expected range (-10.0% to 30.0%)."
+    },
+    {
+      "row_number": 10,
+      "employee_id": "E009",
+      "employee_name": "Hugo Silva",
+      "change_type": "promotion",
+      "value_percent": 35.0,
+      "reason": "Unusually high promotion change outside the expected range (4.5% to 16.5%)."
+    }
+  ],
+  "equity_grants": [
+    {
+      "row_number": 12,
+      "employee_id": "E011",
+      "employee_name": "Jack Reed",
+      "department": "Product",
+      "equity_grant": 75.0,
+      "is_outlier": true,
+      "reason": "Unusually high equity change outside the expected range (-10.0% to 30.0%)."
+    },
+    {
+      "row_number": 11,
+      "employee_id": "E010",
+      "employee_name": "Ivy Park",
+      "department": "Executive",
+      "equity_grant": 25.0,
+      "is_outlier": false,
+      "reason": null
+    },
+    {
+      "row_number": 5,
+      "employee_id": "E004",
+      "employee_name": "Dev Patel",
+      "department": "Engineering",
+      "equity_grant": 20.0,
+      "is_outlier": false,
+      "reason": null
+    },
+    {
+      "row_number": 3,
+      "employee_id": "E002",
+      "employee_name": "Ben Ortiz",
+      "department": "Engineering",
+      "equity_grant": 15.0,
+      "is_outlier": false,
+      "reason": null
+    },
+    {
+      "row_number": 10,
+      "employee_id": "E009",
+      "employee_name": "Hugo Silva",
+      "department": "Operations",
+      "equity_grant": 15.0,
+      "is_outlier": false,
+      "reason": null
+    },
+    {
+      "row_number": 14,
+      "employee_id": "E013",
+      "employee_name": "Liam Fox",
+      "department": "Engineering",
+      "equity_grant": 15.0,
+      "is_outlier": false,
+      "reason": null
+    },
+    {
+      "row_number": 19,
+      "employee_id": "E018",
+      "employee_name": "Priya Shah",
+      "department": "Engineering",
+      "equity_grant": 15.0,
+      "is_outlier": false,
+      "reason": null
+    },
+    {
+      "row_number": 2,
+      "employee_id": "E001",
+      "employee_name": "Alice Chen",
+      "department": "Engineering",
+      "equity_grant": 10.0,
+      "is_outlier": false,
+      "reason": null
+    },
+    {
+      "row_number": 6,
+      "employee_id": "E001",
+      "employee_name": "Duplicate Row",
+      "department": "Engineering",
+      "equity_grant": 10.0,
+      "is_outlier": false,
+      "reason": null
+    },
+    {
+      "row_number": 7,
+      "employee_id": "E006",
+      "employee_name": "Evan Brooks",
+      "department": "Engineering",
+      "equity_grant": 10.0,
+      "is_outlier": false,
+      "reason": null
+    },
+    {
+      "row_number": 15,
+      "employee_id": "E014",
+      "employee_name": "Lia Singh",
+      "department": "Engineering",
+      "equity_grant": 10.0,
+      "is_outlier": false,
+      "reason": null
+    },
+    {
+      "row_number": 16,
+      "employee_id": "E015",
+      "employee_name": "Marcus Lee",
+      "department": "Engineering",
+      "equity_grant": 10.0,
+      "is_outlier": false,
+      "reason": null
+    },
+    {
+      "row_number": 20,
+      "employee_id": "E019",
+      "employee_name": "Quinn Adams",
+      "department": "Product",
+      "equity_grant": 10.0,
+      "is_outlier": false,
+      "reason": null
+    },
+    {
+      "row_number": 4,
+      "employee_id": "E003",
+      "employee_name": "Carla Diaz",
+      "department": "Product",
+      "equity_grant": 5.0,
+      "is_outlier": false,
+      "reason": null
+    },
+    {
+      "row_number": 8,
+      "employee_id": "E007",
+      "employee_name": "Fiona Ng",
+      "department": "Sales",
+      "equity_grant": 5.0,
+      "is_outlier": false,
+      "reason": null
+    },
+    {
+      "row_number": 13,
+      "employee_id": "E012",
+      "employee_name": "Kara Wu",
+      "department": "Engineering",
+      "equity_grant": 5.0,
+      "is_outlier": false,
+      "reason": null
+    },
+    {
+      "row_number": 17,
+      "employee_id": "E016",
+      "employee_name": "Nina Ross",
+      "department": "Sales",
+      "equity_grant": 5.0,
+      "is_outlier": false,
+      "reason": null
+    },
+    {
+      "row_number": 21,
+      "employee_id": "E020",
+      "employee_name": "Rosa Vega",
+      "department": "Sales",
+      "equity_grant": 5.0,
+      "is_outlier": false,
+      "reason": null
+    },
+    {
+      "row_number": 9,
+      "employee_id": "E008",
+      "employee_name": "Grace Kim",
+      "department": "Product",
+      "equity_grant": 0.0,
+      "is_outlier": false,
+      "reason": null
+    },
+    {
+      "row_number": 18,
+      "employee_id": "E017",
+      "employee_name": "Omar Haddad",
+      "department": "Operations",
+      "equity_grant": 0.0,
+      "is_outlier": false,
+      "reason": null
+    }
+  ],
+  "compa_ratios": [
+    {
+      "row_number": 4,
+      "employee_id": "E003",
+      "employee_name": "Carla Diaz",
+      "salary": 78000.0,
+      "range_midpoint": 92500.0,
+      "compa_ratio": 84.3
+    },
+    {
+      "row_number": 8,
+      "employee_id": "E007",
+      "employee_name": "Fiona Ng",
+      "salary": 104000.0,
+      "range_midpoint": 117500.0,
+      "compa_ratio": 88.5
+    },
+    {
+      "row_number": 9,
+      "employee_id": "E008",
+      "employee_name": "Grace Kim",
+      "salary": 82000.0,
+      "range_midpoint": 92500.0,
+      "compa_ratio": 88.6
+    },
+    {
+      "row_number": 3,
+      "employee_id": "E002",
+      "employee_name": "Ben Ortiz",
+      "salary": 108000.0,
+      "range_midpoint": 117500.0,
+      "compa_ratio": 91.9
+    },
+    {
+      "row_number": 17,
+      "employee_id": "E016",
+      "employee_name": "Nina Ross",
+      "salary": 88000.0,
+      "range_midpoint": 95000.0,
+      "compa_ratio": 92.6
+    },
+    {
+      "row_number": 19,
+      "employee_id": "E018",
+      "employee_name": "Priya Shah",
+      "salary": 109000.0,
+      "range_midpoint": 117500.0,
+      "compa_ratio": 92.8
+    },
+    {
+      "row_number": 10,
+      "employee_id": "E009",
+      "employee_name": "Hugo Silva",
+      "salary": 72000.0,
+      "range_midpoint": 77500.0,
+      "compa_ratio": 92.9
+    },
+    {
+      "row_number": 21,
+      "employee_id": "E020",
+      "employee_name": "Rosa Vega",
+      "salary": 79000.0,
+      "range_midpoint": 85000.0,
+      "compa_ratio": 92.9
+    },
+    {
+      "row_number": 11,
+      "employee_id": "E010",
+      "employee_name": "Ivy Park",
+      "salary": 148000.0,
+      "range_midpoint": 157500.0,
+      "compa_ratio": 94.0
+    },
+    {
+      "row_number": 20,
+      "employee_id": "E019",
+      "employee_name": "Quinn Adams",
+      "salary": 94000.0,
+      "range_midpoint": 100000.0,
+      "compa_ratio": 94.0
+    },
+    {
+      "row_number": 5,
+      "employee_id": "E004",
+      "employee_name": "Dev Patel",
+      "salary": 132000.0,
+      "range_midpoint": 140000.0,
+      "compa_ratio": 94.3
+    },
+    {
+      "row_number": 2,
+      "employee_id": "E001",
+      "employee_name": "Alice Chen",
+      "salary": 95000.0,
+      "range_midpoint": 100000.0,
+      "compa_ratio": 95.0
+    },
+    {
+      "row_number": 6,
+      "employee_id": "E001",
+      "employee_name": "Duplicate Row",
+      "salary": 96000.0,
+      "range_midpoint": 100000.0,
+      "compa_ratio": 96.0
+    },
+    {
+      "row_number": 14,
+      "employee_id": "E013",
+      "employee_name": "Liam Fox",
+      "salary": 115000.0,
+      "range_midpoint": 117500.0,
+      "compa_ratio": 97.9
+    },
+    {
+      "row_number": 15,
+      "employee_id": "E014",
+      "employee_name": "Lia Singh",
+      "salary": 98000.0,
+      "range_midpoint": 100000.0,
+      "compa_ratio": 98.0
+    },
+    {
+      "row_number": 18,
+      "employee_id": "E017",
+      "employee_name": "Omar Haddad",
+      "salary": 76000.0,
+      "range_midpoint": 77500.0,
+      "compa_ratio": 98.1
+    },
+    {
+      "row_number": 16,
+      "employee_id": "E015",
+      "employee_name": "Marcus Lee",
+      "salary": 99000.0,
+      "range_midpoint": 100000.0,
+      "compa_ratio": 99.0
+    },
+    {
+      "row_number": 7,
+      "employee_id": "E006",
+      "employee_name": "Evan Brooks",
+      "salary": 112000.0,
+      "range_midpoint": 100000.0,
+      "compa_ratio": 112.0
+    }
+  ],
+  "pay_equity": {
+    "available": true,
+    "gender_groups": [
+      {
+        "dimension": "gender",
+        "group_name": "Female",
+        "headcount": 11,
+        "median_salary": 95000.0,
+        "mean_salary": 97090.91,
+        "median_compa_ratio": 92.85,
+        "workforce_percent": 57.9,
+        "suppressed": false
+      },
+      {
+        "dimension": "gender",
+        "group_name": "Male",
+        "headcount": 8,
+        "median_salary": 103500.0,
+        "mean_salary": 101000.0,
+        "median_compa_ratio": 96.08,
+        "workforce_percent": 42.1,
+        "suppressed": false
+      }
+    ],
+    "race_groups": [
+      {
+        "dimension": "race",
+        "group_name": "Asian",
+        "headcount": 8,
+        "median_salary": 97000.0,
+        "mean_salary": 100875.0,
+        "median_compa_ratio": 94.29,
+        "workforce_percent": 42.1,
+        "suppressed": false
+      },
+      {
+        "dimension": "race",
+        "group_name": "White",
+        "headcount": 7,
+        "median_salary": 94000.0,
+        "mean_salary": 100714.29,
+        "median_compa_ratio": 94.0,
+        "workforce_percent": 36.8,
+        "suppressed": false
+      },
+      {
+        "dimension": "race",
+        "group_name": "Hispanic or Latino",
+        "headcount": 3,
+        "median_salary": null,
+        "mean_salary": null,
+        "median_compa_ratio": null,
+        "workforce_percent": 15.8,
+        "suppressed": true
+      },
+      {
+        "dimension": "race",
+        "group_name": "Black or African American",
+        "headcount": 1,
+        "median_salary": null,
+        "mean_salary": null,
+        "median_compa_ratio": null,
+        "workforce_percent": 5.3,
+        "suppressed": true
+      }
+    ],
+    "gender_gaps": [
+      {
+        "dimension": "gender",
+        "higher_paid_group": "Male",
+        "lower_paid_group": "Female",
+        "higher_median": 103500.0,
+        "lower_median": 95000.0,
+        "gap_amount": 8500.0,
+        "gap_percent": 8.9,
+        "scope": "Overall workforce"
+      }
+    ],
+    "race_gaps": [
+      {
+        "dimension": "race",
+        "higher_paid_group": "Asian",
+        "lower_paid_group": "White",
+        "higher_median": 97000.0,
+        "lower_median": 94000.0,
+        "gap_amount": 3000.0,
+        "gap_percent": 3.2,
+        "scope": "Overall workforce"
+      }
+    ],
+    "level_breakdowns": [
+      {
+        "job_level": "3",
+        "headcount": 8,
+        "gender_groups": [
+          {
+            "dimension": "gender",
+            "group_name": "Female",
+            "headcount": 5,
+            "median_salary": 95000.0,
+            "mean_salary": 93600.0,
+            "median_compa_ratio": 95.5,
+            "workforce_percent": 62.5,
+            "suppressed": false
+          },
+          {
+            "dimension": "gender",
+            "group_name": "Male",
+            "headcount": 3,
+            "median_salary": null,
+            "mean_salary": null,
+            "median_compa_ratio": null,
+            "workforce_percent": 37.5,
+            "suppressed": true
+          }
+        ],
+        "race_groups": [
+          {
+            "dimension": "race",
+            "group_name": "Asian",
+            "headcount": 4,
+            "median_salary": null,
+            "mean_salary": null,
+            "median_compa_ratio": null,
+            "workforce_percent": 50.0,
+            "suppressed": true
+          },
+          {
+            "dimension": "race",
+            "group_name": "White",
+            "headcount": 3,
+            "median_salary": null,
+            "mean_salary": null,
+            "median_compa_ratio": null,
+            "workforce_percent": 37.5,
+            "suppressed": true
+          },
+          {
+            "dimension": "race",
+            "group_name": "Black or African American",
+            "headcount": 1,
+            "median_salary": null,
+            "mean_salary": null,
+            "median_compa_ratio": null,
+            "workforce_percent": 12.5,
+            "suppressed": true
+          }
+        ],
+        "gender_gaps": [],
+        "race_gaps": []
+      }
+    ],
+    "employees_missing_gender": 0,
+    "employees_missing_race": 0,
+    "disclaimer": "Descriptive pay comparisons by gender and race/ethnicity for decision support only. These summaries do not control for job level, tenure, performance, location, or other legitimate factors. They are not legal pay equity or EEO compliance determinations. Groups with fewer than five employees are hidden to reduce re-identification risk."
+  },
+  "tenure": {
+    "available": true,
+    "bands": [
+      {
+        "band_label": "Under 1 year",
+        "headcount": 1,
+        "median_salary": 72000.0,
+        "median_tenure_years": 0.2,
+        "median_compa_ratio": 92.9
+      },
+      {
+        "band_label": "1\u20133 years",
+        "headcount": 1,
+        "median_salary": 112000.0,
+        "median_tenure_years": 2.9,
+        "median_compa_ratio": 112.0
+      },
+      {
+        "band_label": "3\u20135 years",
+        "headcount": 11,
+        "median_salary": 92500.0,
+        "median_tenure_years": 4.1,
+        "median_compa_ratio": 94.0
+      },
+      {
+        "band_label": "5\u201310 years",
+        "headcount": 7,
+        "median_salary": 109000.0,
+        "median_tenure_years": 6.1,
+        "median_compa_ratio": 94.0
+      }
+    ],
+    "employees": [
+      {
+        "row_number": 11,
+        "employee_id": "E010",
+        "employee_name": "Ivy Park",
+        "hire_date": "2018-04-01",
+        "tenure_days": 3017,
+        "tenure_years": 8.3,
+        "tenure_band": "5\u201310 years",
+        "salary": 148000.0,
+        "job_level": "6",
+        "department": "Executive",
+        "location": "Boston",
+        "compa_ratio": 94.0
+      },
+      {
+        "row_number": 5,
+        "employee_id": "E004",
+        "employee_name": "Dev Patel",
+        "hire_date": "2019-08-20",
+        "tenure_days": 2511,
+        "tenure_years": 6.9,
+        "tenure_band": "5\u201310 years",
+        "salary": 132000.0,
+        "job_level": "5",
+        "department": "Engineering",
+        "location": "San Francisco",
+        "compa_ratio": 94.3
+      },
+      {
+        "row_number": 19,
+        "employee_id": "E018",
+        "employee_name": "Priya Shah",
+        "hire_date": "2019-11-30",
+        "tenure_days": 2409,
+        "tenure_years": 6.6,
+        "tenure_band": "5\u201310 years",
+        "salary": 109000.0,
+        "job_level": "4",
+        "department": "Engineering",
+        "location": "San Francisco",
+        "compa_ratio": 92.8
+      },
+      {
+        "row_number": 14,
+        "employee_id": "E013",
+        "employee_name": "Liam Fox",
+        "hire_date": "2020-05-18",
+        "tenure_days": 2239,
+        "tenure_years": 6.1,
+        "tenure_band": "5\u201310 years",
+        "salary": 115000.0,
+        "job_level": "4",
+        "department": "Engineering",
+        "location": "San Francisco",
+        "compa_ratio": 97.9
+      },
+      {
+        "row_number": 8,
+        "employee_id": "E007",
+        "employee_name": "Fiona Ng",
+        "hire_date": "2020-11-05",
+        "tenure_days": 2068,
+        "tenure_years": 5.7,
+        "tenure_band": "5\u201310 years",
+        "salary": 104000.0,
+        "job_level": "4",
+        "department": "Sales",
+        "location": "Boston",
+        "compa_ratio": 88.5
+      },
+      {
+        "row_number": 18,
+        "employee_id": "E017",
+        "employee_name": "Omar Haddad",
+        "hire_date": "2021-04-19",
+        "tenure_days": 1903,
+        "tenure_years": 5.2,
+        "tenure_band": "5\u201310 years",
+        "salary": 76000.0,
+        "job_level": "2",
+        "department": "Operations",
+        "location": "Chicago",
+        "compa_ratio": 98.1
+      },
+      {
+        "row_number": 3,
+        "employee_id": "E002",
+        "employee_name": "Ben Ortiz",
+        "hire_date": "2021-06-01",
+        "tenure_days": 1860,
+        "tenure_years": 5.1,
+        "tenure_band": "5\u201310 years",
+        "salary": 108000.0,
+        "job_level": "4",
+        "department": "Engineering",
+        "location": "San Francisco",
+        "compa_ratio": 91.9
+      },
+      {
+        "row_number": 12,
+        "employee_id": "E011",
+        "employee_name": "Jack Reed",
+        "hire_date": "2021-09-14",
+        "tenure_days": 1755,
+        "tenure_years": 4.8,
+        "tenure_band": "3\u20135 years",
+        "salary": null,
+        "job_level": "2",
+        "department": "Product",
+        "location": "New York",
+        "compa_ratio": null
+      },
+      {
+        "row_number": 15,
+        "employee_id": "E014",
+        "employee_name": "Lia Singh",
+        "hire_date": "2021-12-01",
+        "tenure_days": 1677,
+        "tenure_years": 4.6,
+        "tenure_band": "3\u20135 years",
+        "salary": 98000.0,
+        "job_level": "3",
+        "department": "Engineering",
+        "location": "Remote",
+        "compa_ratio": 98.0
+      },
+      {
+        "row_number": 2,
+        "employee_id": "E001",
+        "employee_name": "Alice Chen",
+        "hire_date": "2022-03-15",
+        "tenure_days": 1573,
+        "tenure_years": 4.3,
+        "tenure_band": "3\u20135 years",
+        "salary": 95000.0,
+        "job_level": "3",
+        "department": "Engineering",
+        "location": "San Francisco",
+        "compa_ratio": 95.0
+      },
+      {
+        "row_number": 6,
+        "employee_id": "E001",
+        "employee_name": "Duplicate Row",
+        "hire_date": "2022-03-15",
+        "tenure_days": 1573,
+        "tenure_years": 4.3,
+        "tenure_band": "3\u20135 years",
+        "salary": 96000.0,
+        "job_level": "3",
+        "department": "Engineering",
+        "location": "Remote",
+        "compa_ratio": 96.0
+      },
+      {
+        "row_number": 13,
+        "employee_id": "E012",
+        "employee_name": "Kara Wu",
+        "hire_date": "2022-02-28",
+        "tenure_days": 1588,
+        "tenure_years": 4.3,
+        "tenure_band": "3\u20135 years",
+        "salary": 91000.0,
+        "job_level": "3",
+        "department": "Engineering",
+        "location": "San Francisco",
+        "compa_ratio": null
+      },
+      {
+        "row_number": 20,
+        "employee_id": "E019",
+        "employee_name": "Quinn Adams",
+        "hire_date": "2022-06-06",
+        "tenure_days": 1490,
+        "tenure_years": 4.1,
+        "tenure_band": "3\u20135 years",
+        "salary": 94000.0,
+        "job_level": "3",
+        "department": "Product",
+        "location": "New York",
+        "compa_ratio": 94.0
+      },
+      {
+        "row_number": 9,
+        "employee_id": "E008",
+        "employee_name": "Grace Kim",
+        "hire_date": "2022-07-22",
+        "tenure_days": 1444,
+        "tenure_years": 4.0,
+        "tenure_band": "3\u20135 years",
+        "salary": 82000.0,
+        "job_level": "2",
+        "department": "Product",
+        "location": "New York",
+        "compa_ratio": 88.6
+      },
+      {
+        "row_number": 17,
+        "employee_id": "E016",
+        "employee_name": "Nina Ross",
+        "hire_date": "2022-10-12",
+        "tenure_days": 1362,
+        "tenure_years": 3.7,
+        "tenure_band": "3\u20135 years",
+        "salary": 88000.0,
+        "job_level": "3",
+        "department": "Sales",
+        "location": "Boston",
+        "compa_ratio": 92.6
+      },
+      {
+        "row_number": 4,
+        "employee_id": "E003",
+        "employee_name": "Carla Diaz",
+        "hire_date": "2023-01-10",
+        "tenure_days": 1272,
+        "tenure_years": 3.5,
+        "tenure_band": "3\u20135 years",
+        "salary": 78000.0,
+        "job_level": "2",
+        "department": "Product",
+        "location": "New York",
+        "compa_ratio": 84.3
+      },
+      {
+        "row_number": 16,
+        "employee_id": "E015",
+        "employee_name": "Marcus Lee",
+        "hire_date": "2023-03-07",
+        "tenure_days": 1216,
+        "tenure_years": 3.3,
+        "tenure_band": "3\u20135 years",
+        "salary": 99000.0,
+        "job_level": "3",
+        "department": "Engineering",
+        "location": "Austin",
+        "compa_ratio": 99.0
+      },
+      {
+        "row_number": 21,
+        "employee_id": "E020",
+        "employee_name": "Rosa Vega",
+        "hire_date": "2023-05-25",
+        "tenure_days": 1137,
+        "tenure_years": 3.1,
+        "tenure_band": "3\u20135 years",
+        "salary": 79000.0,
+        "job_level": "2",
+        "department": "Sales",
+        "location": "Remote",
+        "compa_ratio": 92.9
+      },
+      {
+        "row_number": 7,
+        "employee_id": "E006",
+        "employee_name": "Evan Brooks",
+        "hire_date": "2023-08-10",
+        "tenure_days": 1060,
+        "tenure_years": 2.9,
+        "tenure_band": "1\u20133 years",
+        "salary": 112000.0,
+        "job_level": "3",
+        "department": "Engineering",
+        "location": "Austin",
+        "compa_ratio": 112.0
+      },
+      {
+        "row_number": 10,
+        "employee_id": "E009",
+        "employee_name": "Hugo Silva",
+        "hire_date": "2026-05-01",
+        "tenure_days": 65,
+        "tenure_years": 0.2,
+        "tenure_band": "Under 1 year",
+        "salary": 72000.0,
+        "job_level": "1",
+        "department": "Operations",
+        "location": "Remote",
+        "compa_ratio": 92.9
+      }
+    ],
+    "flags": [],
+    "employees_missing_hire_date": 0,
+    "disclaimer": "Tenure summaries are based on hire date and current base salary. They do not adjust for job level, location, performance, or promotion history. Use for directional review only."
+  },
+  "location_pay": {
+    "available": true,
+    "location_groups": [
+      {
+        "dimension": "location",
+        "group_name": "San Francisco",
+        "headcount": 6,
+        "median_salary": 108500.0,
+        "mean_salary": 108333.33,
+        "median_compa_ratio": null,
+        "workforce_percent": 31.6,
+        "suppressed": false
+      },
+      {
+        "dimension": "location",
+        "group_name": "Remote",
+        "headcount": 4,
+        "median_salary": null,
+        "mean_salary": null,
+        "median_compa_ratio": null,
+        "workforce_percent": 21.1,
+        "suppressed": true
+      },
+      {
+        "dimension": "location",
+        "group_name": "Boston",
+        "headcount": 3,
+        "median_salary": null,
+        "mean_salary": null,
+        "median_compa_ratio": null,
+        "workforce_percent": 15.8,
+        "suppressed": true
+      },
+      {
+        "dimension": "location",
+        "group_name": "New York",
+        "headcount": 3,
+        "median_salary": null,
+        "mean_salary": null,
+        "median_compa_ratio": null,
+        "workforce_percent": 15.8,
+        "suppressed": true
+      },
+      {
+        "dimension": "location",
+        "group_name": "Austin",
+        "headcount": 2,
+        "median_salary": null,
+        "mean_salary": null,
+        "median_compa_ratio": null,
+        "workforce_percent": 10.5,
+        "suppressed": true
+      },
+      {
+        "dimension": "location",
+        "group_name": "Chicago",
+        "headcount": 1,
+        "median_salary": null,
+        "mean_salary": null,
+        "median_compa_ratio": null,
+        "workforce_percent": 5.3,
+        "suppressed": true
+      }
+    ],
+    "location_gaps": [],
+    "level_breakdowns": [
+      {
+        "job_level": "3",
+        "headcount": 8,
+        "location_groups": [
+          {
+            "dimension": "location",
+            "group_name": "Austin",
+            "headcount": 2,
+            "median_salary": null,
+            "mean_salary": null,
+            "median_compa_ratio": null,
+            "workforce_percent": 25.0,
+            "suppressed": true
+          },
+          {
+            "dimension": "location",
+            "group_name": "Remote",
+            "headcount": 2,
+            "median_salary": null,
+            "mean_salary": null,
+            "median_compa_ratio": null,
+            "workforce_percent": 25.0,
+            "suppressed": true
+          },
+          {
+            "dimension": "location",
+            "group_name": "San Francisco",
+            "headcount": 2,
+            "median_salary": null,
+            "mean_salary": null,
+            "median_compa_ratio": null,
+            "workforce_percent": 25.0,
+            "suppressed": true
+          },
+          {
+            "dimension": "location",
+            "group_name": "Boston",
+            "headcount": 1,
+            "median_salary": null,
+            "mean_salary": null,
+            "median_compa_ratio": null,
+            "workforce_percent": 12.5,
+            "suppressed": true
+          },
+          {
+            "dimension": "location",
+            "group_name": "New York",
+            "headcount": 1,
+            "median_salary": null,
+            "mean_salary": null,
+            "median_compa_ratio": null,
+            "workforce_percent": 12.5,
+            "suppressed": true
+          }
+        ],
+        "location_gaps": []
+      }
+    ],
+    "employees_missing_location": 0,
+    "disclaimer": "Location pay comparisons are descriptive medians only. They do not control for job level, cost of living, tenure, or role mix. Groups with fewer than five employees are hidden."
+  },
+  "merit_by_department": {
+    "available": true,
+    "departments": [
+      {
+        "department": "Engineering",
+        "headcount": 9,
+        "employees_with_merit": 9,
+        "average_merit_percent": 3.72,
+        "projected_merit_pool": 36244.0,
+        "payroll_base": 964000.0
+      },
+      {
+        "department": "Executive",
+        "headcount": 1,
+        "employees_with_merit": 1,
+        "average_merit_percent": 5.0,
+        "projected_merit_pool": 7400.0,
+        "payroll_base": 148000.0
+      },
+      {
+        "department": "Operations",
+        "headcount": 2,
+        "employees_with_merit": 2,
+        "average_merit_percent": 10.5,
+        "projected_merit_pool": 15240.0,
+        "payroll_base": 148000.0
+      },
+      {
+        "department": "Product",
+        "headcount": 3,
+        "employees_with_merit": 3,
+        "average_merit_percent": 3.07,
+        "projected_merit_pool": 7888.0,
+        "payroll_base": 254000.0
+      },
+      {
+        "department": "Sales",
+        "headcount": 3,
+        "employees_with_merit": 3,
+        "average_merit_percent": 3.43,
+        "projected_merit_pool": 9384.0,
+        "payroll_base": 271000.0
+      }
+    ],
+    "file_average_merit": 4.39,
+    "disclaimer": "Department merit averages use uploaded merit increase values only. They do not adjust for level mix, performance, or eligibility rules."
+  },
+  "bonus_target_review": {
+    "available": true,
+    "outliers": [
+      {
+        "row_number": 13,
+        "employee_id": "E012",
+        "employee_name": "Kara Wu",
+        "department": "Engineering",
+        "job_level": "3",
+        "bonus_target": 12.0,
+        "level_median_bonus": 15.0,
+        "reason": "Bonus target 12.0% is unusually low for level 3 (level median 15.0%, expected 13.1%\u201316.1%)."
+      },
+      {
+        "row_number": 17,
+        "employee_id": "E016",
+        "employee_name": "Nina Ross",
+        "department": "Sales",
+        "job_level": "3",
+        "bonus_target": 12.0,
+        "level_median_bonus": 15.0,
+        "reason": "Bonus target 12.0% is unusually low for level 3 (level median 15.0%, expected 13.1%\u201316.1%)."
+      },
+      {
+        "row_number": 18,
+        "employee_id": "E017",
+        "employee_name": "Omar Haddad",
+        "department": "Operations",
+        "job_level": "2",
+        "bonus_target": 8.0,
+        "level_median_bonus": 10.0,
+        "reason": "Bonus target 8.0% is unusually low for level 2 (level median 10.0%, expected 10.0%\u201310.0%)."
+      }
+    ],
+    "disclaimer": "Bonus target outliers compare each employee to others at the same job level. Levels with fewer than four employees are skipped."
+  },
+  "post_merit_compa": {
+    "available": true,
+    "employees": [
+      {
+        "row_number": 10,
+        "employee_id": "E009",
+        "employee_name": "Hugo Silva",
+        "department": "Operations",
+        "job_level": "1",
+        "salary": 72000.0,
+        "merit_increase": 18.0,
+        "current_compa_ratio": 92.9,
+        "projected_compa_ratio": 109.6,
+        "compa_change": 16.7,
+        "projected_salary": 84960.0
+      },
+      {
+        "row_number": 11,
+        "employee_id": "E010",
+        "employee_name": "Ivy Park",
+        "department": "Executive",
+        "job_level": "6",
+        "salary": 148000.0,
+        "merit_increase": 5.0,
+        "current_compa_ratio": 94.0,
+        "projected_compa_ratio": 98.7,
+        "compa_change": 4.7,
+        "projected_salary": 155400.0
+      },
+      {
+        "row_number": 5,
+        "employee_id": "E004",
+        "employee_name": "Dev Patel",
+        "department": "Engineering",
+        "job_level": "5",
+        "salary": 132000.0,
+        "merit_increase": 4.5,
+        "current_compa_ratio": 94.3,
+        "projected_compa_ratio": 98.5,
+        "compa_change": 4.2,
+        "projected_salary": 137940.0
+      },
+      {
+        "row_number": 14,
+        "employee_id": "E013",
+        "employee_name": "Liam Fox",
+        "department": "Engineering",
+        "job_level": "4",
+        "salary": 115000.0,
+        "merit_increase": 4.2,
+        "current_compa_ratio": 97.9,
+        "projected_compa_ratio": 102.0,
+        "compa_change": 4.1,
+        "projected_salary": 119830.0
+      },
+      {
+        "row_number": 19,
+        "employee_id": "E018",
+        "employee_name": "Priya Shah",
+        "department": "Engineering",
+        "job_level": "4",
+        "salary": 109000.0,
+        "merit_increase": 4.1,
+        "current_compa_ratio": 92.8,
+        "projected_compa_ratio": 96.6,
+        "compa_change": 3.8,
+        "projected_salary": 113469.0
+      },
+      {
+        "row_number": 3,
+        "employee_id": "E002",
+        "employee_name": "Ben Ortiz",
+        "department": "Engineering",
+        "job_level": "4",
+        "salary": 108000.0,
+        "merit_increase": 4.0,
+        "current_compa_ratio": 91.9,
+        "projected_compa_ratio": 95.6,
+        "compa_change": 3.7,
+        "projected_salary": 112320.0
+      },
+      {
+        "row_number": 7,
+        "employee_id": "E006",
+        "employee_name": "Evan Brooks",
+        "department": "Engineering",
+        "job_level": "3",
+        "salary": 112000.0,
+        "merit_increase": 3.2,
+        "current_compa_ratio": 112.0,
+        "projected_compa_ratio": 115.6,
+        "compa_change": 3.6,
+        "projected_salary": 115584.0
+      },
+      {
+        "row_number": 16,
+        "employee_id": "E015",
+        "employee_name": "Marcus Lee",
+        "department": "Engineering",
+        "job_level": "3",
+        "salary": 99000.0,
+        "merit_increase": 3.6,
+        "current_compa_ratio": 99.0,
+        "projected_compa_ratio": 102.6,
+        "compa_change": 3.6,
+        "projected_salary": 102564.0
+      },
+      {
+        "row_number": 20,
+        "employee_id": "E019",
+        "employee_name": "Quinn Adams",
+        "department": "Product",
+        "job_level": "3",
+        "salary": 94000.0,
+        "merit_increase": 3.7,
+        "current_compa_ratio": 94.0,
+        "projected_compa_ratio": 97.5,
+        "compa_change": 3.5,
+        "projected_salary": 97478.0
+      },
+      {
+        "row_number": 8,
+        "employee_id": "E007",
+        "employee_name": "Fiona Ng",
+        "department": "Sales",
+        "job_level": "4",
+        "salary": 104000.0,
+        "merit_increase": 3.8,
+        "current_compa_ratio": 88.5,
+        "projected_compa_ratio": 91.9,
+        "compa_change": 3.4,
+        "projected_salary": 107952.0
+      },
+      {
+        "row_number": 2,
+        "employee_id": "E001",
+        "employee_name": "Alice Chen",
+        "department": "Engineering",
+        "job_level": "3",
+        "salary": 95000.0,
+        "merit_increase": 3.5,
+        "current_compa_ratio": 95.0,
+        "projected_compa_ratio": 98.3,
+        "compa_change": 3.3,
+        "projected_salary": 98325.0
+      },
+      {
+        "row_number": 15,
+        "employee_id": "E014",
+        "employee_name": "Lia Singh",
+        "department": "Engineering",
+        "job_level": "3",
+        "salary": 98000.0,
+        "merit_increase": 3.4,
+        "current_compa_ratio": 98.0,
+        "projected_compa_ratio": 101.3,
+        "compa_change": 3.3,
+        "projected_salary": 101332.0
+      },
+      {
+        "row_number": 17,
+        "employee_id": "E016",
+        "employee_name": "Nina Ross",
+        "department": "Sales",
+        "job_level": "3",
+        "salary": 88000.0,
+        "merit_increase": 3.3,
+        "current_compa_ratio": 92.6,
+        "projected_compa_ratio": 95.7,
+        "compa_change": 3.1,
+        "projected_salary": 90904.0
+      },
+      {
+        "row_number": 21,
+        "employee_id": "E020",
+        "employee_name": "Rosa Vega",
+        "department": "Sales",
+        "job_level": "2",
+        "salary": 79000.0,
+        "merit_increase": 3.2,
+        "current_compa_ratio": 92.9,
+        "projected_compa_ratio": 95.9,
+        "compa_change": 3.0,
+        "projected_salary": 81528.0
+      },
+      {
+        "row_number": 6,
+        "employee_id": "E001",
+        "employee_name": "Duplicate Row",
+        "department": "Engineering",
+        "job_level": "3",
+        "salary": 96000.0,
+        "merit_increase": 3.0,
+        "current_compa_ratio": 96.0,
+        "projected_compa_ratio": 98.9,
+        "compa_change": 2.9,
+        "projected_salary": 98880.0
+      },
+      {
+        "row_number": 18,
+        "employee_id": "E017",
+        "employee_name": "Omar Haddad",
+        "department": "Operations",
+        "job_level": "2",
+        "salary": 76000.0,
+        "merit_increase": 3.0,
+        "current_compa_ratio": 98.1,
+        "projected_compa_ratio": 101.0,
+        "compa_change": 2.9,
+        "projected_salary": 78280.0
+      },
+      {
+        "row_number": 9,
+        "employee_id": "E008",
+        "employee_name": "Grace Kim",
+        "department": "Product",
+        "job_level": "2",
+        "salary": 82000.0,
+        "merit_increase": 3.0,
+        "current_compa_ratio": 88.6,
+        "projected_compa_ratio": 91.3,
+        "compa_change": 2.7,
+        "projected_salary": 84460.0
+      },
+      {
+        "row_number": 4,
+        "employee_id": "E003",
+        "employee_name": "Carla Diaz",
+        "department": "Product",
+        "job_level": "2",
+        "salary": 78000.0,
+        "merit_increase": 2.5,
+        "current_compa_ratio": 84.3,
+        "projected_compa_ratio": 86.4,
+        "compa_change": 2.1,
+        "projected_salary": 79950.0
+      }
+    ],
+    "average_current_compa": 94.6,
+    "average_projected_compa": 98.7,
+    "employees_below_90_after": 1,
+    "employees_above_110_after": 1,
+    "disclaimer": "Projected compa-ratio assumes the uploaded merit increase is applied to current base salary with no range changes. Use for planning only."
+  },
+  "peer_spread": {
+    "available": true,
+    "flags": [
+      {
+        "row_number": 2,
+        "employee_id": "E001",
+        "employee_name": "Alice Chen",
+        "job_level": "3",
+        "department": "Engineering",
+        "salary": 95000.0,
+        "group_min_salary": 91000.0,
+        "group_max_salary": 112000.0,
+        "spread_percent": 23.1,
+        "headcount": 6,
+        "reason": "Level 3 in Engineering has a 23.1% pay spread ($91,000\u2013$112,000) across 6 employees."
+      },
+      {
+        "row_number": 6,
+        "employee_id": "E001",
+        "employee_name": "Duplicate Row",
+        "job_level": "3",
+        "department": "Engineering",
+        "salary": 96000.0,
+        "group_min_salary": 91000.0,
+        "group_max_salary": 112000.0,
+        "spread_percent": 23.1,
+        "headcount": 6,
+        "reason": "Level 3 in Engineering has a 23.1% pay spread ($91,000\u2013$112,000) across 6 employees."
+      },
+      {
+        "row_number": 7,
+        "employee_id": "E006",
+        "employee_name": "Evan Brooks",
+        "job_level": "3",
+        "department": "Engineering",
+        "salary": 112000.0,
+        "group_min_salary": 91000.0,
+        "group_max_salary": 112000.0,
+        "spread_percent": 23.1,
+        "headcount": 6,
+        "reason": "Level 3 in Engineering has a 23.1% pay spread ($91,000\u2013$112,000) across 6 employees."
+      },
+      {
+        "row_number": 13,
+        "employee_id": "E012",
+        "employee_name": "Kara Wu",
+        "job_level": "3",
+        "department": "Engineering",
+        "salary": 91000.0,
+        "group_min_salary": 91000.0,
+        "group_max_salary": 112000.0,
+        "spread_percent": 23.1,
+        "headcount": 6,
+        "reason": "Level 3 in Engineering has a 23.1% pay spread ($91,000\u2013$112,000) across 6 employees."
+      },
+      {
+        "row_number": 15,
+        "employee_id": "E014",
+        "employee_name": "Lia Singh",
+        "job_level": "3",
+        "department": "Engineering",
+        "salary": 98000.0,
+        "group_min_salary": 91000.0,
+        "group_max_salary": 112000.0,
+        "spread_percent": 23.1,
+        "headcount": 6,
+        "reason": "Level 3 in Engineering has a 23.1% pay spread ($91,000\u2013$112,000) across 6 employees."
+      },
+      {
+        "row_number": 16,
+        "employee_id": "E015",
+        "employee_name": "Marcus Lee",
+        "job_level": "3",
+        "department": "Engineering",
+        "salary": 99000.0,
+        "group_min_salary": 91000.0,
+        "group_max_salary": 112000.0,
+        "spread_percent": 23.1,
+        "headcount": 6,
+        "reason": "Level 3 in Engineering has a 23.1% pay spread ($91,000\u2013$112,000) across 6 employees."
+      }
+    ],
+    "spread_threshold": 15.0,
+    "disclaimer": "Peer spread flags groups with the same job level and department where pay spans more than 15%. Review role scope and recent hires before adjusting."
+  },
+  "merit_matrix": {
+    "available": true,
+    "flags": [
+      {
+        "row_number": 4,
+        "employee_id": "E003",
+        "employee_name": "Carla Diaz",
+        "department": "Product",
+        "job_level": "2",
+        "compa_ratio": 84.3,
+        "merit_increase": 2.5,
+        "matrix_band": "Below 85%",
+        "expected_merit_min": 3.0,
+        "expected_merit_max": 6.0,
+        "reason": "Merit 2.5% is below the Below 85% compa band guideline (3.0\u20136.0%)."
+      },
+      {
+        "row_number": 10,
+        "employee_id": "E009",
+        "employee_name": "Hugo Silva",
+        "department": "Operations",
+        "job_level": "1",
+        "compa_ratio": 92.9,
+        "merit_increase": 18.0,
+        "matrix_band": "85\u201395%",
+        "expected_merit_min": 2.5,
+        "expected_merit_max": 4.5,
+        "reason": "Merit 18.0% exceeds the 85\u201395% compa band guideline (2.5\u20134.5%)."
+      },
+      {
+        "row_number": 11,
+        "employee_id": "E010",
+        "employee_name": "Ivy Park",
+        "department": "Executive",
+        "job_level": "6",
+        "compa_ratio": 94.0,
+        "merit_increase": 5.0,
+        "matrix_band": "85\u201395%",
+        "expected_merit_min": 2.5,
+        "expected_merit_max": 4.5,
+        "reason": "Merit 5.0% exceeds the 85\u201395% compa band guideline (2.5\u20134.5%)."
+      },
+      {
+        "row_number": 14,
+        "employee_id": "E013",
+        "employee_name": "Liam Fox",
+        "department": "Engineering",
+        "job_level": "4",
+        "compa_ratio": 97.9,
+        "merit_increase": 4.2,
+        "matrix_band": "95\u2013105%",
+        "expected_merit_min": 1.5,
+        "expected_merit_max": 3.5,
+        "reason": "Merit 4.2% exceeds the 95\u2013105% compa band guideline (1.5\u20133.5%)."
+      },
+      {
+        "row_number": 16,
+        "employee_id": "E015",
+        "employee_name": "Marcus Lee",
+        "department": "Engineering",
+        "job_level": "3",
+        "compa_ratio": 99.0,
+        "merit_increase": 3.6,
+        "matrix_band": "95\u2013105%",
+        "expected_merit_min": 1.5,
+        "expected_merit_max": 3.5,
+        "reason": "Merit 3.6% exceeds the 95\u2013105% compa band guideline (1.5\u20133.5%)."
+      },
+      {
+        "row_number": 7,
+        "employee_id": "E006",
+        "employee_name": "Evan Brooks",
+        "department": "Engineering",
+        "job_level": "3",
+        "compa_ratio": 112.0,
+        "merit_increase": 3.2,
+        "matrix_band": "105\u2013115%",
+        "expected_merit_min": 0.0,
+        "expected_merit_max": 2.5,
+        "reason": "Merit 3.2% exceeds the 105\u2013115% compa band guideline (0.0\u20132.5%)."
+      }
+    ],
+    "bands": [
+      {
+        "label": "Below 85%",
+        "compa_min": 0.0,
+        "compa_max": 85.0,
+        "merit_min": 3.0,
+        "merit_max": 6.0
+      },
+      {
+        "label": "85\u201395%",
+        "compa_min": 85.0,
+        "compa_max": 95.0,
+        "merit_min": 2.5,
+        "merit_max": 4.5
+      },
+      {
+        "label": "95\u2013105%",
+        "compa_min": 95.0,
+        "compa_max": 105.0,
+        "merit_min": 1.5,
+        "merit_max": 3.5
+      },
+      {
+        "label": "105\u2013115%",
+        "compa_min": 105.0,
+        "compa_max": 115.0,
+        "merit_min": 0.0,
+        "merit_max": 2.5
+      },
+      {
+        "label": "Above 115%",
+        "compa_min": 115.0,
+        "compa_max": 999.0,
+        "merit_min": 0.0,
+        "merit_max": 1.5
+      }
+    ],
+    "disclaimer": "Merit matrix checks compare uploaded merit increases to default compa-ratio bands. Adjust guidelines in your comp policy as needed \u2014 these are directional QA flags only."
+  },
+  "range_structure": {
+    "available": true,
+    "issues": [
+      {
+        "issue_type": "width_outlier",
+        "job_level": "2",
+        "description": "2 range width (16.2% of midpoint) is unusual compared to other levels.",
+        "related_level": null,
+        "range_min": 85000.0,
+        "range_mid": 92500.0,
+        "range_max": 100000.0
+      },
+      {
+        "issue_type": "level_overlap",
+        "job_level": "2",
+        "description": "2 max (100000.0) exceeds 3 min (90000.0) \u2014 level bands overlap.",
+        "related_level": "3",
+        "range_min": 85000.0,
+        "range_mid": null,
+        "range_max": 100000.0
+      },
+      {
+        "issue_type": "level_overlap",
+        "job_level": "3",
+        "description": "3 max (110000.0) exceeds 4 min (105000.0) \u2014 level bands overlap.",
+        "related_level": "4",
+        "range_min": 90000.0,
+        "range_mid": null,
+        "range_max": 110000.0
+      },
+      {
+        "issue_type": "level_overlap",
+        "job_level": "4",
+        "description": "4 max (130000.0) exceeds 5 min (125000.0) \u2014 level bands overlap.",
+        "related_level": "5",
+        "range_min": 105000.0,
+        "range_mid": null,
+        "range_max": 130000.0
+      },
+      {
+        "issue_type": "level_overlap",
+        "job_level": "5",
+        "description": "5 max (155000.0) exceeds 6 min (140000.0) \u2014 level bands overlap.",
+        "related_level": "6",
+        "range_min": 125000.0,
+        "range_mid": null,
+        "range_max": 155000.0
+      }
+    ],
+    "level_ranges": [
+      {
+        "job_level": "1",
+        "range_min": 70000.0,
+        "range_mid": 77500.0,
+        "range_max": 85000.0,
+        "range_width": 15000.0,
+        "range_width_percent": 19.4,
+        "employee_count": 1
+      },
+      {
+        "job_level": "2",
+        "range_min": 85000.0,
+        "range_mid": 92500.0,
+        "range_max": 100000.0,
+        "range_width": 15000.0,
+        "range_width_percent": 16.2,
+        "employee_count": 5
+      },
+      {
+        "job_level": "3",
+        "range_min": 90000.0,
+        "range_mid": 100000.0,
+        "range_max": 110000.0,
+        "range_width": 20000.0,
+        "range_width_percent": 20.0,
+        "employee_count": 7
+      },
+      {
+        "job_level": "4",
+        "range_min": 105000.0,
+        "range_mid": 117500.0,
+        "range_max": 130000.0,
+        "range_width": 25000.0,
+        "range_width_percent": 21.3,
+        "employee_count": 4
+      },
+      {
+        "job_level": "5",
+        "range_min": 125000.0,
+        "range_mid": 140000.0,
+        "range_max": 155000.0,
+        "range_width": 30000.0,
+        "range_width_percent": 21.4,
+        "employee_count": 1
+      },
+      {
+        "job_level": "6",
+        "range_min": 140000.0,
+        "range_mid": 157500.0,
+        "range_max": 175000.0,
+        "range_width": 35000.0,
+        "range_width_percent": 22.2,
+        "employee_count": 1
+      }
+    ],
+    "disclaimer": "Range structure checks use the most common min/mid/max per job level in your file. Mixed ranges within a level may indicate mapping or grade assignment errors."
+  },
+  "compa_penetration_summary": {
+    "available": true,
+    "by_level": [
+      {
+        "group_type": "level",
+        "group_key": "1",
+        "job_level": "1",
+        "department": null,
+        "headcount": 1,
+        "average_compa": 92.9,
+        "median_compa": 92.9,
+        "average_penetration": 13.3,
+        "below_90": 0,
+        "between_90_110": 1,
+        "above_110": 0
+      },
+      {
+        "group_type": "level",
+        "group_key": "2",
+        "job_level": "2",
+        "department": null,
+        "headcount": 4,
+        "average_compa": 91.0,
+        "median_compa": 90.8,
+        "average_penetration": -1.7,
+        "below_90": 2,
+        "between_90_110": 2,
+        "above_110": 0
+      },
+      {
+        "group_type": "level",
+        "group_key": "3",
+        "job_level": "3",
+        "department": null,
+        "headcount": 7,
+        "average_compa": 98.1,
+        "median_compa": 96.0,
+        "average_penetration": 40.7,
+        "below_90": 0,
+        "between_90_110": 6,
+        "above_110": 1
+      },
+      {
+        "group_type": "level",
+        "group_key": "4",
+        "job_level": "4",
+        "department": null,
+        "headcount": 4,
+        "average_compa": 92.8,
+        "median_compa": 92.3,
+        "average_penetration": 16.0,
+        "below_90": 1,
+        "between_90_110": 3,
+        "above_110": 0
+      },
+      {
+        "group_type": "level",
+        "group_key": "5",
+        "job_level": "5",
+        "department": null,
+        "headcount": 1,
+        "average_compa": 94.3,
+        "median_compa": 94.3,
+        "average_penetration": 23.3,
+        "below_90": 0,
+        "between_90_110": 1,
+        "above_110": 0
+      },
+      {
+        "group_type": "level",
+        "group_key": "6",
+        "job_level": "6",
+        "department": null,
+        "headcount": 1,
+        "average_compa": 94.0,
+        "median_compa": 94.0,
+        "average_penetration": 22.9,
+        "below_90": 0,
+        "between_90_110": 1,
+        "above_110": 0
+      }
+    ],
+    "by_department": [
+      {
+        "group_type": "department",
+        "group_key": "Engineering",
+        "job_level": null,
+        "department": "Engineering",
+        "headcount": 9,
+        "average_compa": 97.4,
+        "median_compa": 96.0,
+        "average_penetration": 37.9,
+        "below_90": 0,
+        "between_90_110": 8,
+        "above_110": 1
+      },
+      {
+        "group_type": "department",
+        "group_key": "Executive",
+        "job_level": null,
+        "department": "Executive",
+        "headcount": 1,
+        "average_compa": 94.0,
+        "median_compa": 94.0,
+        "average_penetration": 22.9,
+        "below_90": 0,
+        "between_90_110": 1,
+        "above_110": 0
+      },
+      {
+        "group_type": "department",
+        "group_key": "Operations",
+        "job_level": null,
+        "department": "Operations",
+        "headcount": 2,
+        "average_compa": 95.5,
+        "median_compa": 95.5,
+        "average_penetration": 26.6,
+        "below_90": 0,
+        "between_90_110": 2,
+        "above_110": 0
+      },
+      {
+        "group_type": "department",
+        "group_key": "Product",
+        "job_level": null,
+        "department": "Product",
+        "headcount": 3,
+        "average_compa": 89.0,
+        "median_compa": 88.6,
+        "average_penetration": -15.6,
+        "below_90": 2,
+        "between_90_110": 1,
+        "above_110": 0
+      },
+      {
+        "group_type": "department",
+        "group_key": "Sales",
+        "job_level": null,
+        "department": "Sales",
+        "headcount": 3,
+        "average_compa": 91.3,
+        "median_compa": 92.6,
+        "average_penetration": 10.3,
+        "below_90": 1,
+        "between_90_110": 2,
+        "above_110": 0
+      }
+    ],
+    "by_level_department": [
+      {
+        "group_type": "level_department",
+        "group_key": "1 \u00b7 Operations",
+        "job_level": "1",
+        "department": "Operations",
+        "headcount": 1,
+        "average_compa": 92.9,
+        "median_compa": 92.9,
+        "average_penetration": 13.3,
+        "below_90": 0,
+        "between_90_110": 1,
+        "above_110": 0
+      },
+      {
+        "group_type": "level_department",
+        "group_key": "2 \u00b7 Operations",
+        "job_level": "2",
+        "department": "Operations",
+        "headcount": 1,
+        "average_compa": 98.1,
+        "median_compa": 98.1,
+        "average_penetration": 40.0,
+        "below_90": 0,
+        "between_90_110": 1,
+        "above_110": 0
+      },
+      {
+        "group_type": "level_department",
+        "group_key": "2 \u00b7 Product",
+        "job_level": "2",
+        "department": "Product",
+        "headcount": 2,
+        "average_compa": 86.4,
+        "median_compa": 86.4,
+        "average_penetration": -33.4,
+        "below_90": 2,
+        "between_90_110": 0,
+        "above_110": 0
+      },
+      {
+        "group_type": "level_department",
+        "group_key": "2 \u00b7 Sales",
+        "job_level": "2",
+        "department": "Sales",
+        "headcount": 1,
+        "average_compa": 92.9,
+        "median_compa": 92.9,
+        "average_penetration": 20.0,
+        "below_90": 0,
+        "between_90_110": 1,
+        "above_110": 0
+      },
+      {
+        "group_type": "level_department",
+        "group_key": "3 \u00b7 Engineering",
+        "job_level": "3",
+        "department": "Engineering",
+        "headcount": 5,
+        "average_compa": 100.0,
+        "median_compa": 98.0,
+        "average_penetration": 50.0,
+        "below_90": 0,
+        "between_90_110": 4,
+        "above_110": 1
+      },
+      {
+        "group_type": "level_department",
+        "group_key": "3 \u00b7 Product",
+        "job_level": "3",
+        "department": "Product",
+        "headcount": 1,
+        "average_compa": 94.0,
+        "median_compa": 94.0,
+        "average_penetration": 20.0,
+        "below_90": 0,
+        "between_90_110": 1,
+        "above_110": 0
+      },
+      {
+        "group_type": "level_department",
+        "group_key": "3 \u00b7 Sales",
+        "job_level": "3",
+        "department": "Sales",
+        "headcount": 1,
+        "average_compa": 92.6,
+        "median_compa": 92.6,
+        "average_penetration": 15.0,
+        "below_90": 0,
+        "between_90_110": 1,
+        "above_110": 0
+      },
+      {
+        "group_type": "level_department",
+        "group_key": "4 \u00b7 Engineering",
+        "job_level": "4",
+        "department": "Engineering",
+        "headcount": 3,
+        "average_compa": 94.2,
+        "median_compa": 92.8,
+        "average_penetration": 22.7,
+        "below_90": 0,
+        "between_90_110": 3,
+        "above_110": 0
+      },
+      {
+        "group_type": "level_department",
+        "group_key": "4 \u00b7 Sales",
+        "job_level": "4",
+        "department": "Sales",
+        "headcount": 1,
+        "average_compa": 88.5,
+        "median_compa": 88.5,
+        "average_penetration": -4.0,
+        "below_90": 1,
+        "between_90_110": 0,
+        "above_110": 0
+      },
+      {
+        "group_type": "level_department",
+        "group_key": "5 \u00b7 Engineering",
+        "job_level": "5",
+        "department": "Engineering",
+        "headcount": 1,
+        "average_compa": 94.3,
+        "median_compa": 94.3,
+        "average_penetration": 23.3,
+        "below_90": 0,
+        "between_90_110": 1,
+        "above_110": 0
+      },
+      {
+        "group_type": "level_department",
+        "group_key": "6 \u00b7 Executive",
+        "job_level": "6",
+        "department": "Executive",
+        "headcount": 1,
+        "average_compa": 94.0,
+        "median_compa": 94.0,
+        "average_penetration": 22.9,
+        "below_90": 0,
+        "between_90_110": 1,
+        "above_110": 0
+      }
+    ],
+    "disclaimer": "Aggregate compa and penetration by level and department for cycle readouts. Does not adjust for performance, tenure, or location."
+  },
+  "total_cash_comp": {
+    "available": true,
+    "employees": [
+      {
+        "row_number": 11,
+        "employee_id": "E010",
+        "employee_name": "Ivy Park",
+        "department": "Executive",
+        "job_level": "6",
+        "base_salary": 148000.0,
+        "bonus_target_percent": 30.0,
+        "target_bonus_amount": 44400.0,
+        "total_cash_comp": 192400.0,
+        "base_compa_ratio": 94.0,
+        "tcc_compa_ratio": 122.2
+      },
+      {
+        "row_number": 5,
+        "employee_id": "E004",
+        "employee_name": "Dev Patel",
+        "department": "Engineering",
+        "job_level": "5",
+        "base_salary": 132000.0,
+        "bonus_target_percent": 25.0,
+        "target_bonus_amount": 33000.0,
+        "total_cash_comp": 165000.0,
+        "base_compa_ratio": 94.3,
+        "tcc_compa_ratio": 117.9
+      },
+      {
+        "row_number": 14,
+        "employee_id": "E013",
+        "employee_name": "Liam Fox",
+        "department": "Engineering",
+        "job_level": "4",
+        "base_salary": 115000.0,
+        "bonus_target_percent": 20.0,
+        "target_bonus_amount": 23000.0,
+        "total_cash_comp": 138000.0,
+        "base_compa_ratio": 97.9,
+        "tcc_compa_ratio": 117.4
+      },
+      {
+        "row_number": 19,
+        "employee_id": "E018",
+        "employee_name": "Priya Shah",
+        "department": "Engineering",
+        "job_level": "4",
+        "base_salary": 109000.0,
+        "bonus_target_percent": 20.0,
+        "target_bonus_amount": 21800.0,
+        "total_cash_comp": 130800.0,
+        "base_compa_ratio": 92.8,
+        "tcc_compa_ratio": 111.3
+      },
+      {
+        "row_number": 3,
+        "employee_id": "E002",
+        "employee_name": "Ben Ortiz",
+        "department": "Engineering",
+        "job_level": "4",
+        "base_salary": 108000.0,
+        "bonus_target_percent": 20.0,
+        "target_bonus_amount": 21600.0,
+        "total_cash_comp": 129600.0,
+        "base_compa_ratio": 91.9,
+        "tcc_compa_ratio": 110.3
+      },
+      {
+        "row_number": 7,
+        "employee_id": "E006",
+        "employee_name": "Evan Brooks",
+        "department": "Engineering",
+        "job_level": "3",
+        "base_salary": 112000.0,
+        "bonus_target_percent": 15.0,
+        "target_bonus_amount": 16800.0,
+        "total_cash_comp": 128800.0,
+        "base_compa_ratio": 112.0,
+        "tcc_compa_ratio": 128.8
+      },
+      {
+        "row_number": 16,
+        "employee_id": "E015",
+        "employee_name": "Marcus Lee",
+        "department": "Engineering",
+        "job_level": "3",
+        "base_salary": 99000.0,
+        "bonus_target_percent": 15.0,
+        "target_bonus_amount": 14850.0,
+        "total_cash_comp": 113850.0,
+        "base_compa_ratio": 99.0,
+        "tcc_compa_ratio": 113.9
+      },
+      {
+        "row_number": 15,
+        "employee_id": "E014",
+        "employee_name": "Lia Singh",
+        "department": "Engineering",
+        "job_level": "3",
+        "base_salary": 98000.0,
+        "bonus_target_percent": 15.0,
+        "target_bonus_amount": 14700.0,
+        "total_cash_comp": 112700.0,
+        "base_compa_ratio": 98.0,
+        "tcc_compa_ratio": 112.7
+      },
+      {
+        "row_number": 6,
+        "employee_id": "E001",
+        "employee_name": "Duplicate Row",
+        "department": "Engineering",
+        "job_level": "3",
+        "base_salary": 96000.0,
+        "bonus_target_percent": 15.0,
+        "target_bonus_amount": 14400.0,
+        "total_cash_comp": 110400.0,
+        "base_compa_ratio": 96.0,
+        "tcc_compa_ratio": 110.4
+      },
+      {
+        "row_number": 2,
+        "employee_id": "E001",
+        "employee_name": "Alice Chen",
+        "department": "Engineering",
+        "job_level": "3",
+        "base_salary": 95000.0,
+        "bonus_target_percent": 15.0,
+        "target_bonus_amount": 14250.0,
+        "total_cash_comp": 109250.0,
+        "base_compa_ratio": 95.0,
+        "tcc_compa_ratio": 109.2
+      },
+      {
+        "row_number": 20,
+        "employee_id": "E019",
+        "employee_name": "Quinn Adams",
+        "department": "Product",
+        "job_level": "3",
+        "base_salary": 94000.0,
+        "bonus_target_percent": 15.0,
+        "target_bonus_amount": 14100.0,
+        "total_cash_comp": 108100.0,
+        "base_compa_ratio": 94.0,
+        "tcc_compa_ratio": 108.1
+      },
+      {
+        "row_number": 17,
+        "employee_id": "E016",
+        "employee_name": "Nina Ross",
+        "department": "Sales",
+        "job_level": "3",
+        "base_salary": 88000.0,
+        "bonus_target_percent": 12.0,
+        "target_bonus_amount": 10560.0,
+        "total_cash_comp": 98560.0,
+        "base_compa_ratio": 92.6,
+        "tcc_compa_ratio": 103.7
+      },
+      {
+        "row_number": 9,
+        "employee_id": "E008",
+        "employee_name": "Grace Kim",
+        "department": "Product",
+        "job_level": "2",
+        "base_salary": 82000.0,
+        "bonus_target_percent": 10.0,
+        "target_bonus_amount": 8200.0,
+        "total_cash_comp": 90200.0,
+        "base_compa_ratio": 88.6,
+        "tcc_compa_ratio": 97.5
+      },
+      {
+        "row_number": 21,
+        "employee_id": "E020",
+        "employee_name": "Rosa Vega",
+        "department": "Sales",
+        "job_level": "2",
+        "base_salary": 79000.0,
+        "bonus_target_percent": 10.0,
+        "target_bonus_amount": 7900.0,
+        "total_cash_comp": 86900.0,
+        "base_compa_ratio": 92.9,
+        "tcc_compa_ratio": 102.2
+      },
+      {
+        "row_number": 4,
+        "employee_id": "E003",
+        "employee_name": "Carla Diaz",
+        "department": "Product",
+        "job_level": "2",
+        "base_salary": 78000.0,
+        "bonus_target_percent": 10.0,
+        "target_bonus_amount": 7800.0,
+        "total_cash_comp": 85800.0,
+        "base_compa_ratio": 84.3,
+        "tcc_compa_ratio": 92.8
+      },
+      {
+        "row_number": 18,
+        "employee_id": "E017",
+        "employee_name": "Omar Haddad",
+        "department": "Operations",
+        "job_level": "2",
+        "base_salary": 76000.0,
+        "bonus_target_percent": 8.0,
+        "target_bonus_amount": 6080.0,
+        "total_cash_comp": 82080.0,
+        "base_compa_ratio": 98.1,
+        "tcc_compa_ratio": 105.9
+      },
+      {
+        "row_number": 10,
+        "employee_id": "E009",
+        "employee_name": "Hugo Silva",
+        "department": "Operations",
+        "job_level": "1",
+        "base_salary": 72000.0,
+        "bonus_target_percent": 8.0,
+        "target_bonus_amount": 5760.0,
+        "total_cash_comp": 77760.0,
+        "base_compa_ratio": 92.9,
+        "tcc_compa_ratio": 100.3
+      }
+    ],
+    "average_tcc": 115305.88,
+    "disclaimer": "Total cash comp = base salary + (base \u00d7 bonus target %). TCC compa uses the same salary range midpoint as base compa unless your ranges are TTC-specific."
+  },
+  "new_hire_placement": {
+    "available": true,
+    "employees": [
+      {
+        "row_number": 10,
+        "employee_id": "E009",
+        "employee_name": "Hugo Silva",
+        "department": "Operations",
+        "job_level": "1",
+        "hire_date": "2026-05-01",
+        "tenure_days": 65,
+        "salary": 72000.0,
+        "range_min": 70000.0,
+        "range_max": 85000.0,
+        "compa_ratio": 92.9,
+        "range_penetration": 13.3,
+        "below_minimum": false,
+        "placement_issue": "bottom_quartile"
+      }
+    ],
+    "lookback_days": 365,
+    "below_range_count": 0,
+    "disclaimer": "New hires hired within the last 365 days. Review placement at hire and whether starting pay still sits below range minimum."
+  },
+  "geo_pay_policy": {
+    "available": false,
+    "flags": [],
+    "zone_medians": [],
+    "disclaimer": "Include Pay Zone and Geo Differential columns to compare actual vs expected location pay adjustments."
+  },
+  "currency_report": {
+    "available": false,
+    "currencies": [],
+    "multi_currency": false,
+    "disclaimer": "Include a Currency column for multi-currency workforce summaries."
+  },
+  "employee_type_report": {
+    "available": false,
+    "types": [],
+    "excluded_types": [
+      "consultant",
+      "contingent",
+      "contractor",
+      "intern",
+      "internship",
+      "seasonal",
+      "temp",
+      "temporary"
+    ],
+    "excluded_count": 0,
+    "disclaimer": "Include Employee Type to summarize workforce mix and exclude non-core populations."
+  },
+  "midpoint_progression": {
+    "available": true,
+    "issues": [],
+    "level_midpoints": [
+      {
+        "job_level": "1",
+        "range_mid": 77500.0,
+        "sort_rank": 1
+      },
+      {
+        "job_level": "2",
+        "range_mid": 92500.0,
+        "sort_rank": 2
+      },
+      {
+        "job_level": "3",
+        "range_mid": 100000.0,
+        "sort_rank": 3
+      },
+      {
+        "job_level": "4",
+        "range_mid": 117500.0,
+        "sort_rank": 4
+      },
+      {
+        "job_level": "5",
+        "range_mid": 140000.0,
+        "sort_rank": 5
+      },
+      {
+        "job_level": "6",
+        "range_mid": 157500.0,
+        "sort_rank": 6
+      }
+    ],
+    "disclaimer": "Midpoint progression checks assume job levels sort low-to-high. Non-numeric level names use keyword ordering when numbers are absent."
+  },
+  "penetration_distribution": {
+    "available": true,
+    "bands": [
+      {
+        "band": "below_range",
+        "label": "Below range",
+        "count": 3,
+        "percent": 16.7
+      },
+      {
+        "band": "bottom_quartile",
+        "label": "0\u201325%",
+        "count": 8,
+        "percent": 44.4
+      },
+      {
+        "band": "mid_range",
+        "label": "25\u201375%",
+        "count": 6,
+        "percent": 33.3
+      },
+      {
+        "band": "top_quartile",
+        "label": "75\u2013100%",
+        "count": 0,
+        "percent": 0.0
+      },
+      {
+        "band": "above_range",
+        "label": "Above range",
+        "count": 1,
+        "percent": 5.6
+      }
+    ],
+    "total_employees": 18
+  },
+  "review_queue": {
+    "available": true,
+    "items": [
+      {
+        "priority": 1,
+        "severity": "critical",
+        "category": "Below range minimum",
+        "tab_id": "below_minimum",
+        "reason": "Salary $78,000 is below range minimum $85,000.",
+        "employee_id": "E003",
+        "employee_name": "Carla Diaz",
+        "department": "Product",
+        "job_level": "2",
+        "row_number": 4
+      },
+      {
+        "priority": 1,
+        "severity": "critical",
+        "category": "Manager inversion",
+        "tab_id": "managers_below_reports",
+        "reason": "Manager paid $108,000 vs direct report $112,000 (Evan Brooks).",
+        "employee_id": "E002",
+        "employee_name": "Ben Ortiz",
+        "department": null,
+        "job_level": null,
+        "row_number": 7
+      },
+      {
+        "priority": 1,
+        "severity": "critical",
+        "category": "Below range minimum",
+        "tab_id": "below_minimum",
+        "reason": "Salary $104,000 is below range minimum $105,000.",
+        "employee_id": "E007",
+        "employee_name": "Fiona Ng",
+        "department": "Sales",
+        "job_level": "4",
+        "row_number": 8
+      },
+      {
+        "priority": 1,
+        "severity": "critical",
+        "category": "Below range minimum",
+        "tab_id": "below_minimum",
+        "reason": "Salary $82,000 is below range minimum $85,000.",
+        "employee_id": "E008",
+        "employee_name": "Grace Kim",
+        "department": "Product",
+        "job_level": "2",
+        "row_number": 9
+      },
+      {
+        "priority": 1,
+        "severity": "critical",
+        "category": "Manager inversion",
+        "tab_id": "managers_below_reports",
+        "reason": "Manager paid $96,000 vs direct report $98,000 (Lia Singh).",
+        "employee_id": "E001",
+        "employee_name": "Duplicate Row",
+        "department": null,
+        "job_level": null,
+        "row_number": 15
+      },
+      {
+        "priority": 2,
+        "severity": "high",
+        "category": "Duplicate ID",
+        "tab_id": "duplicate_ids",
+        "reason": "Employee ID appears 2 times (rows 2, 6).",
+        "employee_id": "E001",
+        "employee_name": null,
+        "department": null,
+        "job_level": null,
+        "row_number": null
+      },
+      {
+        "priority": 2,
+        "severity": "high",
+        "category": "Merit matrix",
+        "tab_id": "merit_matrix",
+        "reason": "Merit 2.5% is below the Below 85% compa band guideline (3.0\u20136.0%).",
+        "employee_id": "E003",
+        "employee_name": "Carla Diaz",
+        "department": "Product",
+        "job_level": "2",
+        "row_number": 4
+      },
+      {
+        "priority": 2,
+        "severity": "high",
+        "category": "Merit vs compa",
+        "tab_id": "merit_compa_flags",
+        "reason": "Compa-ratio 84.3% is below 90% but merit (2.5%) is below the file average (4.4%) \u2014 consider a larger increase to close the gap.",
+        "employee_id": "E003",
+        "employee_name": "Carla Diaz",
+        "department": "Product",
+        "job_level": null,
+        "row_number": 4
+      },
+      {
+        "priority": 2,
+        "severity": "high",
+        "category": "Merit matrix",
+        "tab_id": "merit_matrix",
+        "reason": "Merit 3.2% exceeds the 105\u2013115% compa band guideline (0.0\u20132.5%).",
+        "employee_id": "E006",
+        "employee_name": "Evan Brooks",
+        "department": "Engineering",
+        "job_level": "3",
+        "row_number": 7
+      },
+      {
+        "priority": 2,
+        "severity": "high",
+        "category": "Merit vs compa",
+        "tab_id": "merit_compa_flags",
+        "reason": "Compa-ratio 88.6% is below 90% but merit (3.0%) is below the file average (4.4%) \u2014 consider a larger increase to close the gap.",
+        "employee_id": "E008",
+        "employee_name": "Grace Kim",
+        "department": "Product",
+        "job_level": null,
+        "row_number": 9
+      },
+      {
+        "priority": 2,
+        "severity": "high",
+        "category": "Merit matrix",
+        "tab_id": "merit_matrix",
+        "reason": "Merit 18.0% exceeds the 85\u201395% compa band guideline (2.5\u20134.5%).",
+        "employee_id": "E009",
+        "employee_name": "Hugo Silva",
+        "department": "Operations",
+        "job_level": "1",
+        "row_number": 10
+      },
+      {
+        "priority": 2,
+        "severity": "high",
+        "category": "Outlier merit",
+        "tab_id": "outlier_merit_increases",
+        "reason": "Unusually high merit increase outside the expected range (1.6% to 5.5%).",
+        "employee_id": "E009",
+        "employee_name": "Hugo Silva",
+        "department": null,
+        "job_level": null,
+        "row_number": 10
+      },
+      {
+        "priority": 2,
+        "severity": "high",
+        "category": "New-hire merit",
+        "tab_id": "new_hire_merit_flags",
+        "reason": "Employee hired within 90 days has a 18.0% merit increase \u2014 verify eligibility.",
+        "employee_id": "E009",
+        "employee_name": "Hugo Silva",
+        "department": null,
+        "job_level": null,
+        "row_number": 10
+      },
+      {
+        "priority": 2,
+        "severity": "high",
+        "category": "Merit matrix",
+        "tab_id": "merit_matrix",
+        "reason": "Merit 5.0% exceeds the 85\u201395% compa band guideline (2.5\u20134.5%).",
+        "employee_id": "E010",
+        "employee_name": "Ivy Park",
+        "department": "Executive",
+        "job_level": "6",
+        "row_number": 11
+      },
+      {
+        "priority": 2,
+        "severity": "high",
+        "category": "Merit matrix",
+        "tab_id": "merit_matrix",
+        "reason": "Merit 4.2% exceeds the 95\u2013105% compa band guideline (1.5\u20133.5%).",
+        "employee_id": "E013",
+        "employee_name": "Liam Fox",
+        "department": "Engineering",
+        "job_level": "4",
+        "row_number": 14
+      },
+      {
+        "priority": 2,
+        "severity": "high",
+        "category": "Merit matrix",
+        "tab_id": "merit_matrix",
+        "reason": "Merit 3.6% exceeds the 95\u2013105% compa band guideline (1.5\u20133.5%).",
+        "employee_id": "E015",
+        "employee_name": "Marcus Lee",
+        "department": "Engineering",
+        "job_level": "3",
+        "row_number": 16
+      },
+      {
+        "priority": 3,
+        "severity": "moderate",
+        "category": "Compression",
+        "tab_id": "compression",
+        "reason": "Top of range in level 3 ($112,000) overlaps median pay in level 4 ($108,500).",
+        "employee_id": null,
+        "employee_name": null,
+        "department": null,
+        "job_level": null,
+        "row_number": null
+      },
+      {
+        "priority": 3,
+        "severity": "moderate",
+        "category": "Range structure",
+        "tab_id": "range_structure",
+        "reason": "2 range width (16.2% of midpoint) is unusual compared to other levels.",
+        "employee_id": null,
+        "employee_name": null,
+        "department": null,
+        "job_level": null,
+        "row_number": null
+      },
+      {
+        "priority": 3,
+        "severity": "moderate",
+        "category": "Range structure",
+        "tab_id": "range_structure",
+        "reason": "2 max (100000.0) exceeds 3 min (90000.0) \u2014 level bands overlap.",
+        "employee_id": null,
+        "employee_name": null,
+        "department": null,
+        "job_level": null,
+        "row_number": null
+      },
+      {
+        "priority": 3,
+        "severity": "moderate",
+        "category": "Range structure",
+        "tab_id": "range_structure",
+        "reason": "3 max (110000.0) exceeds 4 min (105000.0) \u2014 level bands overlap.",
+        "employee_id": null,
+        "employee_name": null,
+        "department": null,
+        "job_level": null,
+        "row_number": null
+      },
+      {
+        "priority": 3,
+        "severity": "moderate",
+        "category": "Range structure",
+        "tab_id": "range_structure",
+        "reason": "4 max (130000.0) exceeds 5 min (125000.0) \u2014 level bands overlap.",
+        "employee_id": null,
+        "employee_name": null,
+        "department": null,
+        "job_level": null,
+        "row_number": null
+      },
+      {
+        "priority": 3,
+        "severity": "moderate",
+        "category": "Range structure",
+        "tab_id": "range_structure",
+        "reason": "5 max (155000.0) exceeds 6 min (140000.0) \u2014 level bands overlap.",
+        "employee_id": null,
+        "employee_name": null,
+        "department": null,
+        "job_level": null,
+        "row_number": null
+      },
+      {
+        "priority": 3,
+        "severity": "moderate",
+        "category": "Peer pay spread",
+        "tab_id": "peer_spread",
+        "reason": "Level 3 in Engineering has a 23.1% pay spread ($91,000\u2013$112,000) across 6 employees.",
+        "employee_id": "E001",
+        "employee_name": "Alice Chen",
+        "department": "Engineering",
+        "job_level": "3",
+        "row_number": 2
+      },
+      {
+        "priority": 3,
+        "severity": "moderate",
+        "category": "Peer pay spread",
+        "tab_id": "peer_spread",
+        "reason": "Level 3 in Engineering has a 23.1% pay spread ($91,000\u2013$112,000) across 6 employees.",
+        "employee_id": "E001",
+        "employee_name": "Duplicate Row",
+        "department": "Engineering",
+        "job_level": "3",
+        "row_number": 6
+      },
+      {
+        "priority": 3,
+        "severity": "moderate",
+        "category": "Compression",
+        "tab_id": "compression",
+        "reason": "Employee earns $112,000, which is equal to or above someone in a higher level (4).",
+        "employee_id": "E006",
+        "employee_name": "Evan Brooks",
+        "department": null,
+        "job_level": null,
+        "row_number": 7
+      },
+      {
+        "priority": 3,
+        "severity": "moderate",
+        "category": "Compression",
+        "tab_id": "compression",
+        "reason": "Employee earns $112,000, which is equal to or above someone in a higher level (4).",
+        "employee_id": "E006",
+        "employee_name": "Evan Brooks",
+        "department": null,
+        "job_level": null,
+        "row_number": 7
+      },
+      {
+        "priority": 3,
+        "severity": "moderate",
+        "category": "Compression",
+        "tab_id": "compression",
+        "reason": "Employee earns $112,000, which is equal to or above someone in a higher level (4).",
+        "employee_id": "E006",
+        "employee_name": "Evan Brooks",
+        "department": null,
+        "job_level": null,
+        "row_number": 7
+      },
+      {
+        "priority": 3,
+        "severity": "moderate",
+        "category": "Peer pay spread",
+        "tab_id": "peer_spread",
+        "reason": "Level 3 in Engineering has a 23.1% pay spread ($91,000\u2013$112,000) across 6 employees.",
+        "employee_id": "E006",
+        "employee_name": "Evan Brooks",
+        "department": "Engineering",
+        "job_level": "3",
+        "row_number": 7
+      },
+      {
+        "priority": 3,
+        "severity": "moderate",
+        "category": "Above range maximum",
+        "tab_id": "above_maximum",
+        "reason": "Salary $112,000 exceeds range maximum $110,000.",
+        "employee_id": "E006",
+        "employee_name": "Evan Brooks",
+        "department": "Engineering",
+        "job_level": "3",
+        "row_number": 7
+      },
+      {
+        "priority": 3,
+        "severity": "moderate",
+        "category": "Peer pay spread",
+        "tab_id": "peer_spread",
+        "reason": "Level 3 in Engineering has a 23.1% pay spread ($91,000\u2013$112,000) across 6 employees.",
+        "employee_id": "E012",
+        "employee_name": "Kara Wu",
+        "department": "Engineering",
+        "job_level": "3",
+        "row_number": 13
+      },
+      {
+        "priority": 3,
+        "severity": "moderate",
+        "category": "Peer pay spread",
+        "tab_id": "peer_spread",
+        "reason": "Level 3 in Engineering has a 23.1% pay spread ($91,000\u2013$112,000) across 6 employees.",
+        "employee_id": "E014",
+        "employee_name": "Lia Singh",
+        "department": "Engineering",
+        "job_level": "3",
+        "row_number": 15
+      },
+      {
+        "priority": 3,
+        "severity": "moderate",
+        "category": "Peer pay spread",
+        "tab_id": "peer_spread",
+        "reason": "Level 3 in Engineering has a 23.1% pay spread ($91,000\u2013$112,000) across 6 employees.",
+        "employee_id": "E015",
+        "employee_name": "Marcus Lee",
+        "department": "Engineering",
+        "job_level": "3",
+        "row_number": 16
+      },
+      {
+        "priority": 4,
+        "severity": "info",
+        "category": "Bonus target",
+        "tab_id": "missing_bonus_targets",
+        "reason": "Bonus target 12.0% is unusually low for level 3 (level median 15.0%, expected 13.1%\u201316.1%).",
+        "employee_id": "E012",
+        "employee_name": "Kara Wu",
+        "department": "Engineering",
+        "job_level": "3",
+        "row_number": 13
+      },
+      {
+        "priority": 4,
+        "severity": "info",
+        "category": "Bonus target",
+        "tab_id": "missing_bonus_targets",
+        "reason": "Bonus target 12.0% is unusually low for level 3 (level median 15.0%, expected 13.1%\u201316.1%).",
+        "employee_id": "E016",
+        "employee_name": "Nina Ross",
+        "department": "Sales",
+        "job_level": "3",
+        "row_number": 17
+      },
+      {
+        "priority": 4,
+        "severity": "info",
+        "category": "Bonus target",
+        "tab_id": "missing_bonus_targets",
+        "reason": "Bonus target 8.0% is unusually low for level 2 (level median 10.0%, expected 10.0%\u201310.0%).",
+        "employee_id": "E017",
+        "employee_name": "Omar Haddad",
+        "department": "Operations",
+        "job_level": "2",
+        "row_number": 18
+      }
+    ],
+    "total_items": 35,
+    "critical_count": 5,
+    "high_count": 11,
+    "disclaimer": "Review queue prioritizes compensation issues for cycle readiness. Critical items should be addressed before finalizing merit recommendations."
+  },
+  "merit_budget_variance": {
+    "available": true,
+    "file_average_merit": 4.39,
+    "projected_merit_pool": 76156.0,
+    "payroll_base": 1785000.0,
+    "departments": [
+      {
+        "department": "Engineering",
+        "average_merit_percent": 3.72,
+        "projected_pool": 36244.0,
+        "payroll_base": 964000.0,
+        "headcount": 9
+      },
+      {
+        "department": "Executive",
+        "average_merit_percent": 5.0,
+        "projected_pool": 7400.0,
+        "payroll_base": 148000.0,
+        "headcount": 1
+      },
+      {
+        "department": "Operations",
+        "average_merit_percent": 10.5,
+        "projected_pool": 15240.0,
+        "payroll_base": 148000.0,
+        "headcount": 2
+      },
+      {
+        "department": "Product",
+        "average_merit_percent": 3.07,
+        "projected_pool": 7888.0,
+        "payroll_base": 254000.0,
+        "headcount": 3
+      },
+      {
+        "department": "Sales",
+        "average_merit_percent": 3.43,
+        "projected_pool": 9384.0,
+        "payroll_base": 271000.0,
+        "headcount": 3
+      }
+    ],
+    "disclaimer": "Compare your target merit % (in Overview) to the file average and department pools. Positive variance means uploaded merit exceeds your target envelope."
+  },
+  "performance_merit": {
+    "available": false,
+    "flags": [],
+    "disclaimer": "Map a Performance Rating column to check merit vs performance alignment."
+  },
+  "excluded_employee_ids": [],
+  "insights": {
+    "executive_summary": {
+      "headline": "13 compensation issues flagged for review.",
+      "bullets": [
+        "This analysis covers 18 employees. 2 rows were excluded due to incomplete data.",
+        "3 employees are below range minimum, requiring $11,000 to reach the range floor.",
+        "1 employee exceeds their range maximum by a combined $2,000.",
+        "1 duplicate employee ID was found in the source file.",
+        "4 salary compression patterns may create internal equity risk.",
+        "2 managers are paid below at least one direct report.",
+        "1 employee has an unusually high or low equity / LTI grant compared to the rest of the file.",
+        "2 employees have a merit increase that may not align with compa-ratio positioning \u2014 review under-correction and over-rewarding cases.",
+        "Average compa-ratio is 94.6% (3 employees below 90% of midpoint).",
+        "Uploaded merit data implies a projected merit pool of $76,156.",
+        "Merit by department: Operations averages 10.5% vs Product at 3.07%.",
+        "Average compa-ratio moves from 94.6% to 98.7% after uploaded merit increases (1 employees would remain below 90%).",
+        "6 peer pay spread flags \u2014 same level and department groups with more than 15% pay spread.",
+        "3 bonus target outliers vs. same job level.",
+        "6 merit increase flags outside default compa-ratio matrix bands.",
+        "5 range structure issues \u2014 invalid order, overlap, or unusual width.",
+        "Total cash comp (base + target bonus) averages $115,306 across employees with bonus targets.",
+        "Gender median pay gap: Male median is 8.9% above Female ($8,500 difference).",
+        "Race/ethnicity median pay gap: Asian median is 3.2% above White."
+      ],
+      "risk_level": "high"
+    },
+    "cost_metrics": {
+      "employees_below_minimum": 3,
+      "total_gap_to_minimum": 11000.0,
+      "average_gap_to_minimum": 3666.67,
+      "employees_above_maximum": 1,
+      "total_above_maximum": 2000.0
+    },
+    "budget_impact": {
+      "cost_to_minimum": 11000.0,
+      "projected_merit_pool": 76156.0,
+      "total_budget_impact": 87156.0,
+      "note": "Total budget impact combines one-time pay adjustments to reach range minimums plus the projected annual merit pool from uploaded merit increase data."
+    },
+    "merit_calculator": {
+      "employees_with_merit_data": 18,
+      "average_merit_percent": 4.39,
+      "projected_merit_pool": 76156.0,
+      "payroll_base": 1785000.0
+    },
+    "compa_ratio": {
+      "average_compa_ratio": 94.6,
+      "below_90_percent": 3,
+      "between_90_and_110": 14,
+      "above_110_percent": 1
+    }
+  },
+  "warnings": [],
+  "trial_mode": false
+}
