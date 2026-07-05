@@ -12,6 +12,10 @@ export function LegalFooter() {
       <Link to="/security-summary">Security summary</Link>
       <span aria-hidden="true"> · </span>
       <Link to="/dpa">DPA</Link>
+      <span aria-hidden="true"> · </span>
+      <Link to="/checklist">Checklist</Link>
+      <span aria-hidden="true"> · </span>
+      <Link to="/for-consultants">Consultants</Link>
     </footer>
   );
 }

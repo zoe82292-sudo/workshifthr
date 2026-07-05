@@ -1,14 +1,8 @@
 import { useEffect, useState } from "react";
 import { fetchDemoAnalysis } from "../api";
+import { pickInitialTab } from "../analysisNavigation";
 import type { AnalysisResult, AnalysisTab } from "../types";
 import { ResultsDashboard } from "./ResultsDashboard";
-
-function pickInitialTab(result: AnalysisResult): AnalysisTab {
-  if (result.review_queue?.items?.length) return "review_queue";
-  if (result.summary.below_minimum > 0) return "below_minimum";
-  if (result.summary.above_maximum > 0) return "above_maximum";
-  return "range_penetration";
-}
 
 type SampleAnalysisEmbedProps = {
   fileName?: string;

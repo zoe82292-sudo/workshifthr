@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { startCheckout } from "../api";
+import { trackEvent } from "../analytics";
 
 type CheckoutButtonProps = {
   planId: "cycle" | "annual" | "monthly";
@@ -24,6 +25,7 @@ export function CheckoutButton({
   async function handleCheckout() {
     setError(null);
     setLoading(true);
+    trackEvent("checkout_started", { plan_id: planId });
 
     try {
       const { url } = await startCheckout(planId);

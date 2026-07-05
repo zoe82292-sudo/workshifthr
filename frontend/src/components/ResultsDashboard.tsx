@@ -3,6 +3,7 @@ import { PENETRATION_BAND_LABELS } from "../types";
 import { useSortableRows } from "../useSortableRows";
 import { exportReportExcel, exportSummaryPdf } from "../exportActions";
 import { saveAnalysisHistory } from "../api";
+import { trackEvent } from "../analytics";
 import {
   buildDepartmentLookup,
   collectDepartments,
@@ -42,6 +43,8 @@ import { LocationPayPanel, TenurePanel } from "./TenureLocationPanels";
 import { useMemo, useState, useCallback, useEffect, type ReactNode } from "react";
 import { TablePagination, useTablePagination } from "./TablePagination";
 import { TrialDisplayProvider, TrialName, useTrialDisplay } from "../trialDisplay";
+import { FirstRunTour } from "./FirstRunTour";
+import { ResultsStartHereBanner } from "./ResultsStartHereBanner";
 
 interface ResultsDashboardProps {
   result: AnalysisResult;
@@ -503,6 +506,12 @@ export function ResultsDashboard({
           unwatermarked exports.
         </div>
       ) : null}
+      <FirstRunTour />
+      <ResultsStartHereBanner
+        result={result}
+        activeTab={activeTab}
+        onOpenReviewQueue={() => onTabChange("review_queue")}
+      />
       <div className="panel-header" style={{ marginBottom: 16 }}>
         <h2>Analysis results</h2>
         <div className="export-actions">
@@ -533,6 +542,7 @@ export function ResultsDashboard({
               disabled={exporting === "summary-pdf"}
               onClick={() => {
                 setExporting("summary-pdf");
+                trackEvent("export_pdf", { trial_mode: trialMode });
                 void exportSummaryPdf(result, undefined, exportOptions).finally(() =>
                   setExporting(null),
                 );
@@ -549,6 +559,7 @@ export function ResultsDashboard({
               disabled={exporting === "report-excel"}
               onClick={() => {
                 setExporting("report-excel");
+                trackEvent("export_excel", { trial_mode: trialMode });
                 void exportReportExcel(result, undefined, exportOptions).finally(() =>
                   setExporting(null),
                 );

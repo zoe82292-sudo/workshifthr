@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { checkBillingStatus, type PlanId } from "../api";
+import { trackEvent } from "../analytics";
 import { BrandLogo } from "./BrandLogo";
 import { CheckoutButton } from "./CheckoutButton";
 import { LandingSamplePreview } from "./SampleAnalysisEmbed";
@@ -24,6 +25,21 @@ const TRUST_POINTS = [
   { stat: "HR teams", label: "Built for comp spreadsheet QA" },
   { stat: "$249", label: "Cycle pass vs. $10k+ platforms" },
   { stat: "Same day", label: "Export from HRIS and analyze" },
+];
+
+const OUTCOMES = [
+  {
+    title: "Catch below-minimum pay before the merit deck",
+    copy: "Flag employees under range minimum with cost-to-floor — so leadership sees gaps before sign-off, not after.",
+  },
+  {
+    title: "Surface compression and manager inversions",
+    copy: "Same-level pay spread and managers paid below reports — structural issues that are easy to miss in a flat spreadsheet.",
+  },
+  {
+    title: "Export a leadership-ready PDF in one click",
+    copy: "Executive summary and issue counts for HRBP review — not raw employee lists in email.",
+  },
 ];
 
 function buildSteps(trialMaxRows: number) {
@@ -130,6 +146,18 @@ function buildFaqBase(trialMaxRows: number): Array<{ q: string; a: string }> {
     {
       q: "How is this different from a full comp platform?",
       a: "ShiftWorksHR complements the tools you already have — it's built for the spreadsheet work every comp cycle still runs through. You get fast flags, budget impact, and leadership-ready exports without a long rollout or enterprise price tag. Many teams use it for merit season; others pair it with their HRIS or comp platform for a focused first-pass review.",
+    },
+    {
+      q: "I'm a comp consultant — can I use this for client work?",
+      a: "Yes. Many consultants use a Cycle Pass per client engagement ($249 for 90 days). Upload client HRIS exports as-is, run the review queue, and export PDF/Excel for deliverables. See our for-consultants page for workflow and client talking points.",
+    },
+    {
+      q: "Can I compare this cycle to last cycle?",
+      a: "Yes — save analyses to history, then load a prior run to compare side-by-side. Re-upload after merit changes to see what's still open. This is how teams track progress from first pass to final lock.",
+    },
+    {
+      q: "Do you offer invoices for procurement?",
+      a: `Card checkout is instant. If your org needs an invoice or vendor form, email ${CONTACT_EMAIL} — we can usually turn around simple procurement requests same day.`,
     },
   ];
 }
@@ -311,7 +339,14 @@ export function LandingPage({
           </p>
           <div className="landing-hero-actions">
             {trialAvailable && onTryTrial ? (
-              <button className="button button-primary" type="button" onClick={onTryTrial}>
+              <button
+                className="button button-primary"
+                type="button"
+                onClick={() => {
+                  trackEvent("landing_cta", { action: "try_trial", location: "hero" });
+                  onTryTrial();
+                }}
+              >
                 Try free with your file
               </button>
             ) : (
@@ -374,6 +409,17 @@ export function LandingPage({
             <span className="landing-trust-label">{point.label}</span>
           </div>
         ))}
+      </section>
+
+      <section className="landing-section landing-outcomes" aria-label="What you get">
+        <div className="landing-outcome-grid">
+          {OUTCOMES.map((outcome) => (
+            <article className="landing-outcome panel" key={outcome.title}>
+              <h2>{outcome.title}</h2>
+              <p>{outcome.copy}</p>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="landing-section landing-preview" id="see-it-in-action">
@@ -455,18 +501,68 @@ export function LandingPage({
         </div>
       </section>
 
+      <section className="landing-section landing-cycle-moat" id="cycle-comparison">
+        <div className="landing-section-header">
+          <span className="hero-badge">Cycle over cycle</span>
+          <h2>Re-upload after merit — see what&apos;s still open</h2>
+          <p>
+            Save each analysis to history, compare against a prior run, and re-upload when merit
+            numbers change. Track progress from first pass to final lock without rebuilding
+            spreadsheets every week.
+          </p>
+        </div>
+        <div className="landing-cycle-moat__grid">
+          <article className="panel landing-cycle-step">
+            <strong>1. First pass</strong>
+            <p>Upload HRIS export → review queue flags range, compression, and merit issues.</p>
+          </article>
+          <article className="panel landing-cycle-step">
+            <strong>2. After merit edits</strong>
+            <p>Re-export from Workday or your comp tool and upload again.</p>
+          </article>
+          <article className="panel landing-cycle-step">
+            <strong>3. Compare cycles</strong>
+            <p>Load saved history side-by-side — below-min counts, queue items, budget exposure.</p>
+          </article>
+        </div>
+      </section>
+
       <section className="landing-section landing-lead-magnet">
         <div className="landing-lead-magnet-card panel">
           <div>
-            <span className="hero-badge">Free resource</span>
-            <h2>Merit season comp checklist</h2>
+            <span className="hero-badge">Free resources</span>
+            <h2>Guides for merit season</h2>
             <p>
-              A printable prep list for exports, first-pass QA, pay equity review, and
-              leadership readouts — use it with or without ShiftWorksHR.
+              Checklists and export QA guides you can use with or without ShiftWorksHR — share with
+              HRBPs or clients.
             </p>
           </div>
-          <Link className="button button-secondary" to="/checklist">
-            Download checklist
+          <div className="landing-resource-links">
+            <Link className="button button-secondary" to="/checklist">
+              Merit season checklist
+            </Link>
+            <Link className="button button-secondary" to="/guides/workday-comp-export-qa">
+              Workday export QA
+            </Link>
+            <Link className="button button-secondary" to="/for-consultants">
+              For consultants
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="landing-section landing-lead-magnet landing-lead-magnet--alt">
+        <div className="landing-lead-magnet-card panel">
+          <div>
+            <span className="hero-badge">Comp consultants</span>
+            <h2>$249 per client cycle — not per seat</h2>
+            <p>
+              Speed up client deliverables with a focused QA pass. Client talking points, workflow,
+              and procurement answers on one page.
+            </p>
+          </div>
+          <Link className="button button-primary" to="/for-consultants">
+            Consultant guide
           </Link>
         </div>
       </section>

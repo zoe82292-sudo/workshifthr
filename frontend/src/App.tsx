@@ -11,11 +11,15 @@ import { LandingPage } from "./components/LandingPage";
 import { PrivacyPolicy } from "./components/PrivacyPolicy";
 import { SamplePreviewPage } from "./components/SamplePreviewPage";
 import { MeritChecklistPage } from "./components/MeritChecklistPage";
+import { CompExportQaPage } from "./components/CompExportQaPage";
+import { ConsultantsPage } from "./components/ConsultantsPage";
+import { CustomerStoriesPage } from "./components/CustomerStoriesPage";
 import { SecurityPage } from "./components/SecurityPage";
 import { SecuritySummaryPage } from "./components/SecuritySummaryPage";
 import { RecoverAccessPage } from "./components/RecoverAccessPage";
 import { TermsOfService } from "./components/TermsOfService";
 import { captureAttributionFromUrl } from "./marketingAttribution";
+import { trackEvent } from "./analytics";
 
 const TRIAL_START_KEY = "shiftworkshr:startTrial";
 
@@ -44,6 +48,7 @@ function MainApp() {
       if (sessionStorage.getItem(TRIAL_START_KEY) === "1") {
         sessionStorage.removeItem(TRIAL_START_KEY);
         if (status.trial_enabled) {
+          trackEvent("trial_start", { source: "try_route" });
           setTrialMode(true);
         }
       }
@@ -84,7 +89,10 @@ function MainApp() {
         showLogin={authRequired}
         trialAvailable={trialAvailable}
         trialMaxRows={authStatus.trial_max_rows}
-        onTryTrial={trialAvailable ? () => setTrialMode(true) : undefined}
+        onTryTrial={trialAvailable ? () => {
+          trackEvent("trial_start", { source: "landing" });
+          setTrialMode(true);
+        } : undefined}
         onTryDemo={authRequired ? undefined : () => setDevPreview(true)}
       />
     );
@@ -116,6 +124,9 @@ export default function App() {
       <Route path="/security" element={<SecurityPage />} />
       <Route path="/security-summary" element={<SecuritySummaryPage />} />
       <Route path="/checklist" element={<MeritChecklistPage />} />
+      <Route path="/guides/workday-comp-export-qa" element={<CompExportQaPage />} />
+      <Route path="/for-consultants" element={<ConsultantsPage />} />
+      <Route path="/customer-stories" element={<CustomerStoriesPage />} />
       <Route path="/sample-preview" element={<SamplePreviewPage />} />
       <Route path="/try" element={<TryEntry />} />
       <Route path="/marketing-preview" element={<Navigate to="/sample-preview" replace />} />

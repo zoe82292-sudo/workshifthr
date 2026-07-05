@@ -28,19 +28,8 @@ import { OnboardingPanel } from "./OnboardingPanel";
 import { CycleComparisonPanel } from "./CycleComparisonPanel";
 import { LegalFooter } from "./LegalFooter";
 import { loadLocalColumnMapping, saveLocalColumnMapping } from "../savedMappingStorage";
+import { pickInitialTab } from "../analysisNavigation";
 import type { AnalysisHistorySummary, AnalysisResult, AnalysisTab, ColumnMapping } from "../types";
-
-function pickInitialTab(analysis: AnalysisResult): AnalysisTab {
-  if ((analysis.summary.review_queue_items ?? analysis.review_queue?.total_items ?? 0) > 0) {
-    return "review_queue";
-  }
-  if (analysis.summary.below_minimum > 0) return "below_minimum";
-  if (analysis.summary.above_maximum > 0) return "above_maximum";
-  if (analysis.summary.duplicate_ids > 0) return "duplicate_ids";
-  if (analysis.summary.managers_below_reports > 0) return "managers_below_reports";
-  if ((analysis.summary.equity_grant_outliers ?? 0) > 0) return "equity_grants";
-  return "range_penetration";
-}
 
 function formatPlanExpiry(account: AccountInfo | null): string | null {
   if (!account?.expires_at) return null;
@@ -324,7 +313,10 @@ export function AnalyzerApp({
       setManualMappingRequired(false);
       saveAnalysisSnapshot(label, analysis);
       setSavedSnapshot(loadAnalysisSnapshot());
-      trackEvent("analysis_completed", { rows: analysis.summary.total_rows });
+      trackEvent("analysis_completed", {
+        rows: analysis.summary.total_rows,
+        trial_mode: trialMode,
+      });
       setHistoryRefreshKey((value) => value + 1);
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : "Unable to analyze file.";
