@@ -39,6 +39,10 @@ const FEATURES = [
     copy: "Median pay by gender and race, with same-level breakdowns.",
   },
   {
+    title: "Multi-file merge",
+    copy: "Upload multiple files — merged on Employee ID when salary, ranges, and merit live in separate exports.",
+  },
+  {
     title: "Summary & export",
     copy: "Shareable insights plus Excel and PDF exports for comp cycles.",
   },
@@ -51,7 +55,7 @@ const AUDIENCES = [
   },
   {
     title: "Comp analysts & HRBPs",
-    copy: "Upload your HRIS or comp spreadsheet export, spot range and compression issues, and export summaries for leadership.",
+    copy: "Upload your HRIS or comp spreadsheet export — one file or several merged on Employee ID — then export summaries for leadership.",
   },
   {
     title: "HR & comp consultants",
@@ -75,7 +79,7 @@ const STEPS = [
   },
   {
     title: "Upload your file",
-    copy: "Drop an Excel or CSV — columns are detected automatically.",
+    copy: "Drop one or more Excel or CSV files — columns are detected automatically and merged on Employee ID.",
   },
   {
     title: "Add your team",
@@ -88,6 +92,10 @@ const STEPS = [
 ];
 
 const FAQ_BASE: Array<{ q: string; a: string }> = [
+  {
+    q: "Can I upload more than one file?",
+    a: "Yes — up to 5 files per analysis. Map Employee ID on each file, then ShiftWorksHR merges rows by ID. Salary can live in one export, ranges in another, and merit or hire date in a third — useful when HRIS data is split across downloads.",
+  },
   {
     q: "What file format do I need?",
     a: "Excel (.xlsx) or CSV up to 25 MB. Include employee ID, salary, and range min/mid/max when possible. Gender and race columns unlock pay equity views.",
@@ -265,8 +273,8 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
           <BrandLogo size="hero" className="landing-hero-logo" />
           <span className="hero-badge">Compensation spreadsheet QA</span>
           <p className="hero-positioning">
-            Built for HR and total rewards teams — upload Excel or CSV for a
-            first-pass comp analysis.
+            Built for HR and total rewards teams — upload one file or several merged on
+            Employee ID for a first-pass comp analysis.
           </p>
           <h1>Find pay issues before leadership review.</h1>
           <p>
@@ -306,6 +314,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
             <li>Manager vs. report pay checks</li>
             <li>Executive summary + exports</li>
             <li>Gender & race pay equity views</li>
+            <li>Multi-file upload merged on Employee ID</li>
           </ul>
         </div>
       </section>

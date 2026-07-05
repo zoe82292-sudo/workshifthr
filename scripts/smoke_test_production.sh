@@ -35,7 +35,15 @@ fi
 echo
 
 echo "4. Demo analysis"
-curl -s -o /dev/null -w "GET /api/demo/analysis → HTTP %{http_code}\n" "$BASE/api/demo/analysis"
+demo_code="$(curl -s -o /tmp/demo.json -w "%{http_code}" "$BASE/api/demo-analysis")"
+echo "GET /api/demo-analysis → HTTP $demo_code"
+if [[ "$demo_code" != "200" ]]; then
+  echo "FAIL — demo analysis unavailable"
+  cat /tmp/demo.json
+  exit 1
+fi
+python3 -c "import json; d=json.load(open('/tmp/demo.json')); assert d['summary']['total_rows']>0, d"
+echo "OK — demo analysis returned $(python3 -c "import json; print(json.load(open('/tmp/demo.json'))['summary']['total_rows'])") rows"
 echo
 
 echo "=== Summary ==="
