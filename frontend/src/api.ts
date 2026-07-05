@@ -69,7 +69,10 @@ function normalizeSummary(raw: Partial<AnalysisSummary> | undefined): AnalysisSu
     outlier_merit_increases: raw?.outlier_merit_increases ?? 0,
     new_hire_merit_flags: raw?.new_hire_merit_flags ?? 0,
     unusual_comp_changes: raw?.unusual_comp_changes ?? 0,
+    equity_grant_outliers: raw?.equity_grant_outliers ?? 0,
     pay_equity_gaps: raw?.pay_equity_gaps ?? 0,
+    tenure_pay_flags: raw?.tenure_pay_flags ?? 0,
+    location_pay_gaps: raw?.location_pay_gaps ?? 0,
   };
 }
 
@@ -85,6 +88,24 @@ const EMPTY_PAY_EQUITY = {
   disclaimer: "",
 };
 
+const EMPTY_TENURE = {
+  available: false,
+  bands: [],
+  employees: [],
+  flags: [],
+  employees_missing_hire_date: 0,
+  disclaimer: "",
+};
+
+const EMPTY_LOCATION_PAY = {
+  available: false,
+  location_groups: [],
+  location_gaps: [],
+  level_breakdowns: [],
+  employees_missing_location: 0,
+  disclaimer: "",
+};
+
 function normalizeResult(raw: AnalysisResult): AnalysisResult {
   return {
     ...raw,
@@ -97,6 +118,8 @@ function normalizeResult(raw: AnalysisResult): AnalysisResult {
     missing_data: raw.missing_data ?? [],
     compa_ratios: raw.compa_ratios ?? [],
     pay_equity: raw.pay_equity ?? EMPTY_PAY_EQUITY,
+    tenure: raw.tenure ?? EMPTY_TENURE,
+    location_pay: raw.location_pay ?? EMPTY_LOCATION_PAY,
     insights: raw.insights ?? EMPTY_INSIGHTS,
     warnings: raw.warnings ?? [],
     managers_below_reports: raw.managers_below_reports ?? [],
@@ -106,6 +129,7 @@ function normalizeResult(raw: AnalysisResult): AnalysisResult {
     outlier_merit_increases: raw.outlier_merit_increases ?? [],
     new_hire_merit_flags: raw.new_hire_merit_flags ?? [],
     unusual_comp_changes: raw.unusual_comp_changes ?? [],
+    equity_grants: raw.equity_grants ?? [],
     detected_columns: raw.detected_columns ?? [],
     missing_required_columns: raw.missing_required_columns ?? [],
   };

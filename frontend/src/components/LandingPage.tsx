@@ -43,6 +43,10 @@ const FEATURES = [
     copy: "Upload multiple files — merged on Employee ID when salary, ranges, and merit live in separate exports.",
   },
   {
+    title: "Tenure, location & equity grants",
+    copy: "Review pay by tenure band, compare median pay across offices, and flag outlier LTI grant values.",
+  },
+  {
     title: "Summary & export",
     copy: "Shareable insights plus Excel and PDF exports for comp cycles.",
   },
@@ -87,7 +91,7 @@ const STEPS = [
   },
   {
     title: "Act on findings",
-    copy: "Review flagged issues, budget impact, pay equity, and export reports.",
+    copy: "Review flagged issues, budget impact, pay equity, tenure, location pay, equity grants, and export reports.",
   },
 ];
 
@@ -98,7 +102,7 @@ const FAQ_BASE: Array<{ q: string; a: string }> = [
   },
   {
     q: "What file format do I need?",
-    a: "Excel (.xlsx) or CSV up to 25 MB. Include employee ID, salary, and range min/mid/max when possible. Gender and race columns unlock pay equity views.",
+    a: "Excel (.xlsx) or CSV up to 25 MB. Include employee ID, salary, and range min/mid/max when possible. Gender and race columns unlock pay equity views; hire date and location unlock tenure and location pay views; an equity grant column unlocks LTI outlier review.",
   },
   {
     q: "Is my compensation data stored?",
@@ -163,7 +167,7 @@ const PRICING_PLANS: Array<{
     description: "One merit or annual review season.",
     features: [
       "90 days of unlimited uploads",
-      "Full analysis + pay equity",
+      "Full analysis + pay equity, tenure, location & LTI",
       "Excel & PDF exports",
       "Email support",
     ],
@@ -179,7 +183,7 @@ const PRICING_PLANS: Array<{
     description: "Best value — about $75/month, billed annually.",
     features: [
       "Unlimited uploads all year",
-      "Full analysis + pay equity",
+      "Full analysis + pay equity, tenure, location & LTI",
       "Excel & PDF exports",
       "Priority email support",
     ],
@@ -195,7 +199,7 @@ const PRICING_PLANS: Array<{
     description: "Flexible month-to-month access. Cancel anytime.",
     features: [
       "Unlimited uploads each month",
-      "Full analysis + pay equity",
+      "Full analysis + pay equity, tenure, location & LTI",
       "Excel & PDF exports",
       "Email support",
     ],
@@ -312,7 +316,7 @@ export function LandingPage({ onLogin, showLogin, onTryDemo }: LandingPageProps)
             <li>Range penetration & compa-ratio</li>
             <li>Salary compression analysis</li>
             <li>Manager vs. report pay checks</li>
-            <li>Executive summary + exports</li>
+            <li>Overview + PDF &amp; Excel exports</li>
             <li>Gender & race pay equity views</li>
             <li>Multi-file upload merged on Employee ID</li>
           </ul>

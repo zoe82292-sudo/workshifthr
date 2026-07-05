@@ -45,7 +45,7 @@ export function MarketingPreview({ data }: MarketingPreviewProps) {
 
       <section className="marketing-preview__exec">
         <div className="marketing-preview__exec-top">
-          <h2>Executive summary</h2>
+          <h2>Overview</h2>
           <span className={`pill risk-${insights.executive_summary.risk_level}`}>
             {insights.executive_summary.risk_level} risk
           </span>

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchDemoAnalysis } from "../api";
 import {
-  downloadAnalysisExcel,
-  downloadExecutiveSummaryPdf,
+  downloadReportExcel,
+  downloadSummaryPdf,
 } from "../exportAnalysis";
 import type { AnalysisResult } from "../types";
 import { LogoMark } from "./LogoMark";
@@ -20,8 +20,8 @@ const TABS: Array<{ id: DemoTab; label: string }> = [
   { id: "budget", label: "Budget impact" },
 ];
 
-const SAMPLE_PDF = "shiftworkshr-sample-executive-summary.pdf";
-const SAMPLE_XLSX = "shiftworkshr-sample-analysis.xlsx";
+const SAMPLE_PDF = "shiftworkshr-sample-summary.pdf";
+const SAMPLE_XLSX = "shiftworkshr-sample-report.xlsx";
 
 function formatCurrency(value: number | null | undefined) {
   if (value == null) return "—";
@@ -87,18 +87,18 @@ function DemoDownloads({
   return (
     <div className={`product-demo__downloads ${compact ? "product-demo__downloads--compact" : ""}`}>
       <button
-        className="button button-primary"
-        type="button"
-        onClick={() => downloadExecutiveSummaryPdf(result, SAMPLE_PDF)}
-      >
-        Download PDF
-      </button>
-      <button
         className="button button-secondary"
         type="button"
-        onClick={() => downloadAnalysisExcel(result, SAMPLE_XLSX)}
+        onClick={() => downloadSummaryPdf(result, SAMPLE_PDF)}
       >
-        Download Excel
+        PDF summary
+      </button>
+      <button
+        className="button button-primary"
+        type="button"
+        onClick={() => downloadReportExcel(result, SAMPLE_XLSX)}
+      >
+        Excel report
       </button>
     </div>
   );
@@ -223,7 +223,7 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
           <>
             <section className="product-demo__summary">
               <div className="product-demo__summary-top">
-                <h2>Executive summary</h2>
+                <h2>Overview</h2>
                 <span className={`pill risk-${insights.executive_summary.risk_level}`}>
                   {insights.executive_summary.risk_level} risk
                 </span>
@@ -235,8 +235,7 @@ export function ProductDemoShowcase({ variant = "embedded" }: ProductDemoShowcas
                 ))}
               </ul>
               <p className="product-demo__export-note">
-                Same Excel export as production. Use Executive PDF in the full analyzer for a
-                leadership-ready summary.
+                PDF summary for leadership · Excel report includes overview plus all detail tabs.
               </p>
               <DemoDownloads result={result} />
             </section>

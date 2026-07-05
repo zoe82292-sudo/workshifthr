@@ -17,8 +17,8 @@ import {
   type AccountInfo,
 } from "../api";
 import { trackEvent } from "../analytics";
-import { ColumnMappingStep } from "./ColumnMappingStep";
-import { MultiFileMappingStep, type UploadMappingEntry } from "./MultiFileMappingStep";
+import { ColumnMappingStep, mappingIsComplete } from "./ColumnMappingStep";
+import { MultiFileMappingStep, batchMappingIsComplete, type UploadMappingEntry } from "./MultiFileMappingStep";
 import { AnalysisHistoryPanel } from "./AnalysisHistoryPanel";
 import { ResultsDashboard } from "./ResultsDashboard";
 import { BrandLogo } from "./BrandLogo";
@@ -38,6 +38,7 @@ function pickInitialTab(analysis: AnalysisResult): AnalysisTab {
   if (analysis.summary.above_maximum > 0) return "above_maximum";
   if (analysis.summary.duplicate_ids > 0) return "duplicate_ids";
   if (analysis.summary.managers_below_reports > 0) return "managers_below_reports";
+  if ((analysis.summary.equity_grant_outliers ?? 0) > 0) return "equity_grants";
   return "range_penetration";
 }
 
@@ -83,6 +84,7 @@ export function AnalyzerApp({
   const [uploadAuthorized, setUploadAuthorized] = useState(false);
   const [billingLoading, setBillingLoading] = useState(false);
   const [meritIqrMultiplier, setMeritIqrMultiplier] = useState(1.5);
+  const [manualMappingRequired, setManualMappingRequired] = useState(false);
   const [historyItems, setHistoryItems] = useState<AnalysisHistorySummary[]>([]);
   const [compareHistoryId, setCompareHistoryId] = useState("");
   const [priorResult, setPriorResult] = useState<AnalysisResult | null>(null);
@@ -138,9 +140,19 @@ export function AnalyzerApp({
     setResult(null);
     setAnalyzedFileName(null);
     setError(null);
+    setManualMappingRequired(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+  }
+
+  function canAutoAnalyze(entries: UploadMappingEntry[]): boolean {
+    if (entries.length === 0) {
+      return false;
+    }
+    return entries.length === 1
+      ? mappingIsComplete(entries[0].mapping)
+      : batchMappingIsComplete(entries);
   }
 
   async function buildUploadEntry(file: File, saved: ColumnMapping | null): Promise<UploadMappingEntry> {
@@ -187,20 +199,26 @@ export function AnalyzerApp({
     try {
       const saved = await resolveSavedMapping();
 
+      let entries: UploadMappingEntry[];
       if (selected.length === 1 && uploads.length === 0) {
-        const entry = await buildUploadEntry(selected[0], saved);
-        setUploads([entry]);
-        return;
+        entries = [await buildUploadEntry(selected[0], saved)];
+      } else {
+        const batch = await previewBatch(selected);
+        const nextEntries = batch.files.map((item, index) => ({
+          file: selected[index] ?? selected.find((file) => file.name === item.filename) ?? selected[0],
+          preview: item.preview,
+          mapping: applySavedMapping(item.preview.suggested_mapping, item.preview.columns, saved),
+          sheetName: item.preview.sheet_names[0] ?? null,
+        }));
+        entries = [...uploads, ...nextEntries];
       }
 
-      const batch = await previewBatch(selected);
-      const nextEntries = batch.files.map((item, index) => ({
-        file: selected[index] ?? selected.find((file) => file.name === item.filename) ?? selected[0],
-        preview: item.preview,
-        mapping: applySavedMapping(item.preview.suggested_mapping, item.preview.columns, saved),
-        sheetName: item.preview.sheet_names[0] ?? null,
-      }));
-      setUploads((current) => [...current, ...nextEntries]);
+      if (canAutoAnalyze(entries)) {
+        await runAnalysisWithEntries(entries);
+      } else {
+        setUploads(entries);
+        setManualMappingRequired(true);
+      }
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : "Unable to read file.";
       setError(message);
@@ -259,31 +277,32 @@ export function AnalyzerApp({
     setUploads((current) => current.filter((_, itemIndex) => itemIndex !== index));
   }
 
-  async function runAnalysis() {
-    if (uploads.length === 0) return;
+  async function runAnalysisWithEntries(entries: UploadMappingEntry[]) {
+    if (entries.length === 0) return;
 
     setLoading(true);
     setError(null);
 
     try {
       const analysis =
-        uploads.length === 1
-          ? await analyzeFile(uploads[0].file, {
-              columnMapping: uploads[0].mapping,
-              sheetName: uploads[0].sheetName,
+        entries.length === 1
+          ? await analyzeFile(entries[0].file, {
+              columnMapping: entries[0].mapping,
+              sheetName: entries[0].sheetName,
               meritIqrMultiplier,
             })
-          : await analyzeBatch(uploads, { meritIqrMultiplier });
+          : await analyzeBatch(entries, { meritIqrMultiplier });
 
       const label =
-        uploads.length === 1
-          ? uploads[0].file.name
-          : uploads.map((entry) => entry.file.name).join(" + ");
+        entries.length === 1
+          ? entries[0].file.name
+          : entries.map((entry) => entry.file.name).join(" + ");
 
       setResult(analysis);
       setAnalyzedFileName(label);
       setActiveTab(pickInitialTab(analysis));
       setUploads([]);
+      setManualMappingRequired(false);
       saveAnalysisSnapshot(label, analysis);
       setSavedSnapshot(loadAnalysisSnapshot());
       trackEvent("analysis_completed", { rows: analysis.summary.total_rows });
@@ -291,12 +310,18 @@ export function AnalyzerApp({
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : "Unable to analyze file.";
       setError(message);
+      setUploads(entries);
+      setManualMappingRequired(true);
       if (message.includes("sign in again") || message.includes("expired")) {
         onLogout();
       }
     } finally {
       setLoading(false);
     }
+  }
+
+  async function runAnalysis() {
+    await runAnalysisWithEntries(uploads);
   }
 
   function restoreSnapshot() {
@@ -496,8 +521,9 @@ export function AnalyzerApp({
             }}
           >
             <p>
-              Drop one or more `.xlsx`, `.xls`, or `.csv` files here. Upload multiple files
-              when your data is split across exports — they&apos;re merged on Employee ID.
+              Drop your compensation file here — columns are detected automatically, including
+              files without a header row. Upload multiple files when data is split across exports;
+              they&apos;re merged on Employee ID.
             </p>
             <div className="upload-actions">
               <label className={`button button-primary ${uploadAuthorized ? "" : "button-disabled"}`}>
@@ -516,9 +542,9 @@ export function AnalyzerApp({
               </a>
             </div>
             <p className="file-meta">
-              Required across uploads: <strong>Employee ID</strong>, <strong>Salary</strong>,{" "}
-              <strong>Range min</strong>, and <strong>Range max</strong> (can be in different
-              files). Up to {MAX_UPLOAD_FILES} files per analysis.
+              We auto-detect employee ID, salary, and range columns from headers or data patterns.
+              Manual mapping only appears if something can&apos;t be read. Up to {MAX_UPLOAD_FILES}{" "}
+              files per analysis.
             </p>
             <p className="file-meta legal-notice">
               For decision support only — not legal or professional compensation advice.
@@ -530,7 +556,7 @@ export function AnalyzerApp({
         </section>
       ) : null}
 
-      {!result && uploads.length > 0 ? (
+      {!result && uploads.length > 0 && manualMappingRequired ? (
         <section className="panel upload-queue-panel">
           <div className="panel-header">
             <h2>Uploaded files</h2>
@@ -567,7 +593,7 @@ export function AnalyzerApp({
         </section>
       ) : null}
 
-      {!result && uploads.length === 1 ? (
+      {!result && uploads.length > 0 && manualMappingRequired && uploads.length === 1 ? (
         <ColumnMappingStep
           fileName={uploads[0].file.name}
           preview={uploads[0].preview}
@@ -580,10 +606,11 @@ export function AnalyzerApp({
           onCancel={resetWorkflow}
           canSaveMapping
           onSaveMapping={() => handleSaveMapping()}
+          manualRequired
         />
       ) : null}
 
-      {!result && uploads.length > 1 ? (
+      {!result && uploads.length > 1 && manualMappingRequired ? (
         <MultiFileMappingStep
           entries={uploads}
           loading={loading}
@@ -595,7 +622,7 @@ export function AnalyzerApp({
         />
       ) : null}
 
-      {!result && uploads.length > 0 ? (
+      {!result && uploads.length > 0 && manualMappingRequired ? (
         <section className="panel analyzer-options-panel">
           <label className="field analyzer-options-panel__field">
             <span>Merit outlier sensitivity (IQR multiplier: {meritIqrMultiplier.toFixed(1)})</span>
@@ -617,8 +644,8 @@ export function AnalyzerApp({
 
       {loading && uploads.length === 0 && !result ? (
         <div className="alert alert-info">
-          Working on your file — this usually takes a few seconds. If the site just woke up,
-          it can take up to a minute.
+          Reading your file and running analysis — this usually takes a few seconds. If the site
+          just woke up, it can take up to a minute.
         </div>
       ) : null}
 

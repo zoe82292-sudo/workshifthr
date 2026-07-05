@@ -5,7 +5,7 @@ from typing import Any
 import pandas as pd
 
 from app.analyzer import analyze_file, read_upload
-from app.columns import COLUMN_ALIASES, NUMERIC_OPTIONAL_FIELDS, coerce_numeric
+from app.columns import COLUMN_ALIASES, NUMERIC_OPTIONAL_FIELDS, coerce_numeric, resolve_column_mapping
 from app.models import AnalysisOptions, AnalysisResult, ColumnMapping
 
 MAX_MERGE_FILES = 5
@@ -113,7 +113,14 @@ def analyze_merged_files(
     for content, filename, sheet_name, mapping in sources:
         df, _, file_warnings = read_upload(content, filename, sheet_name)
         read_warnings.extend(f"{filename}: {warning}" for warning in file_warnings)
-        canonical_frames.append(canonicalize_dataframe(df, mapping, filename))
+        resolved = resolve_column_mapping(
+            list(df.columns),
+            df,
+            mapping.model_dump() if hasattr(mapping, "model_dump") else dict(mapping),
+        )
+        canonical_frames.append(
+            canonicalize_dataframe(df, ColumnMapping(**resolved), filename)
+        )
 
     merged, merge_warnings = merge_canonical_dataframes(canonical_frames)
     merged_mapping = mapping_for_merged_dataframe(merged)

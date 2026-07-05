@@ -16,6 +16,7 @@ export function getBundledDemoAnalysis(): AnalysisResult {
       range_midpoint: null,
       job_level: "Job Level",
       department: "Department",
+      location: null,
       manager_id: "Manager ID",
       bonus_target: "Bonus Target",
       effective_date: "Effective Date",
@@ -71,6 +72,27 @@ export function getBundledDemoAnalysis(): AnalysisResult {
           "Unusually high promotion change outside the expected range (4.5% to 16.5%).",
       },
     ],
+    equity_grants: [
+      {
+        row_number: 12,
+        employee_id: "E011",
+        employee_name: "Jack Reed",
+        department: "Product",
+        equity_grant: 75,
+        is_outlier: true,
+        reason:
+          "Unusually high equity change outside the expected range (-10.0% to 30.0%).",
+      },
+      {
+        row_number: 10,
+        employee_id: "E009",
+        employee_name: "Hugo Silva",
+        department: "Engineering",
+        equity_grant: 15,
+        is_outlier: false,
+        reason: null,
+      },
+    ],
     compa_ratios: [],
     pay_equity: {
       available: true,
@@ -105,6 +127,22 @@ export function getBundledDemoAnalysis(): AnalysisResult {
       employees_missing_race: 0,
       disclaimer:
         "Pay equity views are decision support only — not a legal pay equity audit. Review outliers with business context.",
+    },
+    tenure: {
+      available: false,
+      bands: [],
+      employees: [],
+      flags: [],
+      employees_missing_hire_date: 0,
+      disclaimer: "",
+    },
+    location_pay: {
+      available: false,
+      location_groups: [],
+      location_gaps: [],
+      level_breakdowns: [],
+      employees_missing_location: 0,
+      disclaimer: "",
     },
     insights,
     warnings: [],

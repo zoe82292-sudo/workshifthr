@@ -20,11 +20,12 @@ export const MAPPING_FIELDS: Array<{
   },
   { key: "job_level", label: "Job level / grade", required: false, hint: "Improves compression checks" },
   { key: "department", label: "Department", required: false },
+  { key: "location", label: "Work location", required: false, hint: "City, office, or site for location pay views" },
   { key: "manager_id", label: "Manager ID", required: false, hint: "Required for manager inversion checks" },
   { key: "bonus_target", label: "Bonus target %", required: false },
   { key: "merit_increase", label: "Merit increase %", required: false },
   { key: "promotion_increase", label: "Promotion increase %", required: false },
-  { key: "equity_grant", label: "Equity / LTI grant %", required: false },
+  { key: "equity_grant", label: "Equity / LTI grant %", required: false, hint: "Flags statistical outliers on the Equity Grants tab" },
   { key: "effective_date", label: "Effective date", required: false },
   { key: "hire_date", label: "Hire date", required: false, hint: "Flags new hires with merit increases" },
   { key: "gender", label: "Gender", required: false, hint: "Required for pay equity views" },
@@ -52,6 +53,7 @@ type ColumnMappingStepProps = {
   analyzeDisabled?: boolean;
   analyzeLabel?: string;
   onRemoveFile?: () => void;
+  manualRequired?: boolean;
 };
 
 export function ColumnMappingStep({
@@ -71,6 +73,7 @@ export function ColumnMappingStep({
   analyzeDisabled,
   analyzeLabel,
   onRemoveFile,
+  manualRequired = false,
 }: ColumnMappingStepProps) {
   const complete = mergeMode ? Boolean(mapping.employee_id) : mappingIsComplete(mapping);
   const runDisabled = analyzeDisabled !== undefined ? analyzeDisabled : !complete;
@@ -112,8 +115,9 @@ export function ColumnMappingStep({
 
       {!embedded ? (
         <p className="mapping-step__intro">
-          We detected columns in your file. Confirm each field is mapped correctly before running
-          the analysis — especially salary and range min/max.
+          {manualRequired
+            ? "We couldn't detect every required column automatically. Confirm the mappings below, then run analysis."
+            : "We detected columns in your file. Confirm each field is mapped correctly before running the analysis — especially salary and range min/max."}
         </p>
       ) : null}
 

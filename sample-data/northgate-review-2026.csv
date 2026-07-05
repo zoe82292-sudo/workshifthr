@@ -1,0 +1,20 @@
+Employee ID,Employee Name,Department,Work Location,Job Level,Manager ID,Gender,Race/Ethnicity,Salary,Range Min,Range Max,Range Midpoint,Bonus Target,Effective Date,Merit Increase %,Hire Date,Promotion Increase %,Equity Grant %
+NG001,Alex Morgan,Executive,Boston,6,,Female,White,178000,165000,195000,180000,30,2026-01-01,4.5,2016-03-01,12,20
+NG002,Jordan Lee,Engineering,San Francisco,5,NG001,Male,Asian,142000,135000,160000,147500,22,2026-01-01,4.0,2018-07-15,14,18
+NG003,Sam Rivera,Engineering,San Francisco,4,NG002,Non-binary,Hispanic or Latino,118000,115000,135000,125000,18,2026-01-01,3.8,2020-02-10,12,12
+NG004,Taylor Kim,Engineering,,3,NG002,Female,Asian,97000,95000,115000,105000,12,2026-01-01,3.2,2022-09-01,10,8
+NG005,Chris Patel,Engineering,Austin,3,NG002,Male,Asian,128000,95000,115000,105000,12,2027-01-01,3.5,2021-05-20,11,10
+NG004,Duplicate ID Row,Engineering,Remote,3,NG002,Female,Asian,98000,95000,115000,105000,12,2026-01-01,3.0,2022-09-01,10,8
+NG006,Morgan Blake,Engineering,Remote,2,NG004,Female,White,82000,78000,92000,85000,8,2026-01-01,2.8,2023-11-08,8,5
+NG007,Riley Chen,Engineering,Austin,2,NG004,Male,Asian,86000,78000,92000,85000,8,2026-01-01,4.5,2026-04-10,32,12
+NG008,Jamie Ortiz,Product,New York,4,NG001,Female,Hispanic or Latino,112000,110000,130000,120000,18,2026-01-01,3.9,2019-06-22,13,15
+NG009,Casey Nguyen,Product,New York,3,NG008,Male,Asian,87000,90000,110000,100000,12,2026-01-01,3.1,2022-01-17,9,5
+NG010,Drew Williams,Product,NYC,3,NG008,Male,White,94000,90000,110000,100000,12,2026-01-01,3.4,2021-08-30,10,55
+NG011,Quinn Adams,Sales,Boston,4,NG001,Male,White,108000,105000,128000,116500,20,2026-01-01,4.1,2017-11-05,12,15
+NG012,Avery Johnson,Sales,Boston,3,NG011,Female,Black or African American,76000,82000,98000,90000,10,2026-01-01,3.0,2020-04-14,8,5
+NG013,Reese Martin,Sales,remote,2,NG011,Female,Hispanic or Latino,71000,70000,85000,77500,,2026-01-01,2.7,2023-06-01,7,0
+NG014,Skyler Reed,Operations,Chicago,3,NG001,Male,White,88000,85000,102000,93500,10,2028-06-01,3.2,2019-12-12,9,10
+NG015,Pat Harper,Operations,Chicago,2,NG001,Female,White,69000,72000,86000,79000,8,2026-01-01,2.9,2022-03-25,8,5
+NG016,Jordan Lee Duplicate Mgr,Operations,Boston,2,NG015,Male,Asian,72000,70000,85000,77500,8,2026-01-01,22.0,2021-10-03,10,8
+NG017,Row Missing Salary,Finance,Boston,2,NG001,Female,Asian,,85000,100000,92500,10,2026-01-01,3.0,2022-07-01,8,5
+NG018,Row Missing Range,Finance,Chicago,2,NG001,Male,White,81000,,, ,10,not-a-date,3.0,2020-01-15,9,0

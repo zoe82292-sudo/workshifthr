@@ -53,7 +53,7 @@ export function OnboardingPanel({ hasResult }: OnboardingPanelProps) {
         <li className={stepUpload ? "onboarding-step onboarding-step--done" : "onboarding-step"}>
           <strong>Export for leadership</strong>
           <span>
-            Use Executive PDF or full Excel from results. See a{" "}
+            Use the PDF summary or Excel report from results. See a{" "}
             <Link to="/sample-preview">sample analysis</Link> anytime.
           </span>
         </li>

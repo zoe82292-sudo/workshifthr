@@ -7,6 +7,7 @@ export interface ColumnMapping {
   range_midpoint: string | null;
   job_level: string | null;
   department: string | null;
+  location: string | null;
   manager_id: string | null;
   bonus_target: string | null;
   effective_date: string | null;
@@ -164,6 +165,16 @@ export interface UnusualCompChangeRecord {
   reason: string;
 }
 
+export interface EquityGrantRecord {
+  row_number: number;
+  employee_id: string | null;
+  employee_name: string | null;
+  department: string | null;
+  equity_grant: number;
+  is_outlier: boolean;
+  reason: string | null;
+}
+
 export interface AnalysisSummary {
   total_rows: number;
   valid_rows: number;
@@ -180,7 +191,10 @@ export interface AnalysisSummary {
   outlier_merit_increases: number;
   new_hire_merit_flags: number;
   unusual_comp_changes: number;
+  equity_grant_outliers: number;
   pay_equity_gaps: number;
+  tenure_pay_flags: number;
+  location_pay_gaps: number;
 }
 
 export interface PayEquityGap {
@@ -226,6 +240,65 @@ export interface PayEquityReport {
   disclaimer: string;
 }
 
+export interface TenurePayFlag {
+  row_number: number;
+  employee_id: string | null;
+  employee_name: string | null;
+  hire_date: string | null;
+  tenure_years: number;
+  salary: number;
+  flag_type: string;
+  reason: string;
+}
+
+export interface TenureBandStats {
+  band_label: string;
+  headcount: number;
+  median_salary: number | null;
+  median_tenure_years: number | null;
+  median_compa_ratio: number | null;
+}
+
+export interface TenureEmployeeRow {
+  row_number: number;
+  employee_id: string | null;
+  employee_name: string | null;
+  hire_date: string | null;
+  tenure_days: number;
+  tenure_years: number;
+  tenure_band: string;
+  salary: number | null;
+  job_level: string | null;
+  department: string | null;
+  location: string | null;
+  compa_ratio: number | null;
+}
+
+export interface TenureReport {
+  available: boolean;
+  bands: TenureBandStats[];
+  employees: TenureEmployeeRow[];
+  flags: TenurePayFlag[];
+  employees_missing_hire_date: number;
+  disclaimer: string;
+}
+
+export interface LevelLocationBreakdown {
+  job_level: string;
+  headcount: number;
+  location_groups: DemographicGroupStats[];
+  location_gaps: PayEquityGap[];
+}
+
+export interface LocationPayReport {
+  available: boolean;
+  location_groups: DemographicGroupStats[];
+  location_gaps: PayEquityGap[];
+  level_breakdowns: LevelLocationBreakdown[];
+  employees_missing_location: number;
+  disclaimer: string;
+}
+
 export interface AnalysisResult {
   summary: AnalysisSummary;
   column_mapping: ColumnMapping;
@@ -244,8 +317,11 @@ export interface AnalysisResult {
   outlier_merit_increases: OutlierMeritIncreaseRecord[];
   new_hire_merit_flags: NewHireMeritFlag[];
   unusual_comp_changes: UnusualCompChangeRecord[];
+  equity_grants: EquityGrantRecord[];
   compa_ratios: CompaRatioRecord[];
   pay_equity: PayEquityReport;
+  tenure: TenureReport;
+  location_pay: LocationPayReport;
   insights: AnalysisInsights;
   warnings: string[];
 }
@@ -283,9 +359,12 @@ export type AnalysisTab =
   | "invalid_effective_dates"
   | "outlier_merit_increases"
   | "new_hire_merit_flags"
+  | "equity_grants"
   | "unusual_comp_changes"
   | "compa_ratio"
   | "pay_equity"
+  | "tenure"
+  | "location_pay"
   | "missing_data";
 
 export const PENETRATION_BAND_LABELS: Record<string, string> = {

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from app.columns import REQUIRED_FIELDS, detect_column_mapping
+from app.columns import REQUIRED_FIELDS, detect_column_mapping, mapping_has_required, normalize_upload_dataframe
 
 
 def test_detect_column_mapping_standard_headers() -> None:
@@ -16,7 +16,7 @@ def test_detect_column_mapping_standard_headers() -> None:
         }
     )
 
-    mapping = detect_column_mapping(frame)
+    mapping = detect_column_mapping(list(frame.columns), frame)
 
     assert mapping["employee_id"] == "Employee ID"
     assert mapping["salary"] == "Base Salary"
@@ -33,7 +33,7 @@ def test_detect_column_mapping_missing_required() -> None:
         }
     )
 
-    mapping = detect_column_mapping(frame)
+    mapping = detect_column_mapping(list(frame.columns), frame)
 
     assert mapping.get("employee_name") == "EE Name"
     assert mapping.get("salary") == "Pay"

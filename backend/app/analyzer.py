@@ -12,8 +12,11 @@ from app.columns import (
     REQUIRED_FIELDS,
     coerce_numeric,
     detect_column_mapping,
+    normalize_upload_dataframe,
+    resolve_column_mapping,
 )
 from app.equity import build_pay_equity_report
+from app.tenure_location import build_location_pay_report, build_tenure_report
 from app.insights import build_insights, empty_insights
 from app.models import (
     AnalysisOptions,
@@ -24,14 +27,17 @@ from app.models import (
     CompressionIssue,
     DuplicateGroup,
     EmployeeRecord,
+    EquityGrantRecord,
     InvalidEffectiveDateRecord,
     ManagerBelowReportIssue,
+    LocationPayReport,
     MissingBonusTargetRecord,
     MissingSalaryRangeRecord,
     NewHireMeritFlag,
     OutlierMeritIncreaseRecord,
     PayEquityReport,
     PreviewResponse,
+    TenureReport,
     UnusualCompChangeRecord,
 )
 
@@ -143,6 +149,8 @@ def read_upload(content: bytes, filename: str, sheet_name: str | None = None) ->
             read_warnings.append(
                 f"Skipped {skipped_rows} malformed CSV row(s) while reading the file."
             )
+        df, normalize_warnings = normalize_upload_dataframe(df)
+        read_warnings.extend(normalize_warnings)
         return df, ["CSV"], read_warnings
 
     workbook = pd.ExcelFile(io.BytesIO(content))
@@ -150,6 +158,8 @@ def read_upload(content: bytes, filename: str, sheet_name: str | None = None) ->
     selected = sheet_name if sheet_name in sheet_names else sheet_names[0]
     df = pd.read_excel(workbook, sheet_name=selected)
     df.columns = [str(col).strip() for col in df.columns]
+    df, normalize_warnings = normalize_upload_dataframe(df)
+    read_warnings.extend(normalize_warnings)
     return df, sheet_names, read_warnings
 
 
@@ -318,8 +328,11 @@ def _empty_result(
         outlier_merit_increases=[],
         new_hire_merit_flags=[],
         unusual_comp_changes=[],
+        equity_grants=[],
         compa_ratios=[],
         pay_equity=PayEquityReport(available=False),
+        tenure=TenureReport(available=False),
+        location_pay=LocationPayReport(available=False),
         insights=empty_insights(),
         warnings=warnings,
     )
@@ -329,14 +342,14 @@ def _prepare_dataframe(
     df: pd.DataFrame,
     mapping_override: ColumnMapping | None = None,
 ) -> tuple[pd.DataFrame, dict[str, str | None], list[str]]:
-    detected = detect_column_mapping(list(df.columns), df)
+    override_dict = None
     if mapping_override:
-        for field in COLUMN_ALIASES:
-            if not hasattr(mapping_override, field):
-                continue
-            override_value = getattr(mapping_override, field)
-            if override_value:
-                detected[field] = override_value
+        override_dict = (
+            mapping_override.model_dump()
+            if hasattr(mapping_override, "model_dump")
+            else dict(mapping_override)
+        )
+    detected = resolve_column_mapping(list(df.columns), df, override_dict)
 
     missing_required = [field for field in REQUIRED_FIELDS if not detected.get(field)]
     if missing_required:
@@ -480,8 +493,12 @@ def analyze_file(
         warnings,
         iqr_multiplier=analysis_options.merit_iqr_multiplier,
     )
+    equity_grants = _build_equity_grant_records(prepared, mapping, unusual_comp_changes, warnings)
+    equity_grant_outliers = sum(1 for record in equity_grants if record.is_outlier)
     managers_below_reports = _find_managers_below_reports(prepared, mapping, warnings)
     pay_equity = build_pay_equity_report(prepared, mapping, warnings)
+    tenure = build_tenure_report(prepared, mapping, warnings)
+    location_pay = build_location_pay_report(prepared, mapping, warnings)
 
     valid_rows = len(prepared) - len(missing_data)
     average_penetration = (
@@ -535,7 +552,10 @@ def analyze_file(
             outlier_merit_increases=len(outlier_merit_increases),
             new_hire_merit_flags=len(new_hire_merit_flags),
             unusual_comp_changes=len(unusual_comp_changes),
+            equity_grant_outliers=equity_grant_outliers,
             pay_equity_gaps=len(pay_equity.gender_gaps) + len(pay_equity.race_gaps),
+            tenure_pay_flags=len(tenure.flags),
+            location_pay_gaps=len(location_pay.location_gaps),
         ),
         column_mapping=ColumnMapping(**mapping),
         detected_columns=list(df.columns),
@@ -557,8 +577,11 @@ def analyze_file(
         outlier_merit_increases=outlier_merit_increases,
         new_hire_merit_flags=new_hire_merit_flags,
         unusual_comp_changes=unusual_comp_changes,
+        equity_grants=equity_grants,
         compa_ratios=compa_ratios,
         pay_equity=pay_equity,
+        tenure=tenure,
+        location_pay=location_pay,
         insights=empty_insights(),
         warnings=warnings,
     )
@@ -943,6 +966,64 @@ def _find_unusual_comp_changes(
         )
     )
     return sorted(records, key=lambda item: item.value_percent, reverse=True)
+
+
+def _build_equity_grant_records(
+    df: pd.DataFrame,
+    mapping: dict[str, str | None],
+    unusual_comp_changes: list[UnusualCompChangeRecord],
+    warnings: list[str],
+) -> list[EquityGrantRecord]:
+    column = mapping.get("equity_grant")
+    if not column or column not in df.columns:
+        return []
+
+    id_col = mapping["employee_id"]
+    name_col = mapping.get("employee_name")
+    dept_col = mapping.get("department")
+    outlier_by_row = {
+        record.row_number: record
+        for record in unusual_comp_changes
+        if record.change_type == "equity"
+    }
+
+    records: list[EquityGrantRecord] = []
+    for index, row in df.iterrows():
+        employee_id = _string_value(row.get(id_col))
+        if not employee_id:
+            continue
+
+        raw = _float_value(row.get(column))
+        if raw is None:
+            continue
+
+        row_number = int(index) + 2
+        percent = _normalize_merit_percent(raw)
+        outlier = outlier_by_row.get(row_number)
+        records.append(
+            EquityGrantRecord(
+                row_number=row_number,
+                employee_id=employee_id,
+                employee_name=_string_value(row.get(name_col)) if name_col else None,
+                department=_string_value(row.get(dept_col)) if dept_col else None,
+                equity_grant=percent,
+                is_outlier=outlier is not None,
+                reason=outlier.reason if outlier else None,
+            )
+        )
+
+    if not records:
+        warnings.append(
+            "Equity grant column is mapped but no populated values were found in the file."
+        )
+    elif len(records) < 4:
+        row_label = "row" if len(records) == 1 else "rows"
+        warnings.append(
+            f"Equity grant column has {len(records)} populated {row_label} — "
+            "statistical outlier detection requires at least 4."
+        )
+
+    return sorted(records, key=lambda item: item.equity_grant, reverse=True)
 
 
 def _find_managers_below_reports(

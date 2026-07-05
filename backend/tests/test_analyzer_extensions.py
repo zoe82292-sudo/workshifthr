@@ -97,6 +97,9 @@ def test_promotion_and_equity_outliers() -> None:
     change_types = {record.change_type for record in result.unusual_comp_changes}
     assert "promotion" in change_types
     assert "equity" in change_types
+    assert result.summary.equity_grant_outliers >= 1
+    assert len(result.equity_grants) == 4
+    assert any(record.is_outlier for record in result.equity_grants)
 
 
 def test_custom_merit_iqr_multiplier() -> None:

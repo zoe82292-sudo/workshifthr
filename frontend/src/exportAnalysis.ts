@@ -3,7 +3,8 @@ import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import type { AnalysisResult } from "./types";
 
-const BASE_FILENAME = "shiftworkshr-analysis";
+const REPORT_FILENAME = "shiftworkshr-report";
+const SUMMARY_FILENAME = "shiftworkshr-summary";
 
 export type ExportOptions = {
   targetMeritPercent?: number | null;
@@ -39,7 +40,7 @@ function formatMoney(value: number | null | undefined): string {
   }).format(value);
 }
 
-function summaryRows(result: AnalysisResult, options?: ExportOptions): Array<Array<string | number>> {
+function overviewRows(result: AnalysisResult, options?: ExportOptions): Array<Array<string | number>> {
   const { insights, summary } = result;
   const generatedAt = new Date().toLocaleString();
   const meritPercent = options?.targetMeritPercent;
@@ -49,36 +50,43 @@ function summaryRows(result: AnalysisResult, options?: ExportOptions): Array<Arr
       : insights.budget_impact.projected_merit_pool;
   const totalBudgetImpact = insights.budget_impact.cost_to_minimum + projectedMeritPool;
   return [
-    ["ShiftWorksHR Compensation Analysis"],
+    ["ShiftWorksHR Compensation Report"],
     ["Generated", generatedAt],
+    [
+      "What's in the Excel file",
+      "This Overview tab plus separate tabs for flagged issues, pay equity, tenure, location pay, and employee detail.",
+    ],
     [],
-    ["Executive Summary"],
+    ["Key findings"],
     ["Headline", insights.executive_summary.headline],
-    ["Risk Level", insights.executive_summary.risk_level],
+    ["Risk level", insights.executive_summary.risk_level],
     ...insights.executive_summary.bullets.map((bullet) => ["", bullet]),
     [],
-    ["Budget Impact"],
-    ["Cost to Minimum", insights.budget_impact.cost_to_minimum],
-    ["Projected Merit Pool", projectedMeritPool],
-    ["Total Budget Impact", totalBudgetImpact],
+    ["Budget impact"],
+    ["Cost to minimum", insights.budget_impact.cost_to_minimum],
+    ["Projected merit pool", projectedMeritPool],
+    ["Total budget impact", totalBudgetImpact],
     [],
-    ["Issue Counts"],
-    ["Total Rows", summary.total_rows],
-    ["Below Minimum", summary.below_minimum],
-    ["Above Maximum", summary.above_maximum],
+    ["Issue counts"],
+    ["Total rows", summary.total_rows],
+    ["Below minimum", summary.below_minimum],
+    ["Above maximum", summary.above_maximum],
     ["Duplicate IDs", summary.duplicate_ids],
-    ["Compression Issues", summary.compression_issues],
-    ["Managers Below Reports", summary.managers_below_reports],
-    ["Missing Bonus Targets", summary.missing_bonus_targets],
-    ["Missing Salary Ranges", summary.missing_salary_ranges],
-    ["Invalid Effective Dates", summary.invalid_effective_dates],
-    ["Outlier Merit Increases", summary.outlier_merit_increases],
-    ["New-Hire Merit Flags", summary.new_hire_merit_flags ?? 0],
-    ["Unusual Comp Changes", summary.unusual_comp_changes ?? 0],
-    ["Pay Equity Gaps", summary.pay_equity_gaps],
+    ["Compression issues", summary.compression_issues],
+    ["Managers below reports", summary.managers_below_reports],
+    ["Missing bonus targets", summary.missing_bonus_targets],
+    ["Missing salary ranges", summary.missing_salary_ranges],
+    ["Invalid effective dates", summary.invalid_effective_dates],
+    ["Outlier merit increases", summary.outlier_merit_increases],
+    ["New-hire merit flags", summary.new_hire_merit_flags ?? 0],
+    ["Unusual comp changes", summary.unusual_comp_changes ?? 0],
+    ["Equity grant outliers", summary.equity_grant_outliers ?? 0],
+    ["Pay equity gaps", summary.pay_equity_gaps],
+    ["Tenure pay flags", summary.tenure_pay_flags ?? 0],
+    ["Location pay gaps", summary.location_pay_gaps ?? 0],
     [],
-    ["Compa-Ratio Summary"],
-    ["Average Compa-Ratio", insights.compa_ratio.average_compa_ratio ?? ""],
+    ["Compa-ratio"],
+    ["Average compa-ratio", insights.compa_ratio.average_compa_ratio ?? ""],
     ["Below 90%", insights.compa_ratio.below_90_percent],
     ["90% to 110%", insights.compa_ratio.between_90_and_110],
     ["Above 110%", insights.compa_ratio.above_110_percent],
@@ -102,17 +110,17 @@ function employeeRows(result: AnalysisResult, options?: ExportOptions): Array<Ar
   ]);
 }
 
-export function downloadAnalysisExcel(
+export function downloadReportExcel(
   result: AnalysisResult,
-  filename = `${BASE_FILENAME}.xlsx`,
+  filename = `${REPORT_FILENAME}.xlsx`,
   options?: ExportOptions,
 ) {
   const workbook = XLSX.utils.book_new();
 
   XLSX.utils.book_append_sheet(
     workbook,
-    XLSX.utils.aoa_to_sheet(summaryRows(result, options)),
-    "Executive Summary",
+    XLSX.utils.aoa_to_sheet(overviewRows(result, options)),
+    "Overview",
   );
 
   XLSX.utils.book_append_sheet(
@@ -264,6 +272,25 @@ export function downloadAnalysisExcel(
     );
   }
 
+  if ((result.equity_grants ?? []).length > 0) {
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.aoa_to_sheet([
+        ["Row", "Employee ID", "Name", "Department", "Equity Grant %", "Outlier", "Reason"],
+        ...result.equity_grants.map((row) => [
+          row.row_number,
+          row.employee_id ?? "",
+          displayEmployeeName(row.employee_id, row.employee_name, options),
+          row.department ?? "",
+          row.equity_grant,
+          row.is_outlier ? "Yes" : "No",
+          row.reason ?? "",
+        ]),
+      ]),
+      "Equity Grants",
+    );
+  }
+
   if (result.missing_bonus_targets.length > 0) {
     XLSX.utils.book_append_sheet(
       workbook,
@@ -388,234 +415,107 @@ export function downloadAnalysisExcel(
     );
   }
 
+  if (result.tenure.available) {
+    const tenure = result.tenure;
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.aoa_to_sheet([
+        ["Tenure Disclaimer"],
+        [tenure.disclaimer],
+        [],
+        ["Tenure Bands"],
+        ["Band", "Headcount", "Median Salary", "Median Tenure (years)", "Median Compa %"],
+        ...tenure.bands.map((band) => [
+          band.band_label,
+          band.headcount,
+          band.median_salary ?? "",
+          band.median_tenure_years ?? "",
+          band.median_compa_ratio ?? "",
+        ]),
+        [],
+        ["Tenure Pay Flags"],
+        ["Row", "Employee", "Hire Date", "Tenure (years)", "Salary", "Flag", "Reason"],
+        ...tenure.flags.map((flag) => [
+          flag.row_number,
+          flag.employee_name ?? flag.employee_id ?? "",
+          flag.hire_date ?? "",
+          flag.tenure_years,
+          flag.salary,
+          flag.flag_type,
+          flag.reason,
+        ]),
+        [],
+        ["Employee Tenure Detail"],
+        [
+          "Row",
+          "Employee",
+          "Location",
+          "Department",
+          "Level",
+          "Hire Date",
+          "Tenure (years)",
+          "Band",
+          "Salary",
+          "Compa %",
+        ],
+        ...tenure.employees.map((row) => [
+          row.row_number,
+          row.employee_name ?? row.employee_id ?? "",
+          row.location ?? "",
+          row.department ?? "",
+          row.job_level ?? "",
+          row.hire_date ?? "",
+          row.tenure_years,
+          row.tenure_band,
+          row.salary ?? "",
+          row.compa_ratio ?? "",
+        ]),
+      ]),
+      "Tenure",
+    );
+  }
+
+  if (result.location_pay.available) {
+    const location = result.location_pay;
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.aoa_to_sheet([
+        ["Location Pay Disclaimer"],
+        [location.disclaimer],
+        [],
+        ["Location Groups"],
+        ["Location", "Headcount", "% Workforce", "Median Salary", "Mean Salary"],
+        ...location.location_groups.map((group) => [
+          group.group_name,
+          group.headcount,
+          group.workforce_percent,
+          group.suppressed ? "Hidden" : group.median_salary ?? "",
+          group.suppressed ? "" : group.mean_salary ?? "",
+        ]),
+        [],
+        ["Location Gaps"],
+        ["Scope", "Higher Location", "Lower Location", "Higher Median", "Lower Median", "Gap", "Gap %"],
+        ...location.location_gaps.map((gap) => [
+          gap.scope,
+          gap.higher_paid_group,
+          gap.lower_paid_group,
+          gap.higher_median,
+          gap.lower_median,
+          gap.gap_amount,
+          gap.gap_percent ?? "",
+        ]),
+      ]),
+      "Location Pay",
+    );
+  }
+
   XLSX.writeFile(workbook, filename);
 }
 
-export function downloadAnalysisPdf(
+/** Leadership-ready PDF: key findings and metrics only (no employee-level detail). */
+export function downloadSummaryPdf(
   result: AnalysisResult,
-  filename = `${BASE_FILENAME}.pdf`,
-  options?: ExportOptions,
-) {
-  const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "letter" });
-  const { insights, summary, pay_equity: payEquity } = result;
-  const meritPercent = options?.targetMeritPercent;
-  const projectedMeritPool =
-    meritPercent != null && Number.isFinite(meritPercent)
-      ? (insights.merit_calculator.payroll_base * meritPercent) / 100
-      : insights.budget_impact.projected_merit_pool;
-  const totalBudgetImpact = insights.budget_impact.cost_to_minimum + projectedMeritPool;
-  const margin = 48;
-  let y = margin;
-
-  type AutoTableDoc = jsPDF & { lastAutoTable?: { finalY: number } };
-
-  function nextY(fallback = margin) {
-    return (doc as AutoTableDoc).lastAutoTable?.finalY ?? fallback;
-  }
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.text("ShiftWorksHR Compensation Analysis", margin, y);
-  y += 24;
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  doc.text(`Generated ${new Date().toLocaleString()}`, margin, y);
-  y += 28;
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.text("Executive Summary", margin, y);
-  y += 16;
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  const headlineLines = doc.splitTextToSize(insights.executive_summary.headline, 520);
-  doc.text(headlineLines, margin, y);
-  y += headlineLines.length * 14 + 8;
-
-  for (const bullet of insights.executive_summary.bullets) {
-    const lines = doc.splitTextToSize(`• ${bullet}`, 520);
-    doc.text(lines, margin, y);
-    y += lines.length * 14 + 4;
-    if (y > 720) {
-      doc.addPage();
-      y = margin;
-    }
-  }
-
-  if (insights.budget_impact.note) {
-    const noteLines = doc.splitTextToSize(insights.budget_impact.note, 520);
-    doc.text(noteLines, margin, y + 4);
-    y += noteLines.length * 14 + 8;
-  }
-
-  autoTable(doc, {
-    startY: y + 8,
-    head: [["Metric", "Value"]],
-    body: [
-      ["Risk Level", insights.executive_summary.risk_level],
-      ["Cost to Minimum", formatMoney(insights.budget_impact.cost_to_minimum)],
-      ["Projected Merit Pool", formatMoney(projectedMeritPool)],
-      ["Total Budget Impact", formatMoney(totalBudgetImpact)],
-      [
-        "Average Compa-Ratio",
-        insights.compa_ratio.average_compa_ratio != null
-          ? `${insights.compa_ratio.average_compa_ratio}%`
-          : "—",
-      ],
-      ["Below Minimum", String(summary.below_minimum)],
-      ["Above Maximum", String(summary.above_maximum)],
-      ["Duplicate IDs", String(summary.duplicate_ids)],
-      ["Compression Issues", String(summary.compression_issues)],
-      ["Managers Below Reports", String(summary.managers_below_reports)],
-      ["Pay Equity Gaps", String(summary.pay_equity_gaps)],
-      ["Missing Salary Ranges", String(summary.missing_salary_ranges)],
-      ["Outlier Merit Increases", String(summary.outlier_merit_increases)],
-    ],
-    styles: { fontSize: 10, cellPadding: 6 },
-    headStyles: { fillColor: [15, 118, 110] },
-    margin: { left: margin, right: margin },
-  });
-
-  let sectionY = nextY(y + 120) + 24;
-
-  const issueSections: Array<{
-    title: string;
-    head: string[];
-    body: string[][];
-    color: [number, number, number];
-  }> = [];
-
-  if (result.below_minimum.length > 0) {
-    issueSections.push({
-      title: "Below Minimum",
-      head: ["Row", "Employee ID", "Name", "Salary", "Range Min", "Gap to Minimum"],
-      body: result.below_minimum.map((row) => [
-        String(row.row_number),
-        row.employee_id ?? "",
-        displayEmployeeName(row.employee_id, row.employee_name, options),
-        formatMoney(row.salary),
-        formatMoney(row.range_min),
-        formatMoney(row.gap_to_minimum),
-      ]),
-      color: [180, 35, 24],
-    });
-  }
-
-  if (result.above_maximum.length > 0) {
-    issueSections.push({
-      title: "Above Maximum",
-      head: ["Row", "Employee ID", "Name", "Salary", "Range Max"],
-      body: result.above_maximum.map((row) => [
-        String(row.row_number),
-        row.employee_id ?? "",
-        displayEmployeeName(row.employee_id, row.employee_name, options),
-        formatMoney(row.salary),
-        formatMoney(row.range_max),
-      ]),
-      color: [180, 95, 24],
-    });
-  }
-
-  if (result.compression.length > 0) {
-    issueSections.push({
-      title: "Salary Compression",
-      head: ["Type", "Description", "Employee", "Row"],
-      body: result.compression.map((issue) => [
-        issue.issue_type,
-        issue.description,
-        displayEmployeeName(issue.employee_id, issue.employee_name, options),
-        issue.row_number != null ? String(issue.row_number) : "",
-      ]),
-      color: [120, 90, 20],
-    });
-  }
-
-  if (result.managers_below_reports.length > 0) {
-    issueSections.push({
-      title: "Managers Below Reports",
-      head: ["Manager", "Manager Pay", "Report", "Report Pay", "Gap"],
-      body: result.managers_below_reports.map((issue) => [
-        issue.manager_name ?? issue.manager_id,
-        formatMoney(issue.manager_salary),
-        issue.report_name ?? issue.report_id,
-        formatMoney(issue.report_salary),
-        formatMoney(issue.pay_gap),
-      ]),
-      color: [24, 78, 119],
-    });
-  }
-
-  if (result.duplicate_ids.length > 0) {
-    issueSections.push({
-      title: "Duplicate IDs",
-      head: ["Employee ID", "Occurrences", "Excel Rows"],
-      body: result.duplicate_ids.map((group) => [
-        group.employee_id,
-        String(group.count),
-        group.rows.join(", "),
-      ]),
-      color: [90, 90, 90],
-    });
-  }
-
-  if (payEquity.available && (payEquity.gender_gaps.length > 0 || payEquity.race_gaps.length > 0)) {
-    const combinedGaps = [...payEquity.gender_gaps, ...payEquity.race_gaps];
-    issueSections.push({
-      title: "Pay Equity Gaps",
-      head: ["Dimension", "Scope", "Higher Paid", "Lower Paid", "Gap %", "Gap Amount"],
-      body: combinedGaps.map((gap) => [
-        gap.dimension,
-        gap.scope,
-        gap.higher_paid_group,
-        gap.lower_paid_group,
-        gap.gap_percent != null ? `${gap.gap_percent}%` : "",
-        formatMoney(gap.gap_amount),
-      ]),
-      color: [15, 118, 110],
-    });
-  }
-
-  for (const section of issueSections) {
-    if (sectionY > 680) {
-      doc.addPage();
-      sectionY = margin;
-    }
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text(section.title, margin, sectionY);
-    autoTable(doc, {
-      startY: sectionY + 10,
-      head: [section.head],
-      body: section.body,
-      styles: { fontSize: 9, cellPadding: 5 },
-      headStyles: { fillColor: section.color },
-      margin: { left: margin, right: margin },
-      theme: "grid",
-    });
-    sectionY = nextY(sectionY + 40) + 24;
-  }
-
-  if (payEquity.disclaimer) {
-    if (sectionY > 640) {
-      doc.addPage();
-      sectionY = margin;
-    }
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(9);
-    const disclaimerLines = doc.splitTextToSize(payEquity.disclaimer, 520);
-    doc.text(disclaimerLines, margin, sectionY);
-  }
-
-  const pdfBlob = doc.output("blob");
-  triggerDownload(pdfBlob, filename);
-}
-
-/** Leadership-ready export: executive summary and key metrics only. */
-export function downloadExecutiveSummaryPdf(
-  result: AnalysisResult,
-  filename = "shiftworkshr-executive-summary.pdf",
+  filename = `${SUMMARY_FILENAME}.pdf`,
   options?: ExportOptions,
 ) {
   const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "letter" });
@@ -631,70 +531,92 @@ export function downloadExecutiveSummaryPdf(
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
-  doc.text("ShiftWorksHR Executive Summary", margin, y);
-  y += 24;
+  doc.text("ShiftWorksHR Summary Report", margin, y);
+  y += 22;
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  doc.text(`Analysis · ${new Date().toLocaleDateString()}`, margin, y);
-  y += 28;
+  doc.setFontSize(10);
+  doc.setTextColor(80, 80, 80);
+  doc.text(`Generated ${new Date().toLocaleString()} · PDF summary for leadership`, margin, y);
+  doc.setTextColor(0, 0, 0);
+  y += 26;
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.text("Overview", margin, y);
+  doc.setFontSize(12);
+  doc.text("Key findings", margin, y);
   y += 16;
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
   const headlineLines = doc.splitTextToSize(insights.executive_summary.headline, 520);
   doc.text(headlineLines, margin, y);
-  y += headlineLines.length * 14 + 8;
+  y += headlineLines.length * 14 + 6;
 
   for (const bullet of insights.executive_summary.bullets) {
     const lines = doc.splitTextToSize(`• ${bullet}`, 520);
     doc.text(lines, margin, y);
     y += lines.length * 14 + 4;
+    if (y > 720) {
+      doc.addPage();
+      y = margin;
+    }
+  }
+
+  if (insights.budget_impact.note) {
+    const noteLines = doc.splitTextToSize(insights.budget_impact.note, 520);
+    doc.setFontSize(9);
+    doc.setTextColor(80, 80, 80);
+    doc.text(noteLines, margin, y + 4);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(11);
+    y += noteLines.length * 12 + 8;
   }
 
   autoTable(doc, {
     startY: y + 8,
-    head: [["Metric", "Value"]],
+    head: [["Budget & issue counts", "Value"]],
     body: [
-      ["Risk Level", insights.executive_summary.risk_level],
-      ["Cost to Minimum", formatMoney(insights.budget_impact.cost_to_minimum)],
-      ["Projected Merit Pool", formatMoney(projectedMeritPool)],
-      ["Total Budget Impact", formatMoney(totalBudgetImpact)],
+      ["Risk level", insights.executive_summary.risk_level],
+      ["Cost to minimum", formatMoney(insights.budget_impact.cost_to_minimum)],
+      ["Projected merit pool", formatMoney(projectedMeritPool)],
+      ["Total budget impact", formatMoney(totalBudgetImpact)],
       [
-        "Average Compa-Ratio",
+        "Average compa-ratio",
         insights.compa_ratio.average_compa_ratio != null
           ? `${insights.compa_ratio.average_compa_ratio}%`
           : "—",
       ],
-      ["Below Minimum", String(summary.below_minimum)],
-      ["Above Maximum", String(summary.above_maximum)],
-      ["Compression Issues", String(summary.compression_issues)],
-      ["Managers Below Reports", String(summary.managers_below_reports)],
-      ["Pay Equity Gaps", String(summary.pay_equity_gaps)],
+      ["Below minimum", String(summary.below_minimum)],
+      ["Above maximum", String(summary.above_maximum)],
+      ["Compression issues", String(summary.compression_issues)],
+      ["Managers below reports", String(summary.managers_below_reports)],
+      ["Pay equity gaps", String(summary.pay_equity_gaps)],
+      ["Tenure pay flags", String(summary.tenure_pay_flags ?? 0)],
+      ["Location pay gaps", String(summary.location_pay_gaps ?? 0)],
+      ["Outlier merit increases", String(summary.outlier_merit_increases)],
     ],
     styles: { fontSize: 10, cellPadding: 6 },
     headStyles: { fillColor: [15, 118, 110] },
     margin: { left: margin, right: margin },
   });
 
-  const pdfBlob = doc.output("blob");
-  triggerDownload(pdfBlob, filename);
+  const footerY = ((doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y) + 20;
+  if (footerY < 720) {
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text(
+      "For employee-level detail and all flagged rows, download the Excel report from the analyzer.",
+      margin,
+      footerY,
+    );
+  }
+
+  triggerDownload(doc.output("blob"), filename);
 }
 
-export function downloadExecutiveSummaryExcel(
-  result: AnalysisResult,
-  filename = "shiftworkshr-executive-summary.xlsx",
-  options?: ExportOptions,
-) {
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(
-    workbook,
-    XLSX.utils.aoa_to_sheet(summaryRows(result, options)),
-    "Executive Summary",
-  );
-  XLSX.writeFile(workbook, filename);
-}
+/** @deprecated Use downloadReportExcel */
+export const downloadAnalysisExcel = downloadReportExcel;
+
+/** @deprecated Use downloadSummaryPdf */
+export const downloadExecutiveSummaryPdf = downloadSummaryPdf;

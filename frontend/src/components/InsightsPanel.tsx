@@ -33,7 +33,7 @@ export function InsightsPanel({ result, onTargetMeritChange }: InsightsPanelProp
     <>
       <section className="insights-panel">
         <div className="panel-header">
-          <h2>Executive Summary</h2>
+          <h2>Overview</h2>
           <span className={`pill risk-${insights.executive_summary.risk_level}`}>
             {insights.executive_summary.risk_level} risk
           </span>

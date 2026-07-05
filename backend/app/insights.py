@@ -176,6 +176,14 @@ def _build_executive_summary(
             f"{_plural(summary.managers_below_reports, 'is', 'are')} paid below at least one direct report."
         )
 
+    if summary.equity_grant_outliers:
+        bullets.append(
+            f"{summary.equity_grant_outliers} "
+            f"{_plural(summary.equity_grant_outliers, 'employee', 'employees')} "
+            f"{_plural(summary.equity_grant_outliers, 'has', 'have')} an unusually high or low "
+            "equity / LTI grant compared to the rest of the file."
+        )
+
     if compa_ratio.average_compa_ratio is not None:
         bullets.append(
             f"Average compa-ratio is {compa_ratio.average_compa_ratio:.1f}% "

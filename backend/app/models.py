@@ -14,6 +14,7 @@ class ColumnMapping(BaseModel):
     range_midpoint: str | None = None
     job_level: str | None = None
     department: str | None = None
+    location: str | None = None
     manager_id: str | None = None
     bonus_target: str | None = None
     effective_date: str | None = None
@@ -175,6 +176,16 @@ class UnusualCompChangeRecord(BaseModel):
     reason: str
 
 
+class EquityGrantRecord(BaseModel):
+    row_number: int
+    employee_id: str | None = None
+    employee_name: str | None = None
+    department: str | None = None
+    equity_grant: float
+    is_outlier: bool = False
+    reason: str | None = None
+
+
 class DemographicGroupStats(BaseModel):
     dimension: str
     group_name: str
@@ -218,6 +229,65 @@ class PayEquityReport(BaseModel):
     disclaimer: str = ""
 
 
+class TenurePayFlag(BaseModel):
+    row_number: int
+    employee_id: str | None = None
+    employee_name: str | None = None
+    hire_date: str | None = None
+    tenure_years: float
+    salary: float
+    flag_type: str
+    reason: str
+
+
+class TenureBandStats(BaseModel):
+    band_label: str
+    headcount: int
+    median_salary: float | None = None
+    median_tenure_years: float | None = None
+    median_compa_ratio: float | None = None
+
+
+class TenureEmployeeRow(BaseModel):
+    row_number: int
+    employee_id: str | None = None
+    employee_name: str | None = None
+    hire_date: str | None = None
+    tenure_days: int
+    tenure_years: float
+    tenure_band: str
+    salary: float | None = None
+    job_level: str | None = None
+    department: str | None = None
+    location: str | None = None
+    compa_ratio: float | None = None
+
+
+class TenureReport(BaseModel):
+    available: bool = False
+    bands: list[TenureBandStats] = Field(default_factory=list)
+    employees: list[TenureEmployeeRow] = Field(default_factory=list)
+    flags: list[TenurePayFlag] = Field(default_factory=list)
+    employees_missing_hire_date: int = 0
+    disclaimer: str = ""
+
+
+class LevelLocationBreakdown(BaseModel):
+    job_level: str
+    headcount: int
+    location_groups: list[DemographicGroupStats] = Field(default_factory=list)
+    location_gaps: list[PayEquityGap] = Field(default_factory=list)
+
+
+class LocationPayReport(BaseModel):
+    available: bool = False
+    location_groups: list[DemographicGroupStats] = Field(default_factory=list)
+    location_gaps: list[PayEquityGap] = Field(default_factory=list)
+    level_breakdowns: list[LevelLocationBreakdown] = Field(default_factory=list)
+    employees_missing_location: int = 0
+    disclaimer: str = ""
+
+
 class AnalysisSummary(BaseModel):
     total_rows: int
     valid_rows: int
@@ -234,7 +304,10 @@ class AnalysisSummary(BaseModel):
     outlier_merit_increases: int = 0
     new_hire_merit_flags: int = 0
     unusual_comp_changes: int = 0
+    equity_grant_outliers: int = 0
     pay_equity_gaps: int = 0
+    tenure_pay_flags: int = 0
+    location_pay_gaps: int = 0
 
 
 class AnalysisResult(BaseModel):
@@ -255,8 +328,11 @@ class AnalysisResult(BaseModel):
     outlier_merit_increases: list[OutlierMeritIncreaseRecord]
     new_hire_merit_flags: list[NewHireMeritFlag] = Field(default_factory=list)
     unusual_comp_changes: list[UnusualCompChangeRecord] = Field(default_factory=list)
+    equity_grants: list[EquityGrantRecord] = Field(default_factory=list)
     compa_ratios: list[CompaRatioRecord]
     pay_equity: PayEquityReport
+    tenure: TenureReport
+    location_pay: LocationPayReport
     insights: AnalysisInsights
     warnings: list[str] = Field(default_factory=list)
 

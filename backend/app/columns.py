@@ -110,6 +110,23 @@ COLUMN_ALIASES: dict[str, list[str]] = {
         "cost center",
         "unit",
     ],
+    "location": [
+        "location",
+        "work location",
+        "office location",
+        "office",
+        "site",
+        "work site",
+        "city",
+        "work city",
+        "state",
+        "region",
+        "geo",
+        "country",
+        "campus",
+        "physical location",
+        "loc",
+    ],
     "manager_id": [
         "manager id",
         "manager employee id",
@@ -298,6 +315,125 @@ def detect_column_mapping(columns: list[Any], df: pd.DataFrame | None = None) ->
     return mapping
 
 
+def mapping_has_required(mapping: dict[str, str | None]) -> bool:
+    return all(mapping.get(field) for field in REQUIRED_FIELDS)
+
+
+def resolve_column_mapping(
+    columns: list[Any],
+    df: pd.DataFrame,
+    override: dict[str, str | None] | None = None,
+) -> dict[str, str | None]:
+    detected = detect_column_mapping(columns, df)
+    if not override:
+        return detected
+
+    merged = {**detected}
+    for field in COLUMN_ALIASES:
+        value = override.get(field)
+        if value:
+            merged[field] = value
+    return merged
+
+
+def _column_name_looks_like_data_value(value: Any) -> bool:
+    text = str(value).strip()
+    if not text:
+        return False
+    if re.fullmatch(r"[A-Za-z]{0,4}\d[\w\-]*", text):
+        return True
+    numeric = coerce_numeric(pd.Series([text]))
+    if numeric.notna().iloc[0]:
+        number = float(numeric.iloc[0])
+        if COMP_MIN_MEDIAN <= number <= COMP_MAX_MEDIAN:
+            return True
+        if 0 < number <= 100:
+            return True
+    return False
+
+
+def _columns_match_known_headers(columns: list[Any]) -> bool:
+    header_matches = _header_lookup(columns)
+    return any(field in header_matches for field in REQUIRED_FIELDS)
+
+
+def _first_row_looks_like_headers(df: pd.DataFrame) -> bool:
+    if len(df) < 2:
+        return False
+
+    matches = 0
+    has_id = False
+    has_comp = False
+    for value in df.iloc[0]:
+        normalized = normalize_header(value)
+        compact = compact_header(value)
+        for field, aliases in COLUMN_ALIASES.items():
+            if normalized in aliases or compact in {compact_header(alias) for alias in aliases}:
+                matches += 1
+                if field == "employee_id":
+                    has_id = True
+                if field in {"salary", "range_min", "range_max"}:
+                    has_comp = True
+                break
+
+    return matches >= 3 and has_id and has_comp
+
+
+def _should_use_headerless_layout(df: pd.DataFrame) -> bool:
+    columns = [str(col) for col in df.columns]
+    if _columns_match_known_headers(columns):
+        return False
+
+    unnamed_or_numeric = sum(
+        1
+        for column in columns
+        if column.startswith("Unnamed:")
+        or re.fullmatch(r"\d+\.?\d*", column)
+    )
+    if unnamed_or_numeric >= max(2, len(columns) // 2):
+        return True
+
+    data_like_headers = sum(1 for column in columns if _column_name_looks_like_data_value(column))
+    return data_like_headers >= max(2, int(len(columns) * 0.4))
+
+
+def normalize_upload_dataframe(df: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
+    warnings: list[str] = []
+    if df.empty or len(df.columns) < 2:
+        return df, warnings
+
+    working = df.copy()
+    working.columns = [str(col).strip() for col in working.columns]
+
+    if (
+        mapping_has_required(detect_column_mapping(list(working.columns), working))
+        and _columns_match_known_headers(list(working.columns))
+    ):
+        return working, warnings
+
+    if _first_row_looks_like_headers(working):
+        promoted = working.copy()
+        promoted.columns = [str(value).strip() for value in promoted.iloc[0]]
+        promoted = promoted.iloc[1:].reset_index(drop=True)
+        promoted.columns = [str(col).strip() for col in promoted.columns]
+        if mapping_has_required(detect_column_mapping(list(promoted.columns), promoted)):
+            warnings.append(
+                "Detected column headers in the first row of the file and adjusted automatically."
+            )
+            return promoted, warnings
+
+    if _should_use_headerless_layout(working):
+        headerless = working.copy()
+        headerless.columns = [f"Column_{index + 1}" for index in range(len(headerless.columns))]
+        if mapping_has_required(detect_column_mapping(list(headerless.columns), headerless)):
+            warnings.append(
+                "No header row detected — required columns were inferred from your data patterns."
+            )
+            return headerless, warnings
+
+    return working, warnings
+
+
 def _used_columns(mapping: dict[str, str | None]) -> set[str]:
     return {column for column in mapping.values() if column}
 
@@ -329,6 +465,7 @@ def _infer_column_mapping(
         ("race_ethnicity", lambda cols: _infer_race_column(df, cols)),
         ("job_level", lambda cols: _infer_job_level_column(df, cols)),
         ("department", lambda cols: _infer_department_column(df, cols)),
+        ("location", lambda cols: _infer_location_column(df, cols)),
         ("merit_increase", lambda cols: _infer_merit_column(df, cols)),
         ("promotion_increase", lambda cols: _infer_percent_column(df, cols, "promotion")),
         ("equity_grant", lambda cols: _infer_percent_column(df, cols, "equity")),
@@ -581,6 +718,39 @@ def _infer_department_column(df: pd.DataFrame, columns: list[Any]) -> str | None
             best_col = str(col)
 
     return best_col if best_score >= 0.55 else None
+
+
+def _infer_location_column(df: pd.DataFrame, columns: list[Any]) -> str | None:
+    best_col: str | None = None
+    best_score = 0.0
+
+    for col in columns:
+        raw = df[col].dropna().astype(str).str.strip()
+        raw = raw[raw != ""]
+        if len(raw) < max(3, len(df) * 0.4):
+            continue
+
+        unique_count = raw.nunique()
+        if unique_count < 2 or unique_count > 25:
+            continue
+
+        numeric_ratio = coerce_numeric(df[col]).notna().mean()
+        if numeric_ratio > 0.15:
+            continue
+
+        remote_hits = raw.str.lower().isin(
+            {"remote", "hybrid", "onsite", "on-site", "office", "wfh", "home"}
+        ).mean()
+        alpha = raw.str.match(r"^[A-Za-z0-9 ,./\-]+$").mean()
+        if alpha < 0.7:
+            continue
+
+        score = alpha * 0.45 + min(unique_count / 10, 1.0) * 0.35 + remote_hits * 0.2
+        if score > best_score:
+            best_score = score
+            best_col = str(col)
+
+    return best_col if best_score >= 0.5 else None
 
 
 def _infer_merit_column(df: pd.DataFrame, columns: list[Any]) -> str | None:

@@ -24,7 +24,10 @@ export const MARKETING_DEMO_DATA: MarketingPreviewData = {
     outlier_merit_increases: 1,
     new_hire_merit_flags: 1,
     unusual_comp_changes: 2,
+    equity_grant_outliers: 1,
     pay_equity_gaps: 2,
+    tenure_pay_flags: 0,
+    location_pay_gaps: 0,
   },
   below_minimum: [
     {

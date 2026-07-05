@@ -1,13 +1,24 @@
 import type { AnalysisResult, AnalysisTab } from "../types";
 import { PENETRATION_BAND_LABELS } from "../types";
 import { useSortableRows } from "../useSortableRows";
-import { exportAnalysisExcel, exportAnalysisPdf, exportExecutiveSummaryExcel, exportExecutiveSummaryPdf } from "../exportActions";
+import { exportReportExcel, exportSummaryPdf } from "../exportActions";
 import { saveAnalysisHistory } from "../api";
-import { buildDepartmentLookup, employeeInDepartment, textMatchesSearch } from "../analysisFilters";
+import {
+  buildDepartmentLookup,
+  collectDepartments,
+  employeeInDepartment,
+  textMatchesSearch,
+} from "../analysisFilters";
 import { ColumnMappingSummary } from "./ColumnMappingSummary";
 import { InsightsPanel } from "./InsightsPanel";
 import { PayEquityPanel, payEquityTabCount } from "./PayEquityPanel";
-import { useMemo, useState, type ReactNode } from "react";
+import {
+  LocationPayPanel,
+  TenurePanel,
+  locationTabCount,
+  tenureTabCount,
+} from "./TenureLocationPanels";
+import { useMemo, useState, useCallback, type ReactNode } from "react";
 import { TablePagination, useTablePagination } from "./TablePagination";
 
 interface ResultsDashboardProps {
@@ -56,6 +67,16 @@ const TABS: Array<{ id: AnalysisTab; label: string; count: (result: AnalysisResu
       count: (r) => payEquityTabCount(r),
     },
     {
+      id: "tenure",
+      label: "Tenure",
+      count: (r) => tenureTabCount(r),
+    },
+    {
+      id: "location_pay",
+      label: "Location Pay",
+      count: (r) => locationTabCount(r),
+    },
+    {
       id: "managers_below_reports",
       label: "Managers Below Reports",
       count: (r) => r.summary.managers_below_reports,
@@ -86,9 +107,15 @@ const TABS: Array<{ id: AnalysisTab; label: string; count: (result: AnalysisResu
       count: (r) => r.summary.new_hire_merit_flags ?? r.new_hire_merit_flags.length,
     },
     {
+      id: "equity_grants",
+      label: "Equity Grants",
+      count: (r) => (r.column_mapping.equity_grant ? r.summary.equity_grant_outliers ?? 0 : 0),
+    },
+    {
       id: "unusual_comp_changes",
-      label: "Unusual Comp Changes",
-      count: (r) => r.summary.unusual_comp_changes ?? r.unusual_comp_changes.length,
+      label: "Unusual Promotions",
+      count: (r) =>
+        (r.unusual_comp_changes ?? []).filter((row) => row.change_type === "promotion").length,
     },
     { id: "compa_ratio", label: "Compa-Ratio", count: (r) => r.compa_ratios.length },
     { id: "missing_data", label: "Missing Data", count: (r) => r.summary.missing_data },
@@ -114,14 +141,19 @@ const TAB_GROUPS: Array<{ title: string; ids: AnalysisTab[] }> = [
     ids: ["pay_equity"],
   },
   {
+    title: "Workforce insights",
+    ids: ["tenure", "location_pay"],
+  },
+  {
+    title: "Merit & LTI",
+    ids: ["outlier_merit_increases", "new_hire_merit_flags", "equity_grants", "unusual_comp_changes"],
+  },
+  {
     title: "Data quality",
     ids: [
       "missing_bonus_targets",
       "missing_salary_ranges",
       "invalid_effective_dates",
-      "outlier_merit_increases",
-      "new_hire_merit_flags",
-      "unusual_comp_changes",
       "missing_data",
     ],
   },
@@ -147,12 +179,14 @@ function EmployeeTable({
   showGapToMinimum = false,
   departmentFilter = "",
   search = "",
+  onDepartmentSelect,
 }: {
   rows: AnalysisResult["below_minimum"];
   showPenetration?: boolean;
   showGapToMinimum?: boolean;
   departmentFilter?: string;
   search?: string;
+  onDepartmentSelect?: (department: string) => void;
 }) {
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -262,7 +296,22 @@ function EmployeeTable({
               <td>{row.row_number}</td>
               <td>{row.employee_id ?? "—"}</td>
               <td>{row.employee_name ?? "—"}</td>
-              <td>{row.department ?? "—"}</td>
+              <td>
+                {row.department ? (
+                  <button
+                    type="button"
+                    className={`department-link${
+                      departmentFilter === row.department ? " department-link--active" : ""
+                    }`}
+                    onClick={() => onDepartmentSelect?.(row.department!)}
+                    title={`Filter to ${row.department}`}
+                  >
+                    {row.department}
+                  </button>
+                ) : (
+                  "—"
+                )}
+              </td>
               <td>{row.job_level ?? "—"}</td>
               <td>{formatCurrency(row.salary)}</td>
               <td>{formatCurrency(row.range_min)}</td>
@@ -297,6 +346,13 @@ function EmployeeTable({
   );
 }
 
+function tabIsVisible(tabId: AnalysisTab, result: AnalysisResult): boolean {
+  if (tabId === "equity_grants") {
+    return Boolean(result.column_mapping.equity_grant);
+  }
+  return true;
+}
+
 export function ResultsDashboard({
   result,
   activeTab,
@@ -323,11 +379,10 @@ export function ResultsDashboard({
   const filteredCompression = useMemo(() => {
     const query = search.trim().toLowerCase();
     return result.compression.filter((issue) => {
-      if (
-        departmentFilter &&
-        !employeeInDepartment(issue.employee_id, departmentFilter, departmentLookup)
-      ) {
-        return false;
+      if (departmentFilter && issue.employee_id) {
+        if (!employeeInDepartment(issue.employee_id, departmentFilter, departmentLookup)) {
+          return false;
+        }
       }
       if (!query) return true;
       return textMatchesSearch(
@@ -374,29 +429,45 @@ export function ResultsDashboard({
     );
   }, [departmentFilter, departmentLookup, result.duplicate_ids]);
 
-  function filterIssueRows<T extends { employee_id?: string | null; employee_name?: string | null }>(
-    rows: T[],
-  ): T[] {
+  const filterIssueRows = useCallback(
+    <T extends { employee_id?: string | null; employee_name?: string | null }>(rows: T[]): T[] => {
+      const query = search.trim().toLowerCase();
+      return rows.filter((row) => {
+        if (
+          departmentFilter &&
+          !employeeInDepartment(row.employee_id, departmentFilter, departmentLookup)
+        ) {
+          return false;
+        }
+        if (!query) return true;
+        return textMatchesSearch([row.employee_id, row.employee_name], query);
+      });
+    },
+    [departmentFilter, departmentLookup, search],
+  );
+
+  const filteredEquityGrants = useMemo(() => {
     const query = search.trim().toLowerCase();
-    return rows.filter((row) => {
-      if (
-        departmentFilter &&
-        !employeeInDepartment(row.employee_id, departmentFilter, departmentLookup)
-      ) {
+    return (result.equity_grants ?? []).filter((row) => {
+      if (departmentFilter && (row.department ?? "") !== departmentFilter) {
         return false;
       }
       if (!query) return true;
-      return textMatchesSearch([row.employee_id, row.employee_name], query);
+      return textMatchesSearch([row.employee_id, row.employee_name, row.department], query);
     });
-  }
+  }, [departmentFilter, result.equity_grants, search]);
 
-  const departments = useMemo(() => {
-    const values = new Set<string>();
-    for (const row of result.range_penetration) {
-      if (row.department) values.add(row.department);
-    }
-    return Array.from(values).sort((a, b) => a.localeCompare(b));
-  }, [result.range_penetration]);
+  const filteredPromotionChanges = useMemo(() => {
+    return filterIssueRows(
+      (result.unusual_comp_changes ?? []).filter((row) => row.change_type === "promotion"),
+    );
+  }, [filterIssueRows, result.unusual_comp_changes]);
+
+  const departments = useMemo(() => collectDepartments(result), [result]);
+
+  function toggleDepartmentFilter(department: string) {
+    setDepartmentFilter((current) => (current === department ? "" : department));
+  }
 
   async function handleSaveHistory() {
     if (!fileName) return;
@@ -419,7 +490,7 @@ export function ResultsDashboard({
     <>
       <div className="panel-header" style={{ marginBottom: 16 }}>
         <h2>Analysis results</h2>
-        <div className="download-actions">
+        <div className="export-actions">
           <label className="legal-consent-checkbox export-anonymize-toggle">
             <input
               type="checkbox"
@@ -438,50 +509,38 @@ export function ResultsDashboard({
               {savingHistory ? "Saving…" : "Save to history"}
             </button>
           ) : null}
-          <button
-            className="button button-primary"
-            type="button"
-            disabled={exporting === "excel"}
-            onClick={() => {
-              setExporting("excel");
-              void exportAnalysisExcel(result, undefined, exportOptions).finally(() => setExporting(null));
-            }}
-          >
-            {exporting === "excel" ? "Preparing…" : "Download Excel"}
-          </button>
-          <button
-            className="button button-secondary"
-            type="button"
-            disabled={exporting === "pdf"}
-            onClick={() => {
-              setExporting("pdf");
-              void exportAnalysisPdf(result, undefined, exportOptions).finally(() => setExporting(null));
-            }}
-          >
-            {exporting === "pdf" ? "Preparing…" : "Download PDF"}
-          </button>
-          <button
-            className="button button-secondary"
-            type="button"
-            disabled={exporting === "exec-pdf"}
-            onClick={() => {
-              setExporting("exec-pdf");
-              void exportExecutiveSummaryPdf(result, undefined, exportOptions).finally(() => setExporting(null));
-            }}
-          >
-            {exporting === "exec-pdf" ? "Preparing…" : "Executive PDF"}
-          </button>
-          <button
-            className="button button-secondary"
-            type="button"
-            disabled={exporting === "exec-xlsx"}
-            onClick={() => {
-              setExporting("exec-xlsx");
-              void exportExecutiveSummaryExcel(result, undefined, exportOptions).finally(() => setExporting(null));
-            }}
-          >
-            {exporting === "exec-xlsx" ? "Preparing…" : "Executive Excel"}
-          </button>
+          <div className="export-action-group">
+            <span className="export-action-label">For leadership</span>
+            <button
+              className="button button-secondary"
+              type="button"
+              disabled={exporting === "summary-pdf"}
+              onClick={() => {
+                setExporting("summary-pdf");
+                void exportSummaryPdf(result, undefined, exportOptions).finally(() =>
+                  setExporting(null),
+                );
+              }}
+            >
+              {exporting === "summary-pdf" ? "Preparing…" : "PDF summary"}
+            </button>
+          </div>
+          <div className="export-action-group">
+            <span className="export-action-label">Full analysis</span>
+            <button
+              className="button button-primary"
+              type="button"
+              disabled={exporting === "report-excel"}
+              onClick={() => {
+                setExporting("report-excel");
+                void exportReportExcel(result, undefined, exportOptions).finally(() =>
+                  setExporting(null),
+                );
+              }}
+            >
+              {exporting === "report-excel" ? "Preparing…" : "Excel report"}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -518,6 +577,18 @@ export function ResultsDashboard({
           <span className="stat-card__label">Pay equity gaps</span>
           <strong className="stat-card__value">{result.summary.pay_equity_gaps}</strong>
         </div>
+        {result.tenure.available ? (
+          <div className="summary-card stat-card stat-card--warning">
+            <span className="stat-card__label">Tenure pay flags</span>
+            <strong className="stat-card__value">{result.summary.tenure_pay_flags ?? 0}</strong>
+          </div>
+        ) : null}
+        {result.location_pay.available ? (
+          <div className="summary-card stat-card stat-card--info">
+            <span className="stat-card__label">Location pay gaps</span>
+            <strong className="stat-card__value">{result.summary.location_pay_gaps ?? 0}</strong>
+          </div>
+        ) : null}
         <div className="summary-card stat-card">
           <span className="stat-card__label">Outlier merit increases</span>
           <strong className="stat-card__value">{result.summary.outlier_merit_increases}</strong>
@@ -532,12 +603,56 @@ export function ResultsDashboard({
         </div>
       </div>
 
+      {departments.length > 0 ? (
+        <div className="table-filters">
+          <label className="table-filters__field" htmlFor="results-department-filter">
+            <span>Department</span>
+            <select
+              id="results-department-filter"
+              value={departmentFilter}
+              onChange={(event) => setDepartmentFilter(event.target.value)}
+            >
+              <option value="">All departments</option>
+              {departments.map((department) => (
+                <option key={department} value={department}>
+                  {department}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="table-filters__field table-filters__field--grow" htmlFor="results-search">
+            <span>Search</span>
+            <input
+              id="results-search"
+              type="search"
+              placeholder="Employee, ID, department, level…"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+          </label>
+          {departmentFilter ? (
+            <div className="table-filters__active">
+              <span>
+                Showing <strong>{departmentFilter}</strong> only
+              </span>
+              <button
+                type="button"
+                className="button button-secondary button-small"
+                onClick={() => setDepartmentFilter("")}
+              >
+                Clear filter
+              </button>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className="tab-groups" role="tablist" aria-label="Issue categories">
         {TAB_GROUPS.map((group) => (
           <div className="tab-group" key={group.title}>
             <span className="tab-group__label">{group.title}</span>
             <div className="tab-group__tabs">
-              {group.ids.map((tabId) => {
+              {group.ids.filter((tabId) => tabIsVisible(tabId, result)).map((tabId) => {
                 const tab = TABS_BY_ID[tabId];
                 return (
                   <button
@@ -557,44 +672,22 @@ export function ResultsDashboard({
         ))}
       </div>
 
-      {result.range_penetration.length > 0 ? (
-        <div className="table-filters">
-          <label className="table-filters__field">
-            <span>Department</span>
-            <select
-              value={departmentFilter}
-              onChange={(event) => setDepartmentFilter(event.target.value)}
-            >
-              <option value="">All departments</option>
-              {departments.map((department) => (
-                <option key={department} value={department}>
-                  {department}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="table-filters__field table-filters__field--grow">
-            <span>Search</span>
-            <input
-              type="search"
-              placeholder="Employee, ID, department, level…"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-          </label>
-        </div>
-      ) : null}
-
       {activeTab === "below_minimum" ? (
         <EmployeeTable
           rows={result.below_minimum}
           showGapToMinimum
           departmentFilter={departmentFilter}
           search={search}
+          onDepartmentSelect={toggleDepartmentFilter}
         />
       ) : null}
       {activeTab === "above_maximum" ? (
-        <EmployeeTable rows={result.above_maximum} departmentFilter={departmentFilter} search={search} />
+        <EmployeeTable
+          rows={result.above_maximum}
+          departmentFilter={departmentFilter}
+          search={search}
+          onDepartmentSelect={toggleDepartmentFilter}
+        />
       ) : null}
 
       {activeTab === "duplicate_ids" ? (
@@ -638,6 +731,7 @@ export function ResultsDashboard({
             showPenetration
             departmentFilter={departmentFilter}
             search={search}
+            onDepartmentSelect={toggleDepartmentFilter}
           />
         </>
       ) : null}
@@ -645,6 +739,8 @@ export function ResultsDashboard({
       {activeTab === "compression" ? (
         result.compression.length === 0 ? (
           <div className="empty-state">No salary compression patterns detected.</div>
+        ) : filteredCompression.length === 0 ? (
+          <div className="empty-state">No compression issues match your filters.</div>
         ) : (
           <PaginatedSlice items={filteredCompression}>
             {(pageItems) => (
@@ -680,6 +776,8 @@ export function ResultsDashboard({
       {activeTab === "managers_below_reports" ? (
         result.managers_below_reports.length === 0 ? (
           <div className="empty-state">No managers paid below direct reports.</div>
+        ) : filteredManagers.length === 0 ? (
+          <div className="empty-state">No manager inversion issues match your filters.</div>
         ) : (
           <PaginatedSlice items={filteredManagers}>
             {(pageItems) => (
@@ -891,11 +989,83 @@ export function ResultsDashboard({
         )
       ) : null}
 
-      {activeTab === "unusual_comp_changes" ? (
-        filterIssueRows(result.unusual_comp_changes ?? []).length === 0 ? (
-          <div className="empty-state">No unusual promotion or equity changes detected.</div>
+      {activeTab === "equity_grants" ? (
+        !result.column_mapping.equity_grant ? (
+          <div className="empty-state">
+            Map an <strong>Equity / LTI grant %</strong> column to review grant values and outliers.
+          </div>
+        ) : filteredEquityGrants.length === 0 ? (
+          <div className="empty-state">
+            Equity grant column is mapped but no populated values match your filters.
+          </div>
         ) : (
-          <PaginatedSlice items={filterIssueRows(result.unusual_comp_changes ?? [])}>
+          <>
+            <p className="file-meta" style={{ marginBottom: 16 }}>
+              Statistical outliers are flagged when a grant falls outside the expected spread for
+              this file. Adjust merit outlier sensitivity before re-running analysis to flag more
+              or fewer grants.
+            </p>
+            <PaginatedSlice items={filteredEquityGrants}>
+              {(pageItems) => (
+                <div className="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Row</th>
+                        <th>Employee ID</th>
+                        <th>Name</th>
+                        <th>Department</th>
+                        <th>Equity Grant %</th>
+                        <th>Status</th>
+                        <th>Reason</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pageItems.map((row) => (
+                        <tr key={row.row_number}>
+                          <td>{row.row_number}</td>
+                          <td>{row.employee_id ?? "—"}</td>
+                          <td>{row.employee_name ?? "—"}</td>
+                          <td>
+                            {row.department ? (
+                              <button
+                                type="button"
+                                className={`department-link${
+                                  departmentFilter === row.department ? " department-link--active" : ""
+                                }`}
+                                onClick={() => toggleDepartmentFilter(row.department!)}
+                              >
+                                {row.department}
+                              </button>
+                            ) : (
+                              "—"
+                            )}
+                          </td>
+                          <td>{row.equity_grant}%</td>
+                          <td>
+                            {row.is_outlier ? (
+                              <span className="pill pill-warning">Outlier</span>
+                            ) : (
+                              <span className="pill">OK</span>
+                            )}
+                          </td>
+                          <td>{row.reason ?? "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </PaginatedSlice>
+          </>
+        )
+      ) : null}
+
+      {activeTab === "unusual_comp_changes" ? (
+        filteredPromotionChanges.length === 0 ? (
+          <div className="empty-state">No unusual promotion increases detected.</div>
+        ) : (
+          <PaginatedSlice items={filteredPromotionChanges}>
             {(pageItems) => (
               <div className="table-wrap">
                 <table>
@@ -904,8 +1074,7 @@ export function ResultsDashboard({
                       <th>Row</th>
                       <th>Employee ID</th>
                       <th>Name</th>
-                      <th>Type</th>
-                      <th>Value</th>
+                      <th>Promotion %</th>
                       <th>Reason</th>
                     </tr>
                   </thead>
@@ -915,7 +1084,6 @@ export function ResultsDashboard({
                         <td>{row.row_number}</td>
                         <td>{row.employee_id ?? "—"}</td>
                         <td>{row.employee_name ?? "—"}</td>
-                        <td>{row.change_type}</td>
                         <td>{row.value_percent}%</td>
                         <td>{row.reason}</td>
                       </tr>
@@ -968,6 +1136,10 @@ export function ResultsDashboard({
       {activeTab === "pay_equity" ? (
         <PayEquityPanel payEquity={result.pay_equity} departmentFilter={departmentFilter} />
       ) : null}
+
+      {activeTab === "tenure" ? <TenurePanel report={result.tenure} /> : null}
+
+      {activeTab === "location_pay" ? <LocationPayPanel report={result.location_pay} /> : null}
 
       {activeTab === "missing_data" ? (
         filterIssueRows(result.missing_data).length === 0 ? (
