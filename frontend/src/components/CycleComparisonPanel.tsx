@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { AnalysisHistorySummary, AnalysisResult } from "../types";
-import { compareAnalysisResults } from "../cycleComparison";
+import { compareAnalysisResults, formatComparisonValue } from "../cycleComparison";
 
 type CycleComparisonPanelProps = {
   current: AnalysisResult;
@@ -12,10 +12,10 @@ type CycleComparisonPanelProps = {
   onLoadPrior: (id: string) => void;
 };
 
-function formatDelta(delta: number) {
+function formatDelta(delta: number, format?: "number" | "percent" | "currency") {
   if (delta === 0) return "—";
   const prefix = delta > 0 ? "+" : "";
-  return `${prefix}${delta}`;
+  return `${prefix}${formatComparisonValue(delta, format)}`;
 }
 
 export function CycleComparisonPanel({
@@ -92,9 +92,9 @@ export function CycleComparisonPanel({
                 {comparison.metrics.map((metric) => (
                   <tr key={metric.label}>
                     <td>{metric.label}</td>
-                    <td>{metric.current}</td>
-                    <td>{metric.prior}</td>
-                    <td>{formatDelta(metric.delta)}</td>
+                    <td>{formatComparisonValue(metric.current, metric.format)}</td>
+                    <td>{formatComparisonValue(metric.prior, metric.format)}</td>
+                    <td>{formatDelta(metric.delta, metric.format)}</td>
                   </tr>
                 ))}
               </tbody>

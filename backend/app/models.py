@@ -28,6 +28,7 @@ class ColumnMapping(BaseModel):
     pay_zone: str | None = None
     geo_differential: str | None = None
     currency: str | None = None
+    performance_rating: str | None = None
 
 
 class AnalysisOptions(BaseModel):
@@ -458,6 +459,77 @@ class MidpointProgressionReport(BaseModel):
     disclaimer: str = ""
 
 
+class PenetrationBandCount(BaseModel):
+    band: str
+    label: str
+    count: int
+    percent: float = 0
+
+
+class PenetrationDistribution(BaseModel):
+    available: bool = False
+    bands: list[PenetrationBandCount] = Field(default_factory=list)
+    total_employees: int = 0
+
+
+class ReviewQueueItem(BaseModel):
+    priority: int
+    severity: str
+    category: str
+    tab_id: str
+    reason: str
+    employee_id: str | None = None
+    employee_name: str | None = None
+    department: str | None = None
+    job_level: str | None = None
+    row_number: int | None = None
+
+
+class ReviewQueueReport(BaseModel):
+    available: bool = False
+    items: list[ReviewQueueItem] = Field(default_factory=list)
+    total_items: int = 0
+    critical_count: int = 0
+    high_count: int = 0
+    disclaimer: str = ""
+
+
+class MeritBudgetVariance(BaseModel):
+    department: str
+    average_merit_percent: float
+    projected_pool: float
+    payroll_base: float
+    headcount: int
+
+
+class MeritBudgetVarianceReport(BaseModel):
+    available: bool = False
+    file_average_merit: float | None = None
+    projected_merit_pool: float = 0
+    payroll_base: float = 0
+    departments: list[MeritBudgetVariance] = Field(default_factory=list)
+    disclaimer: str = ""
+
+
+class PerformanceMeritFlag(BaseModel):
+    row_number: int
+    employee_id: str | None = None
+    employee_name: str | None = None
+    department: str | None = None
+    job_level: str | None = None
+    performance_rating: str
+    merit_increase: float
+    file_average_merit: float
+    flag_type: str
+    reason: str
+
+
+class PerformanceMeritReport(BaseModel):
+    available: bool = False
+    flags: list[PerformanceMeritFlag] = Field(default_factory=list)
+    disclaimer: str = ""
+
+
 class UnusualCompChangeRecord(BaseModel):
     row_number: int
     employee_id: str | None = None
@@ -609,6 +681,8 @@ class AnalysisSummary(BaseModel):
     new_hire_placement_flags: int = 0
     geo_pay_policy_flags: int = 0
     midpoint_progression_issues: int = 0
+    review_queue_items: int = 0
+    performance_merit_flags: int = 0
 
 
 class AnalysisResult(BaseModel):
@@ -648,6 +722,10 @@ class AnalysisResult(BaseModel):
     currency_report: CurrencyReport
     employee_type_report: EmployeeTypeReport
     midpoint_progression: MidpointProgressionReport
+    penetration_distribution: PenetrationDistribution
+    review_queue: ReviewQueueReport
+    merit_budget_variance: MeritBudgetVarianceReport
+    performance_merit: PerformanceMeritReport
     excluded_employee_ids: list[str] = Field(default_factory=list)
     insights: AnalysisInsights
     warnings: list[str] = Field(default_factory=list)

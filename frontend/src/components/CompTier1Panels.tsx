@@ -6,6 +6,7 @@ import type {
   MeritMatrixReport,
   MidpointProgressionReport,
   NewHirePlacementReport,
+  PerformanceMeritReport,
   RangeStructureReport,
   TotalCashCompReport,
 } from "../types";
@@ -548,6 +549,58 @@ export function MidpointProgressionPanel({ report }: { report: MidpointProgressi
           </table>
         </div>
       )}
+    </div>
+  );
+}
+
+export function PerformanceMeritPanel({ report }: { report: PerformanceMeritReport }) {
+  if (!report.available) {
+    return (
+      <div className="empty-state">
+        Map a <strong>Performance Rating</strong> column to check merit vs performance alignment.
+      </div>
+    );
+  }
+
+  if (report.flags.length === 0) {
+    return <div className="empty-state">No performance × merit misalignment flags detected.</div>;
+  }
+
+  return (
+    <div className="pay-equity-panel">
+      <p className="file-meta">{report.disclaimer}</p>
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Rating</th>
+              <th>Merit %</th>
+              <th>File avg</th>
+              <th>Flag</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            {report.flags.map((row) => (
+              <tr key={row.row_number}>
+                <td>{row.employee_name ?? row.employee_id ?? "—"}</td>
+                <td>{row.performance_rating}</td>
+                <td>{row.merit_increase}%</td>
+                <td>{row.file_average_merit}%</td>
+                <td>
+                  <span className="pill pill-warning">
+                    {row.flag_type === "low_performer_high_merit"
+                      ? "Low perf / high merit"
+                      : "High perf / low merit"}
+                  </span>
+                </td>
+                <td>{row.reason}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

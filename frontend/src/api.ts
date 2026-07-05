@@ -82,6 +82,8 @@ function normalizeSummary(raw: Partial<AnalysisSummary> | undefined): AnalysisSu
     new_hire_placement_flags: raw?.new_hire_placement_flags ?? 0,
     geo_pay_policy_flags: raw?.geo_pay_policy_flags ?? 0,
     midpoint_progression_issues: raw?.midpoint_progression_issues ?? 0,
+    review_queue_items: raw?.review_queue_items ?? 0,
+    performance_merit_flags: raw?.performance_merit_flags ?? 0,
   };
 }
 
@@ -172,6 +174,24 @@ const EMPTY_EMPLOYEE_TYPE = {
   disclaimer: "",
 };
 const EMPTY_MIDPOINT = { available: false, issues: [], level_midpoints: [], disclaimer: "" };
+const EMPTY_PENETRATION = { available: false, bands: [], total_employees: 0 };
+const EMPTY_REVIEW_QUEUE = {
+  available: false,
+  items: [],
+  total_items: 0,
+  critical_count: 0,
+  high_count: 0,
+  disclaimer: "",
+};
+const EMPTY_MERIT_BUDGET = {
+  available: false,
+  file_average_merit: null,
+  projected_merit_pool: 0,
+  payroll_base: 0,
+  departments: [],
+  disclaimer: "",
+};
+const EMPTY_PERFORMANCE_MERIT = { available: false, flags: [], disclaimer: "" };
 
 function normalizeResult(raw: AnalysisResult): AnalysisResult {
   return {
@@ -200,6 +220,10 @@ function normalizeResult(raw: AnalysisResult): AnalysisResult {
     currency_report: raw.currency_report ?? EMPTY_CURRENCY,
     employee_type_report: raw.employee_type_report ?? EMPTY_EMPLOYEE_TYPE,
     midpoint_progression: raw.midpoint_progression ?? EMPTY_MIDPOINT,
+    penetration_distribution: raw.penetration_distribution ?? EMPTY_PENETRATION,
+    review_queue: raw.review_queue ?? EMPTY_REVIEW_QUEUE,
+    merit_budget_variance: raw.merit_budget_variance ?? EMPTY_MERIT_BUDGET,
+    performance_merit: raw.performance_merit ?? EMPTY_PERFORMANCE_MERIT,
     excluded_employee_ids: raw.excluded_employee_ids ?? [],
     insights: raw.insights ?? EMPTY_INSIGHTS,
     warnings: raw.warnings ?? [],

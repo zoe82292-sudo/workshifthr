@@ -12,7 +12,6 @@ import {
 } from "../analysisFilters";
 import {
   BonusTargetOutliersPanel,
-  MeritByDepartmentTable,
   PeerSpreadPanel,
   PostMeritCompaPanel,
 } from "./CompPlanningPanels";
@@ -24,18 +23,22 @@ import {
   MeritMatrixPanel,
   MidpointProgressionPanel,
   NewHirePlacementPanel,
+  PerformanceMeritPanel,
   RangeStructurePanel,
   TotalCashCompPanel,
 } from "./CompTier1Panels";
 import { ColumnMappingSummary } from "./ColumnMappingSummary";
-import { InsightsPanel } from "./InsightsPanel";
-import { PayEquityPanel, payEquityTabCount } from "./PayEquityPanel";
+import { CycleReadinessPanel } from "./CycleReadinessPanel";
+import { ReviewQueuePanel } from "./ReviewQueuePanel";
+import { PayEquityPanel } from "./PayEquityPanel";
 import {
-  LocationPayPanel,
-  TenurePanel,
-  locationTabCount,
-  tenureTabCount,
-} from "./TenureLocationPanels";
+  TAB_GROUPS,
+  TABS_BY_ID,
+  formatTabCount,
+  tabIsVisible,
+  tabSeverity,
+} from "../tabConfig";
+import { LocationPayPanel, TenurePanel } from "./TenureLocationPanels";
 import { useMemo, useState, useCallback, type ReactNode } from "react";
 import { TablePagination, useTablePagination } from "./TablePagination";
 
@@ -71,200 +74,6 @@ function PaginatedSlice<T>({
     </div>
   );
 }
-
-const TABS: Array<{ id: AnalysisTab; label: string; count: (result: AnalysisResult) => number }> =
-  [
-    { id: "below_minimum", label: "Below Minimum", count: (r) => r.summary.below_minimum },
-    { id: "above_maximum", label: "Above Maximum", count: (r) => r.summary.above_maximum },
-    { id: "duplicate_ids", label: "Duplicate IDs", count: (r) => r.summary.duplicate_ids },
-    { id: "range_penetration", label: "Range Penetration", count: (r) => r.range_penetration.length },
-    { id: "compression", label: "Salary Compression", count: (r) => r.summary.compression_issues },
-    {
-      id: "peer_spread",
-      label: "Peer Pay Spread",
-      count: (r) => r.summary.peer_spread_flags ?? r.peer_spread?.flags?.length ?? 0,
-    },
-    {
-      id: "pay_equity",
-      label: "Pay Equity",
-      count: (r) => payEquityTabCount(r),
-    },
-    {
-      id: "tenure",
-      label: "Tenure",
-      count: (r) => tenureTabCount(r),
-    },
-    {
-      id: "location_pay",
-      label: "Location Pay",
-      count: (r) => locationTabCount(r),
-    },
-    {
-      id: "managers_below_reports",
-      label: "Managers Below Reports",
-      count: (r) => r.summary.managers_below_reports,
-    },
-    {
-      id: "missing_bonus_targets",
-      label: "Bonus Targets",
-      count: (r) =>
-        r.summary.missing_bonus_targets +
-        (r.summary.bonus_target_outliers ?? r.bonus_target_review?.outliers?.length ?? 0),
-    },
-    {
-      id: "missing_salary_ranges",
-      label: "Missing Salary Ranges",
-      count: (r) => r.summary.missing_salary_ranges,
-    },
-    {
-      id: "invalid_effective_dates",
-      label: "Invalid Effective Dates",
-      count: (r) => r.summary.invalid_effective_dates,
-    },
-    {
-      id: "outlier_merit_increases",
-      label: "Outlier Merit Increases",
-      count: (r) => r.summary.outlier_merit_increases,
-    },
-    {
-      id: "new_hire_merit_flags",
-      label: "New-Hire Merit",
-      count: (r) => r.summary.new_hire_merit_flags ?? r.new_hire_merit_flags.length,
-    },
-    {
-      id: "merit_compa_flags",
-      label: "Merit vs Compa",
-      count: (r) => r.summary.merit_compa_flags ?? r.merit_compa_flags?.length ?? 0,
-    },
-    {
-      id: "equity_grants",
-      label: "Equity Grants",
-      count: (r) => (r.column_mapping.equity_grant ? (r.equity_grants ?? []).length : 0),
-    },
-    {
-      id: "unusual_comp_changes",
-      label: "Unusual Promotions",
-      count: (r) =>
-        (r.unusual_comp_changes ?? []).filter((row) => row.change_type === "promotion").length,
-    },
-    { id: "compa_ratio", label: "Compa-Ratio", count: (r) => r.compa_ratios.length },
-    {
-      id: "post_merit_compa",
-      label: "Post-Merit Compa",
-      count: (r) => r.summary.post_merit_compa_rows ?? r.post_merit_compa?.employees?.length ?? 0,
-    },
-    {
-      id: "new_hire_placement",
-      label: "New Hire Placement",
-      count: (r) =>
-        r.summary.new_hire_placement_flags ??
-        r.new_hire_placement?.below_range_count ??
-        r.new_hire_placement?.employees?.length ??
-        0,
-    },
-    {
-      id: "merit_matrix",
-      label: "Merit Matrix",
-      count: (r) => r.summary.merit_matrix_flags ?? r.merit_matrix?.flags?.length ?? 0,
-    },
-    {
-      id: "range_structure",
-      label: "Range Structure",
-      count: (r) => r.summary.range_structure_issues ?? r.range_structure?.issues?.length ?? 0,
-    },
-    {
-      id: "compa_summary",
-      label: "Compa Summary",
-      count: (r) => r.compa_penetration_summary?.by_level?.length ?? 0,
-    },
-    {
-      id: "total_cash_comp",
-      label: "Total Cash Comp",
-      count: (r) => r.total_cash_comp?.employees?.length ?? 0,
-    },
-    {
-      id: "geo_pay_policy",
-      label: "Geo Pay Policy",
-      count: (r) => r.summary.geo_pay_policy_flags ?? r.geo_pay_policy?.flags?.length ?? 0,
-    },
-    {
-      id: "midpoint_progression",
-      label: "Midpoint Progression",
-      count: (r) =>
-        r.summary.midpoint_progression_issues ?? r.midpoint_progression?.issues?.length ?? 0,
-    },
-    {
-      id: "currency_report",
-      label: "Currency",
-      count: (r) => r.currency_report?.currencies?.length ?? 0,
-    },
-    {
-      id: "employee_types",
-      label: "Employee Types",
-      count: (r) => r.employee_type_report?.types?.length ?? 0,
-    },
-    { id: "missing_data", label: "Missing Data", count: (r) => r.summary.missing_data },
-  ];
-
-const TAB_GROUPS: Array<{ title: string; ids: AnalysisTab[] }> = [
-  {
-    title: "Flagged issues",
-    ids: [
-      "below_minimum",
-      "above_maximum",
-      "duplicate_ids",
-      "compression",
-      "peer_spread",
-      "managers_below_reports",
-      "new_hire_placement",
-    ],
-  },
-  {
-    title: "Ranges & compa",
-    ids: [
-      "range_penetration",
-      "compa_ratio",
-      "compa_summary",
-      "post_merit_compa",
-      "range_structure",
-      "midpoint_progression",
-      "total_cash_comp",
-    ],
-  },
-  {
-    title: "Pay equity",
-    ids: ["pay_equity"],
-  },
-  {
-    title: "Workforce insights",
-    ids: ["tenure", "location_pay", "geo_pay_policy", "currency_report", "employee_types"],
-  },
-  {
-    title: "Merit & LTI",
-    ids: [
-      "outlier_merit_increases",
-      "new_hire_merit_flags",
-      "merit_compa_flags",
-      "merit_matrix",
-      "equity_grants",
-      "unusual_comp_changes",
-    ],
-  },
-  {
-    title: "Data quality",
-    ids: [
-      "missing_bonus_targets",
-      "missing_salary_ranges",
-      "invalid_effective_dates",
-      "missing_data",
-    ],
-  },
-];
-
-const TABS_BY_ID = Object.fromEntries(TABS.map((tab) => [tab.id, tab])) as Record<
-  AnalysisTab,
-  (typeof TABS)[number]
->;
 
 function formatCurrency(value: number | null | undefined) {
   if (value == null) return "—";
@@ -459,13 +268,6 @@ function EmployeeTable({
   );
 }
 
-function tabIsVisible(tabId: AnalysisTab, result: AnalysisResult): boolean {
-  if (tabId === "equity_grants") {
-    return Boolean(result.column_mapping.equity_grant);
-  }
-  return true;
-}
-
 export function ResultsDashboard({
   result,
   activeTab,
@@ -480,7 +282,9 @@ export function ResultsDashboard({
   const [savingHistory, setSavingHistory] = useState(false);
   const [historyMessage, setHistoryMessage] = useState<string | null>(null);
   const [exporting, setExporting] = useState<string | null>(null);
-  const [targetMeritPercent, setTargetMeritPercent] = useState<number | null>(null);
+  const [targetMeritPercent, setTargetMeritPercent] = useState<number | null>(
+    () => result.insights.merit_calculator.average_merit_percent ?? 3.5,
+  );
   const [anonymizeExports, setAnonymizeExports] = useState(false);
 
   const departmentLookup = useMemo(() => buildDepartmentLookup(result), [result]);
@@ -697,112 +501,104 @@ export function ResultsDashboard({
         detectedColumns={result.detected_columns}
       />
 
-      <InsightsPanel
+      <CycleReadinessPanel
         result={result}
+        onNavigateTab={onTabChange}
         onTargetMeritChange={setTargetMeritPercent}
+        targetMeritPercent={targetMeritPercent}
       />
-      <MeritByDepartmentTable report={result.merit_by_department} />
-      {result.compa_penetration_summary?.available ? (
-        <section className="equity-section insights-compa-summary">
-          <div className="panel-header">
-            <h3>Compa by level</h3>
-          </div>
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Level</th>
-                  <th>Headcount</th>
-                  <th>Avg compa</th>
-                  <th>&lt;90%</th>
-                  <th>90–110%</th>
-                  <th>&gt;110%</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.compa_penetration_summary.by_level.map((row) => (
-                  <tr key={row.group_key}>
-                    <td>{row.group_key}</td>
-                    <td>{row.headcount}</td>
-                    <td>{row.average_compa != null ? `${row.average_compa}%` : "—"}</td>
-                    <td>{row.below_90}</td>
-                    <td>{row.between_90_110}</td>
-                    <td>{row.above_110}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      ) : null}
-      <div className="summary-grid card-grid card-grid--4" aria-label="Issue counts">
-        <div className="summary-card stat-card">
-          <span className="stat-card__label">Total rows</span>
-          <strong className="stat-card__value">{result.summary.total_rows}</strong>
-        </div>
-        <div className="summary-card stat-card stat-card--danger">
-          <span className="stat-card__label">Below minimum</span>
-          <strong className="stat-card__value">{result.summary.below_minimum}</strong>
-        </div>
-        <div className="summary-card stat-card stat-card--warning">
-          <span className="stat-card__label">Above maximum</span>
-          <strong className="stat-card__value">{result.summary.above_maximum}</strong>
-        </div>
-        <div className="summary-card stat-card stat-card--info">
-          <span className="stat-card__label">Managers below reports</span>
-          <strong className="stat-card__value">{result.summary.managers_below_reports}</strong>
-        </div>
-        <div className="summary-card stat-card">
-          <span className="stat-card__label">Missing salary ranges</span>
-          <strong className="stat-card__value">{result.summary.missing_salary_ranges}</strong>
-        </div>
-        <div className="summary-card stat-card stat-card--info">
-          <span className="stat-card__label">Pay equity gaps</span>
-          <strong className="stat-card__value">{result.summary.pay_equity_gaps}</strong>
-        </div>
-        {result.tenure.available ? (
-          <div className="summary-card stat-card stat-card--warning">
-            <span className="stat-card__label">Tenure pay flags</span>
-            <strong className="stat-card__value">{result.summary.tenure_pay_flags ?? 0}</strong>
-          </div>
-        ) : null}
-        {result.location_pay.available ? (
-          <div className="summary-card stat-card stat-card--info">
-            <span className="stat-card__label">Location pay gaps</span>
-            <strong className="stat-card__value">{result.summary.location_pay_gaps ?? 0}</strong>
-          </div>
-        ) : null}
-        <div className="summary-card stat-card">
-          <span className="stat-card__label">Outlier merit increases</span>
-          <strong className="stat-card__value">{result.summary.outlier_merit_increases}</strong>
-        </div>
-        <div className="summary-card stat-card">
-          <span className="stat-card__label">Avg penetration</span>
-          <strong className="stat-card__value">
-            {result.summary.average_penetration != null
-              ? `${result.summary.average_penetration}%`
-              : "—"}
-          </strong>
-        </div>
+
+      <div className="summary-grid card-grid card-grid--4 cycle-stat-cards" aria-label="Priority counts">
+        {[
+          {
+            tab: "review_queue" as AnalysisTab,
+            label: "Review queue",
+            count: result.review_queue.total_items,
+            meta: `${result.review_queue.critical_count} critical`,
+            tone: "",
+          },
+          {
+            tab: "below_minimum" as AnalysisTab,
+            label: "Below minimum",
+            count: result.summary.below_minimum,
+            tone: "stat-card--danger",
+          },
+          {
+            tab: "merit_matrix" as AnalysisTab,
+            label: "Merit matrix",
+            count: result.summary.merit_matrix_flags ?? 0,
+            tone: "stat-card--warning",
+          },
+          {
+            tab: "peer_spread" as AnalysisTab,
+            label: "Peer spread",
+            count: result.summary.peer_spread_flags ?? 0,
+            tone: "",
+          },
+          {
+            tab: "new_hire_placement" as AnalysisTab,
+            label: "New hires below range",
+            count: result.summary.new_hire_placement_flags ?? 0,
+            tone: "",
+          },
+          {
+            tab: "range_structure" as AnalysisTab,
+            label: "Range structure",
+            count: result.summary.range_structure_issues ?? 0,
+            tone: "",
+          },
+          {
+            tab: "performance_merit" as AnalysisTab,
+            label: "Performance × merit",
+            count: result.summary.performance_merit_flags ?? 0,
+            tone: "",
+          },
+          {
+            tab: "pay_equity" as AnalysisTab,
+            label: "Pay equity gaps",
+            count: result.summary.pay_equity_gaps,
+            tone: "stat-card--info",
+          },
+        ]
+          .filter(
+            (card) =>
+              card.tab === "review_queue" ||
+              card.count > 0 ||
+              tabIsVisible(card.tab, result),
+          )
+          .map((card) => (
+            <button
+              key={card.tab}
+              type="button"
+              className={`summary-card stat-card stat-card--clickable ${card.tone ?? ""}`.trim()}
+              onClick={() => onTabChange(card.tab)}
+            >
+              <span className="stat-card__label">{card.label}</span>
+              <strong className="stat-card__value">{card.count}</strong>
+              {card.meta ? <span className="stat-card__meta">{card.meta}</span> : null}
+            </button>
+          ))}
       </div>
 
-      {departments.length > 0 ? (
+      <div className="results-sticky-toolbar">
         <div className="table-filters">
-          <label className="table-filters__field" htmlFor="results-department-filter">
-            <span>Department</span>
-            <select
-              id="results-department-filter"
-              value={departmentFilter}
-              onChange={(event) => setDepartmentFilter(event.target.value)}
-            >
-              <option value="">All departments</option>
-              {departments.map((department) => (
-                <option key={department} value={department}>
-                  {department}
-                </option>
-              ))}
-            </select>
-          </label>
+          {departments.length > 0 ? (
+            <label className="table-filters__field" htmlFor="results-department-filter">
+              <span>Department</span>
+              <select
+                id="results-department-filter"
+                value={departmentFilter}
+                onChange={(event) => setDepartmentFilter(event.target.value)}
+              >
+                <option value="">All departments</option>
+                {departments.map((department) => (
+                  <option key={department} value={department}>
+                    {department}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
           <label className="table-filters__field table-filters__field--grow" htmlFor="results-search">
             <span>Search</span>
             <input
@@ -838,32 +634,48 @@ export function ResultsDashboard({
             </div>
           ) : null}
         </div>
-      ) : null}
 
       <div className="tab-groups" role="tablist" aria-label="Issue categories">
-        {TAB_GROUPS.map((group) => (
+        {TAB_GROUPS.map((group) => {
+          const visibleTabs = group.ids.filter((tabId) => tabIsVisible(tabId, result));
+          if (visibleTabs.length === 0) return null;
+          return (
           <div className="tab-group" key={group.title}>
             <span className="tab-group__label">{group.title}</span>
             <div className="tab-group__tabs">
-              {group.ids.filter((tabId) => tabIsVisible(tabId, result)).map((tabId) => {
+              {visibleTabs.map((tabId) => {
                 const tab = TABS_BY_ID[tabId];
+                const count = tab.count(result);
+                const severity = tabSeverity(count, tab.countKind);
                 return (
                   <button
                     key={tabId}
                     type="button"
                     role="tab"
                     aria-selected={activeTab === tabId}
-                    className={`tab ${activeTab === tabId ? "active" : ""}`}
+                    className={`tab tab--${severity} ${activeTab === tabId ? "active" : ""}`}
                     onClick={() => onTabChange(tabId)}
                   >
-                    {tab.label} ({tab.count(result)})
+                    <span className={`tab-severity tab-severity--${severity}`} aria-hidden />
+                    {tab.label} ({formatTabCount(tab, count)})
                   </button>
                 );
               })}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
+      </div>
+
+      {activeTab === "review_queue" ? (
+        <ReviewQueuePanel
+          result={result}
+          onNavigateTab={onTabChange}
+          departmentFilter={departmentFilter}
+          search={search}
+        />
+      ) : null}
 
       {activeTab === "below_minimum" ? (
         <EmployeeTable
@@ -1421,6 +1233,10 @@ export function ResultsDashboard({
 
       {activeTab === "merit_matrix" ? (
         <MeritMatrixPanel report={result.merit_matrix} />
+      ) : null}
+
+      {activeTab === "performance_merit" ? (
+        <PerformanceMeritPanel report={result.performance_merit} />
       ) : null}
 
       {activeTab === "range_structure" ? (

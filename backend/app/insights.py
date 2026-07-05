@@ -138,6 +138,14 @@ def _build_executive_summary(
         )
     bullets.append(scope)
 
+    if summary.review_queue_items:
+        bullets.insert(
+            0,
+            f"{summary.review_queue_items} prioritized review queue "
+            f"{_plural(summary.review_queue_items, 'item', 'items')} "
+            f"({result.review_queue.critical_count} critical, {result.review_queue.high_count} high priority).",
+        )
+
     if summary.below_minimum:
         bullets.append(
             f"{summary.below_minimum} {_plural(summary.below_minimum, 'employee')} "

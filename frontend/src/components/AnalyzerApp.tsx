@@ -31,8 +31,8 @@ import { loadLocalColumnMapping, saveLocalColumnMapping } from "../savedMappingS
 import type { AnalysisHistorySummary, AnalysisResult, AnalysisTab, ColumnMapping } from "../types";
 
 function pickInitialTab(analysis: AnalysisResult): AnalysisTab {
-  if (analysis.pay_equity.available && analysis.summary.pay_equity_gaps > 0) {
-    return "pay_equity";
+  if ((analysis.summary.review_queue_items ?? analysis.review_queue?.total_items ?? 0) > 0) {
+    return "review_queue";
   }
   if (analysis.summary.below_minimum > 0) return "below_minimum";
   if (analysis.summary.above_maximum > 0) return "above_maximum";

@@ -13,9 +13,10 @@ function formatCurrency(value: number | null | undefined) {
 interface InsightsPanelProps {
   result: AnalysisResult;
   onTargetMeritChange?: (percent: number) => void;
+  compact?: boolean;
 }
 
-export function InsightsPanel({ result, onTargetMeritChange }: InsightsPanelProps) {
+export function InsightsPanel({ result, onTargetMeritChange, compact = false }: InsightsPanelProps) {
   const { insights } = result;
   const defaultMerit =
     insights.merit_calculator.average_merit_percent?.toString() ?? "3.5";
@@ -31,25 +32,27 @@ export function InsightsPanel({ result, onTargetMeritChange }: InsightsPanelProp
 
   return (
     <>
-      <section className="insights-panel">
-        <div className="panel-header">
-          <h2>Overview</h2>
-          <span className={`pill risk-${insights.executive_summary.risk_level}`}>
-            {insights.executive_summary.risk_level} risk
-          </span>
-        </div>
-        <p className="executive-headline">{insights.executive_summary.headline}</p>
-        <ul className="executive-list">
-          {insights.executive_summary.bullets.map((bullet) => (
-            <li key={bullet}>{bullet}</li>
-          ))}
-        </ul>
-        {insights.budget_impact.note ? (
-          <p className="insights-note">{insights.budget_impact.note}</p>
-        ) : null}
-      </section>
+      {!compact ? (
+        <section className="insights-panel">
+          <div className="panel-header">
+            <h2>Overview</h2>
+            <span className={`pill risk-${insights.executive_summary.risk_level}`}>
+              {insights.executive_summary.risk_level} risk
+            </span>
+          </div>
+          <p className="executive-headline">{insights.executive_summary.headline}</p>
+          <ul className="executive-list">
+            {insights.executive_summary.bullets.map((bullet) => (
+              <li key={bullet}>{bullet}</li>
+            ))}
+          </ul>
+          {insights.budget_impact.note ? (
+            <p className="insights-note">{insights.budget_impact.note}</p>
+          ) : null}
+        </section>
+      ) : null}
 
-      <section className="insights-grid card-grid card-grid--4" aria-label="Key metrics">
+      <section className={`insights-grid card-grid card-grid--4${compact ? " insights-grid--compact" : ""}`} aria-label="Key metrics">
         <article className="insight-card metric-card">
           <h3 className="metric-card__title">Cost to minimum</h3>
           <p className="metric-card__label">Dollars to bring employees to range floor</p>

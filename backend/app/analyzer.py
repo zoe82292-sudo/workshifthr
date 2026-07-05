@@ -34,6 +34,12 @@ from app.comp_extensions import (
     build_peer_spread_report,
     build_post_merit_compa,
 )
+from app.cycle_readiness import (
+    build_merit_budget_variance_report,
+    build_penetration_distribution,
+    build_performance_merit_report,
+    build_review_queue,
+)
 from app.equity import build_pay_equity_report
 from app.tenure_location import build_location_pay_report, build_tenure_report
 from app.insights import build_insights, empty_insights
@@ -61,6 +67,10 @@ from app.models import (
     GeoPayPolicyReport,
     MeritMatrixReport,
     MidpointProgressionReport,
+    PenetrationDistribution,
+    PerformanceMeritReport,
+    ReviewQueueReport,
+    MeritBudgetVarianceReport,
     NewHirePlacementReport,
     PeerSpreadReport,
     PostMeritCompaReport,
@@ -384,6 +394,10 @@ def _empty_result(
         currency_report=CurrencyReport(available=False),
         employee_type_report=EmployeeTypeReport(available=False),
         midpoint_progression=MidpointProgressionReport(available=False),
+        penetration_distribution=PenetrationDistribution(available=False),
+        review_queue=ReviewQueueReport(available=False),
+        merit_budget_variance=MeritBudgetVarianceReport(available=False),
+        performance_merit=PerformanceMeritReport(available=False),
         excluded_employee_ids=[],
         insights=empty_insights(),
         warnings=warnings,
@@ -593,6 +607,8 @@ def analyze_file(
     currency_report = build_currency_report(prepared, mapping, range_penetration)
     employee_type_report = build_employee_type_report(prepared, mapping)
     midpoint_progression = build_midpoint_progression_report(prepared, mapping)
+    penetration_distribution = build_penetration_distribution(range_penetration)
+    performance_merit = build_performance_merit_report(prepared, mapping, range_penetration)
 
     excluded_employee_ids: list[str] = []
     if type_col and type_col in prepared.columns:
@@ -673,6 +689,8 @@ def analyze_file(
             new_hire_placement_flags=new_hire_placement.below_range_count,
             geo_pay_policy_flags=len(geo_pay_policy.flags),
             midpoint_progression_issues=len(midpoint_progression.issues),
+            review_queue_items=0,
+            performance_merit_flags=len(performance_merit.flags),
         ),
         column_mapping=ColumnMapping(**mapping),
         detected_columns=list(df.columns),
@@ -713,11 +731,18 @@ def analyze_file(
         currency_report=currency_report,
         employee_type_report=employee_type_report,
         midpoint_progression=midpoint_progression,
+        penetration_distribution=penetration_distribution,
+        review_queue=ReviewQueueReport(available=False),
+        merit_budget_variance=MeritBudgetVarianceReport(available=False),
+        performance_merit=performance_merit,
         excluded_employee_ids=excluded_employee_ids,
         insights=empty_insights(),
         warnings=warnings,
     )
     result.insights = build_insights(result)
+    result.review_queue = build_review_queue(result)
+    result.merit_budget_variance = build_merit_budget_variance_report(result)
+    result.summary.review_queue_items = result.review_queue.total_items
     return result
 
 

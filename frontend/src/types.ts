@@ -21,6 +21,7 @@ export interface ColumnMapping {
   pay_zone: string | null;
   geo_differential: string | null;
   currency: string | null;
+  performance_rating: string | null;
 }
 
 export interface EmployeeRecord {
@@ -221,6 +222,8 @@ export interface AnalysisSummary {
   new_hire_placement_flags?: number;
   geo_pay_policy_flags?: number;
   midpoint_progression_issues?: number;
+  review_queue_items?: number;
+  performance_merit_flags?: number;
 }
 
 export interface PayEquityGap {
@@ -600,6 +603,77 @@ export interface MidpointProgressionReport {
   disclaimer: string;
 }
 
+export interface PenetrationBandCount {
+  band: string;
+  label: string;
+  count: number;
+  percent: number;
+}
+
+export interface PenetrationDistribution {
+  available: boolean;
+  bands: PenetrationBandCount[];
+  total_employees: number;
+}
+
+export interface ReviewQueueItem {
+  priority: number;
+  severity: string;
+  category: string;
+  tab_id: string;
+  reason: string;
+  employee_id: string | null;
+  employee_name: string | null;
+  department: string | null;
+  job_level: string | null;
+  row_number: number | null;
+}
+
+export interface ReviewQueueReport {
+  available: boolean;
+  items: ReviewQueueItem[];
+  total_items: number;
+  critical_count: number;
+  high_count: number;
+  disclaimer: string;
+}
+
+export interface MeritBudgetVariance {
+  department: string;
+  average_merit_percent: number;
+  projected_pool: number;
+  payroll_base: number;
+  headcount: number;
+}
+
+export interface MeritBudgetVarianceReport {
+  available: boolean;
+  file_average_merit: number | null;
+  projected_merit_pool: number;
+  payroll_base: number;
+  departments: MeritBudgetVariance[];
+  disclaimer: string;
+}
+
+export interface PerformanceMeritFlag {
+  row_number: number;
+  employee_id: string | null;
+  employee_name: string | null;
+  department: string | null;
+  job_level: string | null;
+  performance_rating: string;
+  merit_increase: number;
+  file_average_merit: number;
+  flag_type: string;
+  reason: string;
+}
+
+export interface PerformanceMeritReport {
+  available: boolean;
+  flags: PerformanceMeritFlag[];
+  disclaimer: string;
+}
+
 export interface AnalysisResult {
   summary: AnalysisSummary;
   column_mapping: ColumnMapping;
@@ -637,6 +711,10 @@ export interface AnalysisResult {
   currency_report: CurrencyReport;
   employee_type_report: EmployeeTypeReport;
   midpoint_progression: MidpointProgressionReport;
+  penetration_distribution: PenetrationDistribution;
+  review_queue: ReviewQueueReport;
+  merit_budget_variance: MeritBudgetVarianceReport;
+  performance_merit: PerformanceMeritReport;
   excluded_employee_ids: string[];
   insights: AnalysisInsights;
   warnings: string[];
@@ -664,6 +742,7 @@ export interface AnalysisHistoryDetail extends AnalysisHistorySummary {
 }
 
 export type AnalysisTab =
+  | "review_queue"
   | "below_minimum"
   | "above_maximum"
   | "duplicate_ids"
@@ -682,6 +761,7 @@ export type AnalysisTab =
   | "compa_ratio"
   | "post_merit_compa"
   | "merit_matrix"
+  | "performance_merit"
   | "range_structure"
   | "compa_summary"
   | "total_cash_comp"

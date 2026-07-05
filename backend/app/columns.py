@@ -276,6 +276,17 @@ COLUMN_ALIASES: dict[str, list[str]] = {
         "local currency",
         "currency code",
     ],
+    "performance_rating": [
+        "performance rating",
+        "perf rating",
+        "performance",
+        "rating",
+        "perf rating desc",
+        "performance score",
+        "overall rating",
+        "performance level",
+        "perf rating description",
+    ],
 }
 
 REQUIRED_FIELDS = ["employee_id", "salary", "range_min", "range_max"]
