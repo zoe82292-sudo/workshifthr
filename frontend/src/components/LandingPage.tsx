@@ -50,36 +50,53 @@ const FEATURES = [
 
 const FAQ_ITEMS = (trialMaxRows: number) => [
   {
-    q: "Free trial?",
-    a: `One file, ${trialMaxRows.toLocaleString()} rows, one analyze/day. Names blurred; exports watermarked until purchase.`,
+    id: "trial",
+    q: "Is there a free trial?",
+    a: `Yes. Run one analysis per day on a single file (up to ${trialMaxRows.toLocaleString()} rows) with no credit card required. Names are masked in the trial view, and PDF and Excel exports include a watermark until you purchase a plan.`,
   },
   {
-    q: "Workday / UKG / ADP integration?",
-    a: "No API — upload Excel or CSV exports as-is. Columns auto-detect.",
+    id: "integrations",
+    q: "Does ShiftWorksHR integrate with Workday, UKG, or ADP?",
+    a: "We do not connect via API. Export compensation data from your HRIS as Excel or CSV and upload it directly. Standard export columns are detected automatically.",
   },
   {
-    q: "Multiple files?",
-    a: "Up to 5 files merged on Employee ID (paid plans).",
+    id: "multi-file",
+    q: "Can I upload multiple files?",
+    a: "Paid plans support merging up to five files on Employee ID—useful when base pay, equity, and performance data live in separate exports.",
   },
   {
-    q: "Data stored?",
-    a: "Processed in memory by default. Optional save-to-history for your account only.",
+    id: "data",
+    q: "How is my compensation data handled?",
+    a: "Files are processed in memory during analysis and are not retained on our servers by default. If you choose Save to history, results are stored in your organization account only.",
   },
   {
-    q: "Team access?",
-    a: "One org password; teammates sign in with work email.",
+    id: "team",
+    q: "How does team access work?",
+    a: "Your organization shares one password. Each teammate signs in with their work email—no per-seat licensing.",
   },
   {
-    q: "Consultants?",
+    id: "consultants",
+    q: "Do you support compensation consultants?",
     a: (
       <>
-        Cycle Pass per client — see <Link to="/for-consultants">consultant guide</Link>.
+        Yes. The Cycle Pass is priced per client engagement. See our{" "}
+        <Link to="/for-consultants">consultant guide</Link> for deliverables and workflow
+        recommendations.
       </>
     ),
   },
   {
-    q: "Invoices?",
-    a: `Email ${CONTACT_EMAIL} for procurement.`,
+    id: "invoices",
+    q: "Can we pay by invoice or purchase order?",
+    a: (
+      <>
+        Yes. Email{" "}
+        <a href={`mailto:${CONTACT_EMAIL}?subject=ShiftWorksHR%20procurement`}>
+          {CONTACT_EMAIL}
+        </a>{" "}
+        for procurement, PO, and invoice billing.
+      </>
+    ),
   },
 ];
 
@@ -334,22 +351,32 @@ export function LandingPage({
         ) : null}
 
         {activeTab === "faq" ? (
-          <div className="landing-tab-panel" role="tabpanel" id="panel-faq" aria-labelledby="tab-faq">
-            <div className="landing-faq-list">
+          <div className="landing-tab-panel landing-tab-panel--faq" role="tabpanel" id="panel-faq" aria-labelledby="tab-faq">
+            <header className="landing-faq-header">
+              <h2 className="landing-faq-title">Frequently asked questions</h2>
+              <p className="landing-faq-lead">
+                What comp teams and HR leaders ask before their first merit cycle.
+              </p>
+            </header>
+            <div className="landing-faq-list panel">
               {faqItems.map((item) => (
-                <details className="landing-faq-item panel" key={item.q}>
-                  <summary>{item.q}</summary>
+                <details className="landing-faq-item" key={item.id}>
+                  <summary>
+                    <span className="landing-faq-question">{item.q}</span>
+                    <span className="landing-faq-chevron" aria-hidden />
+                  </summary>
                   <div className="landing-faq-answer">{item.a}</div>
                 </details>
               ))}
             </div>
-            <p className="landing-tab-intro">
-              More detail: <Link to="/sample-preview">sample analysis</Link>
-              {" · "}
-              <Link to="/security">security</Link>
-              {" · "}
-              <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
-            </p>
+            <footer className="landing-faq-footer">
+              <p>Still have questions?</p>
+              <div className="landing-faq-footer-links">
+                <Link to="/sample-preview">View sample analysis</Link>
+                <Link to="/security">Security overview</Link>
+                <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+              </div>
+            </footer>
           </div>
         ) : null}
         </div>
