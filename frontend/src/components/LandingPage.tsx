@@ -178,6 +178,22 @@ export function LandingPage({
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             />
           </div>
+          <nav className="landing-tab-bar--header" role="tablist" aria-label="Learn more">
+            {LANDING_TABS.map(({ id, label }) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                id={`tab-${id}`}
+                aria-selected={activeTab === id}
+                aria-controls={`panel-${id}`}
+                className={`landing-tab ${activeTab === id ? "landing-tab--active" : ""}`}
+                onClick={() => selectTab(id)}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
           {showLogin ? (
             <button
               type="button"
@@ -186,24 +202,10 @@ export function LandingPage({
             >
               Sign in
             </button>
-          ) : null}
+          ) : (
+            <span className="landing-nav-spacer" aria-hidden />
+          )}
         </div>
-        <nav className="landing-tab-bar landing-tab-bar--header" role="tablist" aria-label="Learn more">
-          {LANDING_TABS.map(({ id, label }) => (
-            <button
-              key={id}
-              type="button"
-              role="tab"
-              id={`tab-${id}`}
-              aria-selected={activeTab === id}
-              aria-controls={`panel-${id}`}
-              className={`landing-tab ${activeTab === id ? "landing-tab--active" : ""}`}
-              onClick={() => selectTab(id)}
-            >
-              {label}
-            </button>
-          ))}
-        </nav>
       </header>
 
       <section className="landing-hero landing-hero--compact">
