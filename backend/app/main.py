@@ -692,7 +692,8 @@ if STATIC_DIR.exists():
                 icon_path = STATIC_DIR / name
                 if not icon_path.is_file():
                     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-                return FileResponse(icon_path, media_type=mime, headers={"Cache-Control": "public, max-age=86400"})
+                cache = "public, max-age=300" if name == "og-image.png" else "public, max-age=86400"
+                return FileResponse(icon_path, media_type=mime, headers={"Cache-Control": cache})
 
             return _handler
 

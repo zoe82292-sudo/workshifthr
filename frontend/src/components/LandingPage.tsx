@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { checkBillingStatus, type PlanId } from "../api";
 import { trackEvent } from "../analytics";
+import { useIsMobile } from "../useMediaQuery";
 import { BrandLogo } from "./BrandLogo";
 import { CheckoutButton } from "./CheckoutButton";
 import { LandingSamplePreview } from "./SampleAnalysisEmbed";
@@ -121,6 +122,13 @@ const PRICING_PLANS: Array<{
   },
 ];
 
+function defaultLandingTab(): LandingTab {
+  if (typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches) {
+    return "product";
+  }
+  return "sample";
+}
+
 export function LandingPage({
   onLogin,
   showLogin,
@@ -130,7 +138,8 @@ export function LandingPage({
   onTryDemo,
 }: LandingPageProps) {
   const [availablePlans, setAvailablePlans] = useState<PlanId[]>([]);
-  const [activeTab, setActiveTab] = useState<LandingTab>("sample");
+  const [activeTab, setActiveTab] = useState<LandingTab>(defaultLandingTab);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     void checkBillingStatus().then(({ plans }) => {
@@ -246,16 +255,18 @@ export function LandingPage({
           <div className="landing-tab-panel" role="tabpanel" id="panel-sample" aria-labelledby="tab-sample">
             <p className="landing-tab-intro">Live demo — same dashboard you get after upload.</p>
             <LandingSamplePreview />
-            <div className="landing-preview-actions">
-              <Link className="button button-primary" to="/sample-preview">
-                Full screen sample
-              </Link>
-              {trialAvailable && onTryTrial ? (
-                <button className="button button-secondary" type="button" onClick={() => tryTrial("sample_tab")}>
-                  Try your file
-                </button>
-              ) : null}
-            </div>
+            {!isMobile ? (
+              <div className="landing-preview-actions">
+                <Link className="button button-primary" to="/sample-preview">
+                  Full screen sample
+                </Link>
+                {trialAvailable && onTryTrial ? (
+                  <button className="button button-secondary" type="button" onClick={() => tryTrial("sample_tab")}>
+                    Try your file
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         ) : null}
 

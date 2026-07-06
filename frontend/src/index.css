@@ -53,6 +53,12 @@ select {
   font: inherit;
 }
 
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
 h1,
 h2,
 h3,
@@ -389,11 +395,20 @@ p {
 }
 
 .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
   border: none;
   border-radius: 999px;
   padding: 12px 20px;
   cursor: pointer;
   font-weight: 600;
+  text-decoration: none;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
@@ -1061,8 +1076,17 @@ a:focus-visible {
 }
 
 .brand-logo--nav.brand-logo--lockup .brand-logo__wordmark {
-  font-size: 1.2rem;
+  font-family: "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   white-space: nowrap;
+}
+
+.brand-logo--nav.brand-logo--lockup .brand-logo__wordmark-hr {
+  font-size: 0.92em;
+  font-weight: 700;
+  letter-spacing: 0.05em;
 }
 
 .brand-logo--nav.brand-logo--lockup .brand-logo__mark {
@@ -1326,6 +1350,8 @@ a:focus-visible {
 .landing-page {
   min-height: 100vh;
   min-height: 100dvh;
+  overflow-x: clip;
+  overscroll-behavior-y: contain;
   background:
     radial-gradient(circle at 50% -20%, rgba(47, 125, 90, 0.1), transparent 45%),
     linear-gradient(180deg, #eef7f1 0%, #f4f1e8 32%, #f4f1e8 100%);
@@ -1372,10 +1398,21 @@ a:focus-visible {
 
 .landing-tabs-card .landing-tab-bar {
   margin-bottom: 0;
-  padding: 12px 16px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--border);
   background: var(--surface-muted);
   border-radius: 0;
+  position: sticky;
+  top: calc(48px + env(safe-area-inset-top, 0px));
+  z-index: 8;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.landing-tabs-card .landing-tab-bar::-webkit-scrollbar {
+  display: none;
 }
 
 .landing-tabs-card .landing-tab-panel {
@@ -1427,8 +1464,11 @@ a:focus-visible {
   font-weight: 600;
   font-size: 0.95rem;
   padding: 10px 16px;
+  min-height: 44px;
   border-radius: 8px;
   cursor: pointer;
+  flex-shrink: 0;
+  touch-action: manipulation;
 }
 
 .landing-tab:hover {
@@ -4708,5 +4748,128 @@ a:focus-visible {
 
   table {
     min-width: 0;
+  }
+}
+
+/* iPhone / mobile landing polish */
+.landing-sample-mobile {
+  display: grid;
+  gap: 16px;
+}
+
+.landing-sample-mobile-cta {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  text-align: center;
+  background: linear-gradient(160deg, #fffdf9 0%, #edf8f1 100%);
+  border-color: rgba(47, 125, 90, 0.2);
+}
+
+.landing-sample-mobile-cta p {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.landing-sample-mobile-cta .button {
+  width: 100%;
+}
+
+.landing-hero--compact h1 {
+  font-family: "Instrument Serif", Georgia, "Times New Roman", serif;
+  font-size: clamp(1.75rem, 8vw, 2.35rem);
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+.landing-sign-in-btn {
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
+}
+
+@media (max-width: 768px) {
+  .landing-hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .landing-hero-actions .button {
+    width: 100%;
+  }
+
+  .landing-hero-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 10px;
+    margin-top: 22px;
+    padding-top: 20px;
+  }
+
+  .landing-hero-stat strong {
+    font-family: "DM Sans", system-ui, -apple-system, sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .landing-hero-stat span {
+    font-size: 0.72rem;
+  }
+
+  .landing-tabs-section {
+    padding: 0 12px max(32px, env(safe-area-inset-bottom));
+  }
+
+  .landing-tabs-card {
+    border-radius: 18px;
+  }
+
+  .landing-tabs-card .landing-tab-panel {
+    padding: 16px 14px 18px;
+  }
+
+  .landing-tab-intro {
+    font-size: 0.95rem;
+    max-width: none;
+  }
+
+  .landing-feature-compact {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-footer {
+    padding: 24px 16px max(28px, env(safe-area-inset-bottom));
+    text-align: center;
+  }
+
+  .landing-footer-copy {
+    align-items: center;
+  }
+
+  .legal-footer {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .brand-logo--nav.brand-logo--lockup .brand-logo__mark {
+    width: 34px;
+    height: 34px;
+  }
+
+  .brand-logo--nav.brand-logo--lockup .brand-logo__wordmark {
+    font-size: 0.98rem;
+  }
+
+  .landing-nav-inner {
+    min-height: 48px;
+  }
+
+  .first-run-tour {
+    right: 12px;
+    left: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    width: auto;
   }
 }
