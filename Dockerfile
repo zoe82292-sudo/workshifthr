@@ -3,8 +3,10 @@ WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm install
 COPY frontend/ ./
-# Force a clean frontend build in Docker (avoid stale incremental artifacts).
-RUN rm -f tsconfig.tsbuildinfo && npm run build
+RUN rm -f tsconfig.tsbuildinfo && npm run build \
+  && test -f dist/social-share.png \
+  && test -f dist/og-image.png \
+  && test $(wc -c < dist/og-image.png) -lt 120000
 
 FROM python:3.12-slim
 WORKDIR /app

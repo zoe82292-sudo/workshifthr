@@ -76,7 +76,15 @@ test("trial analyze works without login", async ({ request }) => {
   expect(body.trial_mode).toBe(true);
 });
 
-test("og image asset exists", async ({ request }) => {
-  const response = await request.get("/og-image.png");
-  expect(response.ok()).toBeTruthy();
+test("og image assets exist", async ({ request }) => {
+  for (const path of ["/social-share.png", "/og-image.png"]) {
+    const response = await request.get(path);
+    expect(response.ok()).toBeTruthy();
+    const body = await response.body();
+    expect(body.length).toBeGreaterThan(10_000);
+    expect(body.length).toBeLessThan(120_000);
+    expect(body[1]).toBe("P".charCodeAt(0));
+    expect(body[2]).toBe("N".charCodeAt(0));
+    expect(body[3]).toBe("G".charCodeAt(0));
+  }
 });

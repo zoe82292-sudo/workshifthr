@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "python ../scripts/generate_brand_assets.py && tsc -b && vite build",
-    "generate:brand": "python ../scripts/generate_brand_assets.py",
+    "build": "node scripts/verify-brand-assets.mjs && tsc -b && vite build",
+    "generate:brand": "python ../scripts/generate_brand_assets.py && node scripts/verify-brand-assets.mjs",
     "preview": "vite preview",
     "sync:demo": "python ../scripts/sync_demo_snapshot.py",
     "test:e2e": "playwright test"

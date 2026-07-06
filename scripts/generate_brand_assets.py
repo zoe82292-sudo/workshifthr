@@ -149,6 +149,7 @@ def render_favicon_32() -> Image.Image:
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     assets = {
+        "social-share.png": render_og_image(),
         "og-image.png": render_og_image(),
         "apple-touch-icon.png": render_apple_touch_icon(),
         "favicon-32.png": render_favicon_32(),
