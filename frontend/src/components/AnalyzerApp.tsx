@@ -402,11 +402,8 @@ export function AnalyzerApp({
       <header className="hero">
         <div className="hero-top">
           <div className="hero-brand">
-            <BrandLogo size="nav" />
-            <span className="landing-logo-text">
-              ShiftWorks<span className="landing-logo-text-hr">HR</span>
-            </span>
-            <span className="hero-badge">Compensation intelligence</span>
+            <BrandLogo size="nav" layout="lockup" />
+            <span className="hero-badge hero-badge--app">Comp spreadsheet QA</span>
           </div>
           {authRequired && userEmail && !trialMode ? (
             <div className="session-bar">

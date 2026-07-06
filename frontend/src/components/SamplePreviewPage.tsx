@@ -6,9 +6,9 @@ export function SamplePreviewPage() {
   return (
     <div className="sample-preview-page">
       <header className="sample-preview-page__header">
-        <BrandLogo size="nav" />
+        <BrandLogo size="nav" layout="lockup" />
         <Link className="legal-back-link" to="/">
-          ← Back to ShiftWorksHR
+          ← Home
         </Link>
       </header>
       <div className="sample-preview-page__intro">
@@ -19,8 +19,7 @@ export function SamplePreviewPage() {
           all issue tabs, and exports on sample data.
         </p>
         <p className="sample-preview-page__note">
-          Looking for the homepage tour?{" "}
-          <Link to="/#see-it-in-action">View the embedded sample</Link>.
+          <Link to="/">Back to homepage sample</Link>
         </p>
       </div>
 

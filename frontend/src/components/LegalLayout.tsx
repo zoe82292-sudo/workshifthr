@@ -14,9 +14,9 @@ export function LegalLayout({
     <div className="legal-page">
       <div className="legal-page-inner">
         <div className="legal-page-brand">
-          <BrandLogo size="nav" />
+          <BrandLogo size="nav" layout="lockup" />
           <Link className="legal-back-link" to="/">
-            ← Back to ShiftWorksHR
+            ← Home
           </Link>
         </div>
         <h1>{title}</h1>

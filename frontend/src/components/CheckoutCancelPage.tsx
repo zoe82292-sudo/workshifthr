@@ -6,7 +6,7 @@ export function CheckoutCancelPage() {
   return (
     <div className="checkout-page">
       <div className="checkout-card panel">
-        <BrandLogo size="nav" />
+        <BrandLogo size="nav" layout="lockup" />
         <span className="hero-badge">Checkout canceled</span>
         <h1>No charge was made</h1>
         <p className="checkout-copy">

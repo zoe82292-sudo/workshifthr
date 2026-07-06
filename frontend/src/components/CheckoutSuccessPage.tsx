@@ -162,7 +162,7 @@ export function CheckoutSuccessPage() {
   return (
     <div className="checkout-page">
       <div className="checkout-card panel">
-        <BrandLogo size="nav" />
+        <BrandLogo size="nav" layout="lockup" />
         <span className="hero-badge">Payment received</span>
         <h1>Thank you for your purchase</h1>
         {error ? (

@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { checkBillingStatus, type PlanId } from "../api";
 import { trackEvent } from "../analytics";
@@ -20,177 +20,60 @@ type LandingPageProps = {
   onTryDemo?: () => void;
 };
 
+type LandingTab = "sample" | "product" | "pricing" | "faq";
+
 const TRUST_POINTS = [
-  { stat: "< 30 sec", label: "Typical time to first insights" },
-  { stat: "HR teams", label: "Built for comp spreadsheet QA" },
-  { stat: "$249", label: "Cycle pass vs. $10k+ platforms" },
-  { stat: "Same day", label: "Export from HRIS and analyze" },
+  { stat: "< 30 sec", label: "To first insights" },
+  { stat: "$249", label: "Per merit cycle" },
+  { stat: "No API", label: "HRIS export upload" },
+  { stat: "PDF + Excel", label: "Leadership exports" },
 ];
-
-const OUTCOMES = [
-  {
-    title: "Catch below-minimum pay before the merit deck",
-    copy: "Flag employees under range minimum with cost-to-floor — so leadership sees gaps before sign-off, not after.",
-  },
-  {
-    title: "Surface compression and manager inversions",
-    copy: "Same-level pay spread and managers paid below reports — structural issues that are easy to miss in a flat spreadsheet.",
-  },
-  {
-    title: "Export a leadership-ready PDF in one click",
-    copy: "Executive summary and issue counts for HRBP review — not raw employee lists in email.",
-  },
-];
-
-function buildSteps(trialMaxRows: number) {
-  return [
-    {
-      title: "Try or purchase",
-      copy: `Upload up to ${trialMaxRows.toLocaleString()} rows free (one analyze per day), or pick monthly, annual, or a one-time Cycle Pass — login details appear instantly after checkout.`,
-    },
-    {
-      title: "Upload your file",
-      copy: "Drop one or more Excel or CSV files — columns are detected automatically and merged on Employee ID.",
-    },
-    {
-      title: "Add your team",
-      copy: "Share the org password with authorized HR and comp teammates — each signs in with their own work email.",
-    },
-    {
-      title: "Act on findings",
-      copy: "Review flagged issues, budget impact, pay equity, tenure, location pay, equity grants, and export reports.",
-    },
-  ];
-}
 
 const FEATURES = [
-  {
-    title: "HRIS export upload",
-    copy: "Export from Workday, UKG, or ADP and upload as-is — columns are auto-detected from headers or data patterns. No API connection or template required.",
-  },
-  {
-    title: "Out-of-range pay",
-    copy: "Flag employees below minimum or above maximum in seconds.",
-  },
-  {
-    title: "Range penetration",
-    copy: "See where each employee sits in their salary band.",
-  },
-  {
-    title: "Pay equity signals",
-    copy: "Catch compression, manager inversions, and duplicate IDs.",
-  },
-  {
-    title: "Budget impact",
-    copy: "Estimate cost to minimum, merit pool, and compa-ratio trends.",
-  },
-  {
-    title: "Demographic pay equity",
-    copy: "Median pay by gender and race, with same-level breakdowns.",
-  },
-  {
-    title: "Multi-file merge",
-    copy: "Upload multiple files — merged on Employee ID when salary, ranges, and merit live in separate exports.",
-  },
-  {
-    title: "Tenure, location & equity grants",
-    copy: "Review pay by tenure band, compare median pay across offices, and flag outlier LTI grant values.",
-  },
-  {
-    title: "Summary & export",
-    copy: "Shareable insights plus Excel and PDF exports for comp cycles.",
-  },
+  "Below / above range flags",
+  "Compression & manager inversions",
+  "Range penetration & compa-ratio",
+  "Pay equity by level",
+  "Budget & merit impact",
+  "Multi-file merge on Employee ID",
+  "Tenure, location & LTI checks",
+  "Cycle history & comparison",
 ];
 
-const AUDIENCES = [
+const FAQ_ITEMS = (trialMaxRows: number) => [
   {
-    title: "In-house HR & total rewards",
-    copy: "Run a first-pass comp QA before merit meetings — spot range and compression issues without rebuilding formulas every cycle.",
+    q: "Free trial?",
+    a: `One file, ${trialMaxRows.toLocaleString()} rows, one analyze/day. Names blurred; exports watermarked until purchase.`,
   },
   {
-    title: "Comp analysts & HRBPs",
-    copy: "Upload your HRIS or comp spreadsheet export — one file or several merged on Employee ID — then export summaries for leadership.",
+    q: "Workday / UKG / ADP integration?",
+    a: "No API — upload Excel or CSV exports as-is. Columns auto-detect.",
   },
   {
-    title: "HR & comp consultants",
-    copy: "Speed up client deliverables with a focused analysis pass at $249 per cycle — not per employee row.",
+    q: "Multiple files?",
+    a: "Up to 5 files merged on Employee ID (paid plans).",
+  },
+  {
+    q: "Data stored?",
+    a: "Processed in memory by default. Optional save-to-history for your account only.",
+  },
+  {
+    q: "Team access?",
+    a: "One org password; teammates sign in with work email.",
+  },
+  {
+    q: "Consultants?",
+    a: (
+      <>
+        Cycle Pass per client — see <Link to="/for-consultants">consultant guide</Link>.
+      </>
+    ),
+  },
+  {
+    q: "Invoices?",
+    a: `Email ${CONTACT_EMAIL} for procurement.`,
   },
 ];
-
-function buildFaqBase(trialMaxRows: number): Array<{ q: string; a: string }> {
-  return [
-    {
-      q: "Can I try it on my own file before paying?",
-      a: `Yes — use Try free with your file on the homepage. Upload one Excel or CSV (up to ${trialMaxRows.toLocaleString()} rows, one analyze per day), run the full analysis, and export watermarked PDF/Excel reports. Employee names are blurred in the trial UI. Purchase a plan for unlimited rows, multi-file merge, team access, full names, and unwatermarked exports.`,
-    },
-    {
-      q: "Do you connect to Workday or other HRIS systems?",
-      a: "Not today — ShiftWorksHR works with spreadsheet exports you download from your HRIS or comp tool. Export to Excel or CSV, upload as-is, and columns are detected automatically. No API integration or IT project required.",
-    },
-    {
-      q: "Can I upload more than one file?",
-      a: "Yes — up to 5 files per analysis. Map Employee ID on each file, then ShiftWorksHR merges rows by ID. Salary can live in one export, ranges in another, and merit or hire date in a third — useful when HRIS data is split across downloads.",
-    },
-    {
-      q: "What file format do I need?",
-      a: "Excel (.xlsx) or CSV up to 25 MB — upload your HRIS or comp export as-is; no template required. Columns are detected automatically from headers or data patterns. Gender and race unlock pay equity; hire date and location unlock tenure and location pay; merit and bonus columns unlock budget and compa projections.",
-    },
-    {
-      q: "Is my compensation data stored?",
-      a: "Uploads are processed in memory and not kept after analysis by default. If you click Save to history while signed in, that run is stored as JSON on our server for your account only (up to 25 saved runs, deletable anytime). See our Security page for details.",
-    },
-    {
-      q: "How do teammates get access?",
-      a: "One organization, one shared password. After purchase, each authorized person signs in with their work email and that password. Add teammates anytime from Team access in the analyzer.",
-    },
-    {
-      q: "How is this different from a full comp platform?",
-      a: "ShiftWorksHR complements the tools you already have — it's built for the spreadsheet work every comp cycle still runs through. You get fast flags, budget impact, and leadership-ready exports without a long rollout or enterprise price tag. Many teams use it for merit season; others pair it with their HRIS or comp platform for a focused first-pass review.",
-    },
-    {
-      q: "I'm a comp consultant — can I use this for client work?",
-      a: "Yes. Many consultants use a Cycle Pass per client engagement ($249 for 90 days). Upload client HRIS exports as-is, run the review queue, and export PDF/Excel for deliverables. See our for-consultants page for workflow and client talking points.",
-    },
-    {
-      q: "Can I compare this cycle to last cycle?",
-      a: "Yes — save analyses to history, then load a prior run to compare side-by-side. Re-upload after merit changes to see what's still open. This is how teams track progress from first pass to final lock.",
-    },
-    {
-      q: "Do you offer invoices for procurement?",
-      a: `Card checkout is instant. If your org needs an invoice or vendor form, email ${CONTACT_EMAIL} — we can usually turn around simple procurement requests same day.`,
-    },
-  ];
-}
-
-function buildFaq(scrollTo: (id: string) => void, trialMaxRows: number): Array<{ q: string; a: ReactNode }> {
-  return [
-    ...buildFaqBase(trialMaxRows).map((item) => ({ q: item.q, a: item.a as ReactNode })),
-    {
-      q: "Can I try it before buying?",
-      a: (
-        <>
-          Yes.{" "}
-          <button
-            type="button"
-            className="landing-text-link"
-            onClick={() => scrollTo("see-it-in-action")}
-          >
-            View the sample analysis
-          </button>{" "}
-          on this page, or open the{" "}
-          <Link to="/sample-preview">full-screen preview</Link> for tabs, filters, and exports —
-          both use our demo comp file and do not require an account. To upload your own
-          own spreadsheet, choose a plan (login is instant after checkout). Prefer a walkthrough
-          first? Email{" "}
-          <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Sample walkthrough request")}`}>
-            {CONTACT_EMAIL}
-          </a>
-          .
-        </>
-      ),
-    },
-  ];
-}
 
 const PRICING_PLANS: Array<{
   id: PlanId;
@@ -207,14 +90,9 @@ const PRICING_PLANS: Array<{
     id: "cycle",
     name: "Cycle Pass",
     price: "$249",
-    period: "one-time · 90 days",
-    description: "One merit or annual review season.",
-    features: [
-      "90 days of unlimited uploads",
-      "Full analysis + pay equity, tenure, location & LTI",
-      "Excel & PDF exports",
-      "Email support",
-    ],
+    period: "90 days",
+    description: "One merit season.",
+    features: ["Unlimited uploads", "Full analysis & exports", "Email support"],
     cta: "Get cycle pass",
     mailSubject: "ShiftWorksHR Comp Cycle Pass",
     featured: false,
@@ -224,14 +102,9 @@ const PRICING_PLANS: Array<{
     name: "Annual",
     price: "$899",
     period: "per year",
-    description: "Best value — about $75/month, billed annually.",
-    features: [
-      "Unlimited uploads all year",
-      "Full analysis + pay equity, tenure, location & LTI",
-      "Excel & PDF exports",
-      "Priority email support",
-    ],
-    cta: "Get annual access",
+    description: "Best value.",
+    features: ["Unlimited uploads", "Full analysis & exports", "Priority support"],
+    cta: "Get annual",
     mailSubject: "ShiftWorksHR Annual Plan",
     featured: true,
   },
@@ -240,14 +113,9 @@ const PRICING_PLANS: Array<{
     name: "Monthly",
     price: "$99",
     period: "per month",
-    description: "Flexible month-to-month access. Cancel anytime.",
-    features: [
-      "Unlimited uploads each month",
-      "Full analysis + pay equity, tenure, location & LTI",
-      "Excel & PDF exports",
-      "Email support",
-    ],
-    cta: "Get monthly access",
+    description: "Cancel anytime.",
+    features: ["Unlimited uploads", "Full analysis & exports", "Email support"],
+    cta: "Get monthly",
     mailSubject: "ShiftWorksHR Monthly Plan",
     featured: false,
   },
@@ -262,6 +130,7 @@ export function LandingPage({
   onTryDemo,
 }: LandingPageProps) {
   const [availablePlans, setAvailablePlans] = useState<PlanId[]>([]);
+  const [activeTab, setActiveTab] = useState<LandingTab>("sample");
 
   useEffect(() => {
     void checkBillingStatus().then(({ plans }) => {
@@ -269,19 +138,18 @@ export function LandingPage({
     });
   }, []);
 
-  function scrollTo(id: string) {
-    const target = document.getElementById(id);
-    if (!target) return;
-
-    const nav = document.querySelector(".landing-nav");
-    const navHeight = nav instanceof HTMLElement ? nav.offsetHeight : 72;
-    const top = target.getBoundingClientRect().top + window.scrollY - navHeight - 16;
-
-    window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
+  function selectTab(tab: LandingTab) {
+    setActiveTab(tab);
+    trackEvent("landing_tab", { tab });
+    document.getElementById("landing-tabs")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  const faqItems = buildFaq(scrollTo, trialMaxRows);
-  const steps = buildSteps(trialMaxRows);
+  function tryTrial(source: string) {
+    trackEvent("landing_cta", { action: "try_trial", location: source });
+    onTryTrial?.();
+  }
+
+  const faqItems = FAQ_ITEMS(trialMaxRows);
 
   return (
     <div className="landing-page">
@@ -290,119 +158,77 @@ export function LandingPage({
           <div className="landing-brand">
             <BrandLogo
               size="nav"
+              layout="lockup"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             />
-            <div className="landing-brand-copy">
-              <span className="landing-logo-text">
-                ShiftWorks<span className="landing-logo-text-hr">HR</span>
-              </span>
-              <span className="landing-domain">shiftworkshr.com</span>
-            </div>
           </div>
-          <nav className="landing-links">
-            <button type="button" onClick={() => scrollTo("see-it-in-action")}>
-              Sample analysis
-            </button>
-            <button type="button" onClick={() => scrollTo("features")}>
-              Features
-            </button>
-            <button type="button" onClick={() => scrollTo("who-its-for")}>
-              Who it&apos;s for
-            </button>
-            <button type="button" onClick={() => scrollTo("faq")}>
-              FAQ
-            </button>
-            <button type="button" onClick={() => scrollTo("pricing")}>
-              Pricing
-            </button>
-            {showLogin ? (
-              <button type="button" onClick={() => scrollTo("sign-in")}>
-                Sign in
+          <nav className="landing-links landing-links--desktop" aria-label="Page sections">
+            {(
+              [
+                ["sample", "Sample"],
+                ["product", "Product"],
+                ["pricing", "Pricing"],
+                ["faq", "FAQ"],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                className={activeTab === id ? "landing-nav-active" : ""}
+                aria-current={activeTab === id ? "page" : undefined}
+                onClick={() => selectTab(id)}
+              >
+                {label}
               </button>
-            ) : null}
+            ))}
           </nav>
+          {showLogin ? (
+            <button
+              type="button"
+              className="landing-sign-in-btn"
+              onClick={() => document.getElementById("sign-in")?.scrollIntoView({ behavior: "smooth" })}
+            >
+              Sign in
+            </button>
+          ) : null}
         </div>
       </header>
 
-      <section className="landing-hero">
+      <section className="landing-hero landing-hero--compact">
         <div className="landing-hero-copy">
-          <BrandLogo size="hero" className="landing-hero-logo" />
-          <span className="hero-badge">Compensation spreadsheet QA</span>
-          <p className="hero-positioning">
-            Built for HR and total rewards teams — upload one file or several merged on
-            Employee ID for a first-pass comp analysis.
-          </p>
+          <span className="hero-badge">Comp spreadsheet QA</span>
           <h1>Find pay issues before leadership review.</h1>
-          <p>
-            ShiftWorksHR flags below-minimum pay, compression, manager inversions, and
-            budget gaps — then exports leadership-ready summaries your team can act on.
+          <p className="landing-hero-lead">
+            Upload your HRIS export. Get range flags, compression checks, and a leadership PDF — in under a minute.
           </p>
           <div className="landing-hero-actions">
             {trialAvailable && onTryTrial ? (
-              <button
-                className="button button-primary"
-                type="button"
-                onClick={() => {
-                  trackEvent("landing_cta", { action: "try_trial", location: "hero" });
-                  onTryTrial();
-                }}
-              >
+              <button className="button button-primary" type="button" onClick={() => tryTrial("hero")}>
                 Try free with your file
               </button>
             ) : (
-              <button
-                className="button button-primary"
-                type="button"
-                onClick={() => scrollTo("pricing")}
-              >
-                Start analysis
-              </button>
-            )}
-            <button
-              className="button button-secondary"
-              type="button"
-              onClick={() => scrollTo("see-it-in-action")}
-            >
-              View sample analysis
-            </button>
-            {showLogin ? (
-              <button
-                className="button button-secondary"
-                type="button"
-                onClick={() => scrollTo("pricing")}
-              >
+              <button className="button button-primary" type="button" onClick={() => selectTab("pricing")}>
                 See pricing
               </button>
-            ) : onTryDemo ? (
+            )}
+            <button className="button button-secondary" type="button" onClick={() => selectTab("sample")}>
+              View sample
+            </button>
+            {!showLogin && onTryDemo ? (
               <button className="button button-secondary" type="button" onClick={onTryDemo}>
-                Try the analyzer
+                Try analyzer
               </button>
             ) : null}
           </div>
           {trialAvailable ? (
             <p className="landing-hero-trial-note">
-              Free trial: one file, up to {trialMaxRows.toLocaleString()} rows, one analyze per day —
-              no credit card. Names are blurred in the UI; exports include a trial watermark until
-              you purchase.
+              Trial: 1 file, {trialMaxRows.toLocaleString()} rows/day — no card required.
             </p>
           ) : null}
         </div>
-
-        <div className="landing-hero-card panel">
-          <h2>What you get on every upload</h2>
-          <ul className="landing-checklist">
-            <li>Below / above range flags</li>
-            <li>Range penetration & compa-ratio</li>
-            <li>Salary compression analysis</li>
-            <li>Manager vs. report pay checks</li>
-            <li>Overview + PDF &amp; Excel exports</li>
-            <li>Gender & race pay equity views</li>
-            <li>Multi-file upload merged on Employee ID</li>
-          </ul>
-        </div>
       </section>
 
-      <section className="landing-trust-strip" aria-label="Why teams choose ShiftWorksHR">
+      <section className="landing-trust-strip" aria-label="Highlights">
         {TRUST_POINTS.map((point) => (
           <div className="landing-trust-item" key={point.label}>
             <span className="landing-trust-stat">{point.stat}</span>
@@ -411,273 +237,140 @@ export function LandingPage({
         ))}
       </section>
 
-      <section className="landing-section landing-outcomes" aria-label="What you get">
-        <div className="landing-outcome-grid">
-          {OUTCOMES.map((outcome) => (
-            <article className="landing-outcome panel" key={outcome.title}>
-              <h2>{outcome.title}</h2>
-              <p>{outcome.copy}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="landing-section landing-preview" id="see-it-in-action">
-        <div className="landing-section-header landing-preview-header">
-          <span className="hero-badge">Sample analysis</span>
-          <h2>See what you get before you buy</h2>
-          <p>
-            Live output from our sample compensation file — the same results dashboard customers
-            see after upload. Scroll every tab, filter, and export below.
-          </p>
-        </div>
-
-        <LandingSamplePreview />
-
-        <div className="landing-preview-actions">
-          <Link className="button button-primary" to="/sample-preview">
-            Open full sample analysis
-          </Link>
-          {trialAvailable && onTryTrial ? (
-            <button className="button button-secondary" type="button" onClick={onTryTrial}>
-              Try with your file
-            </button>
-          ) : (
-            <button className="button button-secondary" type="button" onClick={() => scrollTo("pricing")}>
-              See pricing
-            </button>
-          )}
-        </div>
-        <p className="landing-preview-note">
-          Sample file for illustration. {trialAvailable ? "Use Try free with your file" : "Upload your own export after purchase"}{" "}
-          to confirm column mapping on your HRIS export.
-        </p>
-      </section>
-
-      <section className="landing-section" id="features">
-        <div className="landing-section-header">
-          <h2>Built for comp review, not generic HR reporting</h2>
-          <p>Every check is designed around real compensation cycle workflows.</p>
-        </div>
-        <div className="landing-feature-grid">
-          {FEATURES.map((feature) => (
-            <article className="landing-feature" key={feature.title}>
-              <h3>{feature.title}</h3>
-              <p>{feature.copy}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="landing-section" id="who-its-for">
-        <div className="landing-section-header">
-          <h2>Who it&apos;s for</h2>
-          <p>HR teams and consultants who need fast answers from a comp spreadsheet — not a six-month rollout.</p>
-        </div>
-        <div className="landing-audience-grid">
-          {AUDIENCES.map((audience) => (
-            <article className="landing-audience panel" key={audience.title}>
-              <h3>{audience.title}</h3>
-              <p>{audience.copy}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="landing-section landing-about" id="about">
-        <div className="landing-about-card panel">
-          <span className="hero-badge">Built by a comp analyst</span>
-          <h2>The tool I wished I had every merit season</h2>
-          <p>
-            I&apos;m a compensation analyst. Before every merit cycle, I used to spend days
-            in Excel — range checks, compression flags, manager inversions — before I could
-            walk into leadership with confidence. ShiftWorksHR runs that first pass in under
-            30 seconds.
-          </p>
-          <p>
-            Same rigor I applied by hand, without the formula archaeology — flags, budget
-            impact, and exports ready for the room where decisions get made.
-          </p>
-        </div>
-      </section>
-
-      <section className="landing-section landing-cycle-moat" id="cycle-comparison">
-        <div className="landing-section-header">
-          <span className="hero-badge">Cycle over cycle</span>
-          <h2>Re-upload after merit — see what&apos;s still open</h2>
-          <p>
-            Save each analysis to history, compare against a prior run, and re-upload when merit
-            numbers change. Track progress from first pass to final lock without rebuilding
-            spreadsheets every week.
-          </p>
-        </div>
-        <div className="landing-cycle-moat__grid">
-          <article className="panel landing-cycle-step">
-            <strong>1. First pass</strong>
-            <p>Upload HRIS export → review queue flags range, compression, and merit issues.</p>
-          </article>
-          <article className="panel landing-cycle-step">
-            <strong>2. After merit edits</strong>
-            <p>Re-export from Workday or your comp tool and upload again.</p>
-          </article>
-          <article className="panel landing-cycle-step">
-            <strong>3. Compare cycles</strong>
-            <p>Load saved history side-by-side — below-min counts, queue items, budget exposure.</p>
-          </article>
-        </div>
-      </section>
-
-      <section className="landing-section landing-lead-magnet">
-        <div className="landing-lead-magnet-card panel">
-          <div>
-            <span className="hero-badge">Free resources</span>
-            <h2>Guides for merit season</h2>
-            <p>
-              Checklists and export QA guides you can use with or without ShiftWorksHR — share with
-              HRBPs or clients.
-            </p>
-          </div>
-          <div className="landing-resource-links">
-            <Link className="button button-secondary" to="/checklist">
-              Merit season checklist
-            </Link>
-            <Link className="button button-secondary" to="/guides/workday-comp-export-qa">
-              Workday export QA
-            </Link>
-            <Link className="button button-secondary" to="/for-consultants">
-              For consultants
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="landing-section landing-lead-magnet landing-lead-magnet--alt">
-        <div className="landing-lead-magnet-card panel">
-          <div>
-            <span className="hero-badge">Comp consultants</span>
-            <h2>$249 per client cycle — not per seat</h2>
-            <p>
-              Speed up client deliverables with a focused QA pass. Client talking points, workflow,
-              and procurement answers on one page.
-            </p>
-          </div>
-          <Link className="button button-primary" to="/for-consultants">
-            Consultant guide
-          </Link>
-        </div>
-      </section>
-
-      <section className="landing-section landing-steps">
-        <div className="landing-section-header">
-          <h2>How it works</h2>
-          <p>From purchase to insights in four steps.</p>
-        </div>
-        <div className="landing-step-grid">
-          {steps.map((step, index) => (
-            <article className="landing-step panel" key={step.title}>
-              <span className="landing-step-number">{index + 1}</span>
-              <h3>{step.title}</h3>
-              <p>{step.copy}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="landing-section landing-pricing-section" id="pricing">
-        <div className="landing-section-header">
-          <span className="hero-badge">Introductory pricing</span>
-          <h2>Enterprise comp analysis without the enterprise price tag</h2>
-          <p>
-            Big comp platforms often cost $10,000+ per year or require consultants at $5,000–$15,000
-            per cycle. ShiftWorksHR is a focused spreadsheet QA tool for HR teams who need fast,
-            practical answers — try up to {trialMaxRows.toLocaleString()} rows free, then upgrade
-            when you&apos;re ready.
-          </p>
-        </div>
-
-        <div className="landing-pricing-grid">
-          {PRICING_PLANS.map((plan) => (
-            <article
-              className={`landing-price-card panel ${plan.featured ? "featured" : ""}`}
-              key={plan.id}
+      <section className="landing-tabs-section" id="landing-tabs">
+        <div className="landing-tab-bar" role="tablist" aria-label="Learn more">
+          {(
+            [
+              ["sample", "Sample"],
+              ["product", "Product"],
+              ["pricing", "Pricing"],
+              ["faq", "FAQ"],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              id={`tab-${id}`}
+              aria-selected={activeTab === id}
+              aria-controls={`panel-${id}`}
+              className={`landing-tab ${activeTab === id ? "landing-tab--active" : ""}`}
+              onClick={() => selectTab(id)}
             >
-              <div className="landing-price-card__badge-row">
-                {plan.featured ? (
-                  <span className="landing-price-badge">Best value</span>
-                ) : (
-                  <span
-                    className="landing-price-badge landing-price-badge--placeholder"
-                    aria-hidden="true"
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === "sample" ? (
+          <div className="landing-tab-panel" role="tabpanel" id="panel-sample" aria-labelledby="tab-sample">
+            <p className="landing-tab-intro">Live demo — same dashboard you get after upload.</p>
+            <LandingSamplePreview />
+            <div className="landing-preview-actions">
+              <Link className="button button-primary" to="/sample-preview">
+                Full screen sample
+              </Link>
+              {trialAvailable && onTryTrial ? (
+                <button className="button button-secondary" type="button" onClick={() => tryTrial("sample_tab")}>
+                  Try your file
+                </button>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+
+        {activeTab === "product" ? (
+          <div className="landing-tab-panel" role="tabpanel" id="panel-product" aria-labelledby="tab-product">
+            <p className="landing-tab-intro">
+              For in-house comp teams, HRBPs, and consultants — export from Workday, UKG, or ADP and upload as-is.
+            </p>
+            <ul className="landing-feature-compact">
+              {FEATURES.map((feature) => (
+                <li key={feature}>{feature}</li>
+              ))}
+            </ul>
+            <ol className="landing-steps-compact">
+              <li>Upload Excel/CSV (columns auto-detect)</li>
+              <li>Review prioritized queue</li>
+              <li>Export PDF or Excel for leadership</li>
+              <li>Re-upload after merit — compare cycles</li>
+            </ol>
+            <div className="landing-resource-links">
+              <Link to="/checklist">Merit checklist</Link>
+              <Link to="/guides/workday-comp-export-qa">Export QA guide</Link>
+              <Link to="/for-consultants">For consultants</Link>
+            </div>
+          </div>
+        ) : null}
+
+        {activeTab === "pricing" ? (
+          <div className="landing-tab-panel" role="tabpanel" id="panel-pricing" aria-labelledby="tab-pricing">
+            <p className="landing-tab-intro">
+              Focused comp QA — not a $10k platform. Per organization, not per row.
+            </p>
+            <div className="landing-pricing-grid">
+              {PRICING_PLANS.map((plan) => (
+                <article
+                  className={`landing-price-card panel ${plan.featured ? "featured" : ""}`}
+                  key={plan.id}
+                >
+                  {plan.featured ? <span className="landing-price-badge">Best value</span> : null}
+                  <h3 className="landing-price-card__title">{plan.name}</h3>
+                  <p className="landing-price-amount">{plan.price}</p>
+                  <p className="landing-price-period">{plan.period}</p>
+                  <p className="landing-price-description">{plan.description}</p>
+                  <ul className="landing-checklist landing-price-card__features">
+                    {plan.features.map((feature) => (
+                      <li key={feature}>{feature}</li>
+                    ))}
+                  </ul>
+                  <CheckoutButton
+                    planId={plan.id}
+                    label={plan.cta}
+                    variant={plan.featured ? "primary" : "secondary"}
+                    checkoutEnabled={availablePlans.includes(plan.id)}
+                    fallbackHref={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(plan.mailSubject)}`}
                   />
-                )}
-              </div>
-              <h3 className="landing-price-card__title">{plan.name}</h3>
-              <p className="landing-price-amount">{plan.price}</p>
-              <p className="landing-price-period">{plan.period}</p>
-              <p className="landing-price-description">{plan.description}</p>
-              <ul className="landing-checklist landing-price-card__features">
-                {plan.features.map((feature) => (
-                  <li key={feature}>{feature}</li>
-                ))}
-              </ul>
-              <div className="landing-price-card__grow" aria-hidden="true" />
-              <div className="landing-price-card__cta">
-                <CheckoutButton
-                  planId={plan.id}
-                  label={plan.cta}
-                  variant={plan.featured ? "primary" : "secondary"}
-                  checkoutEnabled={availablePlans.includes(plan.id)}
-                  fallbackHref={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(plan.mailSubject)}`}
-                />
-              </div>
-            </article>
-          ))}
-        </div>
+                </article>
+              ))}
+            </div>
+            <p className="landing-pricing-note">
+              One org password · teammates use work email · Stripe checkout ·{" "}
+              <Link to="/terms">terms</Link>
+            </p>
+          </div>
+        ) : null}
 
-        <div className="landing-pricing-footnote panel">
-          <p>
-            <strong>One organization, one shared password.</strong> Pricing is per organization
-            (not per employee row). Teammates sign in with their own work email and the same
-            password — add teammates anytime from <strong>Team access</strong> after you sign in.
-            Payments are processed securely by Stripe and are non-refundable once
-            access credentials are delivered (see Terms). Uploads are processed in memory by default.
-            Optional Save to history stores a JSON snapshot for your account only.
-          </p>
-        </div>
-      </section>
-
-      <section className="landing-section landing-faq" id="faq">
-        <div className="landing-section-header">
-          <h2>Frequently asked questions</h2>
-        </div>
-        <div className="landing-faq-list">
-          {faqItems.map((item) => (
-            <details className="landing-faq-item panel" key={item.q}>
-              <summary>{item.q}</summary>
-              <div className="landing-faq-answer">{item.a}</div>
-            </details>
-          ))}
-        </div>
+        {activeTab === "faq" ? (
+          <div className="landing-tab-panel" role="tabpanel" id="panel-faq" aria-labelledby="tab-faq">
+            <div className="landing-faq-list">
+              {faqItems.map((item) => (
+                <details className="landing-faq-item panel" key={item.q}>
+                  <summary>{item.q}</summary>
+                  <div className="landing-faq-answer">{item.a}</div>
+                </details>
+              ))}
+            </div>
+            <p className="landing-tab-intro">
+              More detail: <Link to="/sample-preview">sample analysis</Link>
+              {" · "}
+              <Link to="/security">security</Link>
+              {" · "}
+              <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+            </p>
+          </div>
+        ) : null}
       </section>
 
       {showLogin ? (
         <section className="landing-section landing-sign-in" id="sign-in">
           <div className="landing-sign-in-card panel">
-            <div className="landing-sign-in-copy">
-              <span className="hero-badge">Customer sign in</span>
-              <h2>Already a customer?</h2>
-              <p>
-                Sign in with your work email and your organization&apos;s shared password.
-                Login details appear on the confirmation page right after checkout — share
-                them with authorized HR and comp teammates.
-              </p>
-            </div>
-            <div className="landing-sign-in-form">
-              <LoginForm onLogin={onLogin} compact />
-              <p className="legal-agreement">
-                By signing in, you agree to our <LegalConsentLinks />.
-              </p>
-            </div>
+            <h2>Sign in</h2>
+            <p className="landing-sign-in-blurb">Work email + your org password.</p>
+            <LoginForm onLogin={onLogin} compact />
+            <p className="legal-agreement">
+              By signing in, you agree to our <LegalConsentLinks />.
+            </p>
           </div>
         </section>
       ) : null}
@@ -685,20 +378,13 @@ export function LandingPage({
       <footer className="landing-footer">
         <div className="landing-footer-copy">
           <p className="landing-footer-brand">ShiftWorksHR</p>
-          <p className="landing-footer-domain">shiftworkshr.com</p>
-          <p>Compensation spreadsheet QA for HR and total rewards teams.</p>
-          <p className="landing-footer-contact">
+          <p>
             <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
             {" · "}
-            <Link to="/checklist">Merit checklist</Link>
+            <Link to="/checklist">Checklist</Link>
           </p>
           <LegalFooter />
         </div>
-        {showLogin ? (
-          <button className="landing-footer-link" type="button" onClick={() => scrollTo("sign-in")}>
-            Customer sign in
-          </button>
-        ) : null}
       </footer>
     </div>
   );
