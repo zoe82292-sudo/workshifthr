@@ -162,26 +162,6 @@ export function LandingPage({
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             />
           </div>
-          <nav className="landing-links landing-links--desktop" aria-label="Page sections">
-            {(
-              [
-                ["sample", "Sample"],
-                ["product", "Product"],
-                ["pricing", "Pricing"],
-                ["faq", "FAQ"],
-              ] as const
-            ).map(([id, label]) => (
-              <button
-                key={id}
-                type="button"
-                className={activeTab === id ? "landing-nav-active" : ""}
-                aria-current={activeTab === id ? "page" : undefined}
-                onClick={() => selectTab(id)}
-              >
-                {label}
-              </button>
-            ))}
-          </nav>
           {showLogin ? (
             <button
               type="button"
@@ -225,19 +205,19 @@ export function LandingPage({
               Trial: 1 file, {trialMaxRows.toLocaleString()} rows/day — no card required.
             </p>
           ) : null}
+          <div className="landing-hero-stats" aria-label="Highlights">
+            {TRUST_POINTS.map((point) => (
+              <div className="landing-hero-stat" key={point.label}>
+                <strong>{point.stat}</strong>
+                <span>{point.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="landing-trust-strip" aria-label="Highlights">
-        {TRUST_POINTS.map((point) => (
-          <div className="landing-trust-item" key={point.label}>
-            <span className="landing-trust-stat">{point.stat}</span>
-            <span className="landing-trust-label">{point.label}</span>
-          </div>
-        ))}
-      </section>
-
       <section className="landing-tabs-section" id="landing-tabs">
+        <div className="landing-tabs-card panel">
         <div className="landing-tab-bar" role="tablist" aria-label="Learn more">
           {(
             [
@@ -360,6 +340,7 @@ export function LandingPage({
             </p>
           </div>
         ) : null}
+        </div>
       </section>
 
       {showLogin ? (

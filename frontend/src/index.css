@@ -1348,6 +1348,52 @@ a:focus-visible {
   padding: 0 24px 48px;
 }
 
+.landing-tabs-card {
+  overflow: hidden;
+  padding: 0;
+}
+
+.landing-tabs-card .landing-tab-bar {
+  margin-bottom: 0;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-muted);
+  border-radius: 0;
+}
+
+.landing-tabs-card .landing-tab-panel {
+  padding: 24px;
+}
+
+.landing-hero-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(47, 125, 90, 0.12);
+}
+
+.landing-hero-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+}
+
+.landing-hero-stat strong {
+  font-family: "Instrument Serif", serif;
+  font-size: 1.25rem;
+  color: var(--accent);
+  font-weight: 400;
+}
+
+.landing-hero-stat span {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
 .landing-tab-bar {
   display: flex;
   flex-wrap: wrap;
@@ -1358,25 +1404,25 @@ a:focus-visible {
 }
 
 .landing-tab {
-  border: 1px solid var(--border);
-  background: #fff;
+  border: none;
+  background: transparent;
   color: var(--text-muted);
   font-weight: 600;
   font-size: 0.95rem;
-  padding: 10px 18px;
-  border-radius: 999px;
+  padding: 10px 16px;
+  border-radius: 8px;
   cursor: pointer;
 }
 
 .landing-tab:hover {
-  border-color: rgba(47, 125, 90, 0.35);
   color: var(--accent);
+  background: rgba(47, 125, 90, 0.08);
 }
 
 .landing-tab--active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+  background: #fff;
+  color: var(--accent);
+  box-shadow: 0 1px 3px rgba(26, 77, 58, 0.12);
 }
 
 .landing-tab-panel {
@@ -2907,6 +2953,19 @@ a:focus-visible {
   .landing-nav-inner {
     padding: 10px 14px;
     gap: 10px;
+  }
+
+  .landing-hero-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 12px;
+  }
+
+  .landing-tabs-section {
+    padding: 0 14px 36px;
+  }
+
+  .landing-tabs-card .landing-tab-panel {
+    padding: 16px;
   }
 
   .landing-links--desktop {
