@@ -506,7 +506,9 @@ export function ResultsDashboard({
           unwatermarked exports.
         </div>
       ) : null}
-      <FirstRunTour />
+      <FirstRunTour
+        reviewQueueCount={result.summary.review_queue_items ?? result.review_queue?.total_items ?? 0}
+      />
       <ResultsStartHereBanner
         result={result}
         activeTab={activeTab}
