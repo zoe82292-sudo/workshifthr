@@ -23,6 +23,13 @@ type LandingPageProps = {
 
 type LandingTab = "sample" | "product" | "pricing" | "faq";
 
+const LANDING_TABS: { id: LandingTab; label: string }[] = [
+  { id: "sample", label: "Sample" },
+  { id: "product", label: "Product" },
+  { id: "pricing", label: "Pricing" },
+  { id: "faq", label: "FAQ" },
+];
+
 const TRUST_POINTS = [
   { stat: "< 30 sec", label: "To first insights" },
   { stat: "$249", label: "Per merit cycle" },
@@ -150,7 +157,7 @@ export function LandingPage({
   function selectTab(tab: LandingTab) {
     setActiveTab(tab);
     trackEvent("landing_tab", { tab });
-    document.getElementById("landing-tabs")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.getElementById("landing-tab-content")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function tryTrial(source: string) {
@@ -181,6 +188,22 @@ export function LandingPage({
             </button>
           ) : null}
         </div>
+        <nav className="landing-tab-bar landing-tab-bar--header" role="tablist" aria-label="Learn more">
+          {LANDING_TABS.map(({ id, label }) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              id={`tab-${id}`}
+              aria-selected={activeTab === id}
+              aria-controls={`panel-${id}`}
+              className={`landing-tab ${activeTab === id ? "landing-tab--active" : ""}`}
+              onClick={() => selectTab(id)}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
       </header>
 
       <section className="landing-hero landing-hero--compact">
@@ -226,31 +249,7 @@ export function LandingPage({
       </section>
 
       <section className="landing-tabs-section" id="landing-tabs">
-        <div className="landing-tabs-card panel">
-        <div className="landing-tab-bar" role="tablist" aria-label="Learn more">
-          {(
-            [
-              ["sample", "Sample"],
-              ["product", "Product"],
-              ["pricing", "Pricing"],
-              ["faq", "FAQ"],
-            ] as const
-          ).map(([id, label]) => (
-            <button
-              key={id}
-              type="button"
-              role="tab"
-              id={`tab-${id}`}
-              aria-selected={activeTab === id}
-              aria-controls={`panel-${id}`}
-              className={`landing-tab ${activeTab === id ? "landing-tab--active" : ""}`}
-              onClick={() => selectTab(id)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
+        <div className="landing-tabs-card panel" id="landing-tab-content">
         {activeTab === "sample" ? (
           <div className="landing-tab-panel" role="tabpanel" id="panel-sample" aria-labelledby="tab-sample">
             <p className="landing-tab-intro">Live demo — same dashboard you get after upload.</p>
