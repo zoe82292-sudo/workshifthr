@@ -514,6 +514,102 @@ export function ResultsDashboard({
         activeTab={activeTab}
         onOpenReviewQueue={() => onTabChange("review_queue")}
       />
+
+      <div className="results-nav-shell">
+        <div className="results-tab-nav" role="tablist" aria-label="Issue categories">
+          <div className="tab-category-nav">
+            {visibleTabGroups.map((group) => (
+              <button
+                key={group.title}
+                type="button"
+                className={`tab-category ${activeTabGroup === group.title ? "active" : ""}`}
+                onClick={() => selectTabGroup(group.title)}
+              >
+                {group.title}
+              </button>
+            ))}
+          </div>
+          {currentTabGroup ? (
+            <div className="tab-group__tabs">
+              {currentTabGroup.ids.map((tabId) => {
+                const tab = TABS_BY_ID[tabId];
+                const count = tab.count(result);
+                const severity = tabSeverity(count, tab.countKind);
+                return (
+                  <button
+                    key={tabId}
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === tabId}
+                    className={`tab tab--${severity} ${activeTab === tabId ? "active" : ""}`}
+                    onClick={() => onTabChange(tabId)}
+                  >
+                    <span className={`tab-severity tab-severity--${severity}`} aria-hidden />
+                    {tab.label} ({formatTabCount(tab, count)})
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="results-sticky-toolbar">
+          <div className="table-filters">
+            {departments.length > 0 ? (
+              <label className="table-filters__field" htmlFor="results-department-filter">
+                <span>Department</span>
+                <select
+                  id="results-department-filter"
+                  value={departmentFilter}
+                  onChange={(event) => setDepartmentFilter(event.target.value)}
+                >
+                  <option value="">All departments</option>
+                  {departments.map((department) => (
+                    <option key={department} value={department}>
+                      {department}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
+            <label className="table-filters__field table-filters__field--grow" htmlFor="results-search">
+              <span>Search</span>
+              <input
+                id="results-search"
+                type="search"
+                placeholder="Employee, ID, department, level…"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+              />
+            </label>
+            {hasExcludedEmployees ? (
+              <label className="table-filters__checkbox">
+                <input
+                  type="checkbox"
+                  checked={excludeNonCore}
+                  onChange={(event) => setExcludeNonCore(event.target.checked)}
+                />
+                <span>Hide interns & contractors</span>
+              </label>
+            ) : null}
+            {departmentFilter ? (
+              <div className="table-filters__active">
+                <span>
+                  Showing <strong>{departmentFilter}</strong> only
+                </span>
+                <button
+                  type="button"
+                  className="button button-secondary button-small"
+                  onClick={() => setDepartmentFilter("")}
+                >
+                  Clear filter
+                </button>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
       <div className="panel-header" style={{ marginBottom: 16 }}>
         <h2>Analysis results</h2>
         <div className="export-actions">
@@ -657,99 +753,6 @@ export function ResultsDashboard({
               {card.meta ? <span className="stat-card__meta">{card.meta}</span> : null}
             </button>
           ))}
-      </div>
-
-      <div className="results-sticky-toolbar">
-        <div className="table-filters">
-          {departments.length > 0 ? (
-            <label className="table-filters__field" htmlFor="results-department-filter">
-              <span>Department</span>
-              <select
-                id="results-department-filter"
-                value={departmentFilter}
-                onChange={(event) => setDepartmentFilter(event.target.value)}
-              >
-                <option value="">All departments</option>
-                {departments.map((department) => (
-                  <option key={department} value={department}>
-                    {department}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ) : null}
-          <label className="table-filters__field table-filters__field--grow" htmlFor="results-search">
-            <span>Search</span>
-            <input
-              id="results-search"
-              type="search"
-              placeholder="Employee, ID, department, level…"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-          </label>
-          {hasExcludedEmployees ? (
-            <label className="table-filters__checkbox">
-              <input
-                type="checkbox"
-                checked={excludeNonCore}
-                onChange={(event) => setExcludeNonCore(event.target.checked)}
-              />
-              <span>Hide interns & contractors</span>
-            </label>
-          ) : null}
-          {departmentFilter ? (
-            <div className="table-filters__active">
-              <span>
-                Showing <strong>{departmentFilter}</strong> only
-              </span>
-              <button
-                type="button"
-                className="button button-secondary button-small"
-                onClick={() => setDepartmentFilter("")}
-              >
-                Clear filter
-              </button>
-            </div>
-          ) : null}
-        </div>
-      </div>
-
-      <div className="results-tab-nav" role="tablist" aria-label="Issue categories">
-        <div className="tab-category-nav">
-          {visibleTabGroups.map((group) => (
-            <button
-              key={group.title}
-              type="button"
-              className={`tab-category ${activeTabGroup === group.title ? "active" : ""}`}
-              onClick={() => selectTabGroup(group.title)}
-            >
-              {group.title}
-            </button>
-          ))}
-        </div>
-        {currentTabGroup ? (
-          <div className="tab-group__tabs">
-            {currentTabGroup.ids.map((tabId) => {
-              const tab = TABS_BY_ID[tabId];
-              const count = tab.count(result);
-              const severity = tabSeverity(count, tab.countKind);
-              return (
-                <button
-                  key={tabId}
-                  type="button"
-                  role="tab"
-                  aria-selected={activeTab === tabId}
-                  className={`tab tab--${severity} ${activeTab === tabId ? "active" : ""}`}
-                  onClick={() => onTabChange(tabId)}
-                >
-                  <span className={`tab-severity tab-severity--${severity}`} aria-hidden />
-                  {tab.label} ({formatTabCount(tab, count)})
-                </button>
-              );
-            })}
-          </div>
-        ) : null}
       </div>
 
       <div className="results-tab-content">
