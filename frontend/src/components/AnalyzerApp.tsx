@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   analyzeBatch,
   analyzeFile,
@@ -405,6 +406,9 @@ export function AnalyzerApp({
             <BrandLogo size="nav" layout="lockup" />
             <span className="hero-badge hero-badge--app">Comp spreadsheet QA</span>
           </div>
+          <Link className="button button-secondary button-small analyzer-sample-link" to="/sample-preview">
+            View sample demo
+          </Link>
           {authRequired && userEmail && !trialMode ? (
             <div className="session-bar">
               <div className="session-user">

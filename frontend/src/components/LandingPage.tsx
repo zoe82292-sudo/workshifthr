@@ -406,7 +406,21 @@ export function LandingPage({
                 See pricing — from $249/cycle
               </button>
             )}
-            <button className="button button-secondary" type="button" onClick={() => selectTab("sample")}>
+            <button
+              className="button button-secondary"
+              type="button"
+              onClick={() => {
+                const target = document.getElementById("see-it-in-action");
+                if (target) {
+                  const nav = document.querySelector<HTMLElement>(".landing-nav");
+                  const offset = (nav?.offsetHeight ?? 72) + 12;
+                  const top = target.getBoundingClientRect().top + window.scrollY - offset;
+                  window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+                } else {
+                  selectTab("sample");
+                }
+              }}
+            >
               See sample analysis
             </button>
           </div>
@@ -425,6 +439,18 @@ export function LandingPage({
           </div>
         </div>
         </div>
+      </section>
+
+      <section className="landing-demo-spotlight" id="see-it-in-action">
+        <div className="landing-section-header">
+          <span className="hero-badge">See it in action</span>
+          <h2>Sample analysis on a 20-employee comp file</h2>
+          <p>
+            Executive summary, budget impact, merit pool math, and flagged issues — the same
+            dashboard you get after uploading your HRIS export.
+          </p>
+        </div>
+        <LandingSamplePreview />
       </section>
 
       {outcomeStats ? (
@@ -463,8 +489,29 @@ export function LandingPage({
         >
         {activeTab === "sample" ? (
           <div className="landing-tab-panel landing-tab-panel--sample" role="tabpanel" id="panel-sample" aria-labelledby="tab-sample">
-            <p className="landing-tab-intro">Interactive sample — same checks on your merit spreadsheet.</p>
-            <LandingSamplePreview />
+            <p className="landing-tab-intro">
+              The live preview is in the <strong>See it in action</strong> section above. Open the
+              full sample for every issue tab, pay equity view, and export buttons.
+            </p>
+            <div className="landing-preview-actions">
+              <button
+                className="button button-secondary"
+                type="button"
+                onClick={() => {
+                  const target = document.getElementById("see-it-in-action");
+                  if (!target) return;
+                  const nav = document.querySelector<HTMLElement>(".landing-nav");
+                  const offset = (nav?.offsetHeight ?? 72) + 12;
+                  const top = target.getBoundingClientRect().top + window.scrollY - offset;
+                  window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+                }}
+              >
+                Jump to preview
+              </button>
+              <Link className="button button-primary" to="/sample-preview">
+                Open full interactive sample
+              </Link>
+            </div>
           </div>
         ) : null}
 

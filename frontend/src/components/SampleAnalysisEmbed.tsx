@@ -84,8 +84,29 @@ import { MarketingPreview } from "./MarketingPreview";
 export function LandingSamplePreview() {
   return (
     <div className="landing-sample-preview">
-      <MarketingPreview focus="full" className="landing-sample-preview__dashboard" />
-      <div className="landing-preview-actions">
+      <div className="landing-sample-preview__desktop">
+        <MarketingPreview focus="full" className="landing-sample-preview__dashboard" />
+      </div>
+      <div className="landing-sample-mobile">
+        <figure className="landing-sample-mobile-shot">
+          <img
+            src="/demo-mobile-preview.png"
+            alt="ShiftWorksHR sample analysis showing executive summary and below-minimum employees"
+            width={390}
+            height={844}
+            loading="lazy"
+          />
+        </figure>
+        <div className="landing-sample-mobile-cta panel">
+          <p>
+            Full interactive tabs and exports on desktop — open the complete sample on any device.
+          </p>
+          <Link className="button button-primary" to="/sample-preview">
+            Open full interactive sample
+          </Link>
+        </div>
+      </div>
+      <div className="landing-preview-actions landing-sample-preview__desktop-actions">
         <Link className="button button-primary" to="/sample-preview">
           Open full interactive sample
         </Link>
