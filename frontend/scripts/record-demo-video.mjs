@@ -1,13 +1,7 @@
 #!/usr/bin/env node
 /**
- * Records a ~45s product walkthrough for marketing (Sample tab + LinkedIn DMs).
- *
- * Prerequisites:
- *   App running at PLAYWRIGHT_BASE_URL (default http://127.0.0.1:8080)
- *   Optional: ffmpeg on PATH for MP4 output
- *
- * Usage:
- *   PLAYWRIGHT_BASE_URL=http://127.0.0.1:8080 node scripts/record-demo-video.mjs
+ * Records a LinkedIn walkthrough to marketing/demo-walkthrough.mp4 (not deployed).
+ * Requires app at PLAYWRIGHT_BASE_URL and /demo-video route.
  */
 import { chromium } from "playwright";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
@@ -17,10 +11,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const publicDir = path.resolve(__dirname, "../public");
+const marketingDir = path.resolve(__dirname, "../../marketing");
 const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:8080";
-const webmOut = path.join(publicDir, "demo-walkthrough.webm");
-const mp4Out = path.join(publicDir, "demo-walkthrough.mp4");
+const webmOut = path.join(marketingDir, "demo-walkthrough.webm");
+const mp4Out = path.join(marketingDir, "demo-walkthrough.mp4");
+const RECORD_MS = 34_000;
+const videoTempDir = path.join(marketingDir, ".record-tmp");
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -36,54 +32,30 @@ function resolveFfmpeg() {
   return null;
 }
 
-async function waitForApp(page) {
-  const health = await page.request.get(`${baseUrl}/api/health`).catch(() => null);
-  if (!health?.ok()) {
-    throw new Error(
-      `App not reachable at ${baseUrl}. Start with ./start.sh or set PLAYWRIGHT_BASE_URL.`,
-    );
-  }
-}
-
 async function main() {
-  fs.mkdirSync(publicDir, { recursive: true });
+  fs.mkdirSync(marketingDir, { recursive: true });
+  fs.mkdirSync(videoTempDir, { recursive: true });
+
+  const healthCheck = await fetch(`${baseUrl}/api/health`).catch(() => null);
+  if (!healthCheck?.ok) {
+    throw new Error(`App not reachable at ${baseUrl}. Start with ./start.sh`);
+  }
 
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
-    viewport: { width: 1280, height: 800 },
+    viewport: { width: 1280, height: 720 },
     deviceScaleFactor: 2,
     recordVideo: {
-      dir: publicDir,
-      size: { width: 1280, height: 800 },
+      dir: videoTempDir,
+      size: { width: 1280, height: 720 },
     },
   });
   const page = await context.newPage();
 
   try {
-    await waitForApp(page);
-
-    // Full sample preview — main demo surface (works with or without auth landing page)
-    await page.goto(`${baseUrl}/sample-preview`, { waitUntil: "networkidle" });
-    await page.getByRole("heading", { name: /analysis results|complete analyzer view/i }).first().waitFor({
-      timeout: 20_000,
-    });
-    await sleep(3000);
-
-    const tabsToVisit = [/review queue/i, /below minimum/i, /merit matrix/i, /compression/i, /pay equity/i];
-    for (const pattern of tabsToVisit) {
-      const tab = page.getByRole("tab", { name: pattern }).first();
-      if (await tab.isVisible().catch(() => false)) {
-        await tab.click();
-        await sleep(5000);
-        await page.evaluate(() => window.scrollBy({ top: 280, behavior: "smooth" }));
-        await sleep(4000);
-        await page.evaluate(() => window.scrollBy({ top: 280, behavior: "smooth" }));
-        await sleep(3500);
-      }
-    }
-
-    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
-    await sleep(6000);
+    await page.goto(`${baseUrl}/demo-video?autoplay=1`, { waitUntil: "networkidle" });
+    await page.waitForSelector(".demo-video-layer--active", { timeout: 10_000 });
+    await sleep(RECORD_MS);
   } finally {
     const video = page.video();
     await context.close();
@@ -107,8 +79,6 @@ async function main() {
         { stdio: "inherit", shell: true },
       );
       console.log(`Saved ${mp4Out}`);
-    } else {
-      console.warn("ffmpeg not found — only WebM was generated. Run: npx playwright install ffmpeg");
     }
   }
 }

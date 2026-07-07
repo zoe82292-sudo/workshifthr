@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { checkBillingStatus, fetchDemoAnalysis, type PlanId } from "../api";
 import { trackEvent } from "../analytics";
-import { useIsMobile } from "../useMediaQuery";
 import { BrandLogo } from "./BrandLogo";
 import { CheckoutButton } from "./CheckoutButton";
 import { LandingSamplePreview } from "./SampleAnalysisEmbed";
@@ -210,7 +209,6 @@ export function LandingPage({
     reviewQueue: number;
     headcount: number;
   } | null>(null);
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     void checkBillingStatus().then(({ plans }) => {
@@ -285,6 +283,7 @@ export function LandingPage({
         </div>
       </header>
 
+      <div className="landing-shell">
       <section className="landing-hero landing-hero--compact">
         <div className="landing-hero-copy">
           <span className="hero-badge">Comp spreadsheet QA · for comp analysts &amp; HRBPs</span>
@@ -332,21 +331,21 @@ export function LandingPage({
           <div className="landing-outcomes-inner">
             <p className="landing-outcomes-eyebrow">What a first pass surfaces</p>
             <div className="landing-outcomes-grid">
-              <article className="landing-outcome-card panel">
+              <article className="landing-outcome-card">
                 <strong>{outcomeStats.belowMinimum}</strong>
-                <span>Below-minimum flags</span>
+                <span>Below minimum</span>
               </article>
-              <article className="landing-outcome-card panel">
+              <article className="landing-outcome-card">
                 <strong>{outcomeStats.managerInversions}</strong>
-                <span>Manager inversions</span>
+                <span>Mgr inversions</span>
               </article>
-              <article className="landing-outcome-card panel">
+              <article className="landing-outcome-card">
                 <strong>{outcomeStats.reviewQueue}</strong>
-                <span>Review queue items</span>
+                <span>Review queue</span>
               </article>
-              <article className="landing-outcome-card panel">
+              <article className="landing-outcome-card">
                 <strong>{outcomeStats.headcount || "—"}</strong>
-                <span>Employees analyzed</span>
+                <span>Employees</span>
               </article>
             </div>
             <p className="landing-outcomes-note">
@@ -362,37 +361,9 @@ export function LandingPage({
           id="landing-tab-content"
         >
         {activeTab === "sample" ? (
-          <div className="landing-tab-panel" role="tabpanel" id="panel-sample" aria-labelledby="tab-sample">
-            <p className="landing-tab-intro">Live demo — same dashboard you get after upload.</p>
-            <div className="landing-demo-media">
-              <video
-                className="landing-demo-video"
-                controls
-                playsInline
-                preload="metadata"
-                poster="/demo-mobile-preview.png"
-                aria-label="ShiftWorksHR product walkthrough"
-              >
-                <source src="/demo-walkthrough.mp4" type="video/mp4" />
-                <source src="/demo-walkthrough.webm" type="video/webm" />
-              </video>
-              <p className="landing-demo-video-caption">
-                Product walkthrough — review queue, issue tabs, and leadership exports on sample data.
-              </p>
-            </div>
+          <div className="landing-tab-panel landing-tab-panel--sample" role="tabpanel" id="panel-sample" aria-labelledby="tab-sample">
+            <p className="landing-tab-intro">Sample analysis — same checks on your HRIS export.</p>
             <LandingSamplePreview />
-            {!isMobile ? (
-              <div className="landing-preview-actions">
-                <Link className="button button-primary" to="/sample-preview">
-                  Full screen sample
-                </Link>
-                {trialAvailable && onTryTrial ? (
-                  <button className="button button-secondary" type="button" onClick={() => tryTrial("sample_tab")}>
-                    Try your file
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
           </div>
         ) : null}
 
@@ -505,6 +476,7 @@ export function LandingPage({
         ) : null}
         </div>
       </section>
+      </div>
 
       {showLogin ? (
         <section className="landing-section landing-sign-in" id="sign-in">

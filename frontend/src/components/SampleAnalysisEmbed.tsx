@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchDemoAnalysis } from "../api";
 import { pickInitialTab } from "../analysisNavigation";
-import { useIsMobile } from "../useMediaQuery";
 import type { AnalysisResult, AnalysisTab } from "../types";
 import { ResultsDashboard } from "./ResultsDashboard";
 
@@ -80,54 +79,17 @@ export function DemoPreviewStats({ result }: { result: AnalysisResult }) {
   );
 }
 
+import { MarketingPreview } from "./MarketingPreview";
+
 export function LandingSamplePreview() {
-  const [result, setResult] = useState<AnalysisResult | null>(null);
-  const isMobile = useIsMobile();
-
-  useEffect(() => {
-    void fetchDemoAnalysis().then(setResult);
-  }, []);
-
-  if (!result) {
-    return <p className="sample-analysis-embed__loading">Loading sample analysis…</p>;
-  }
-
-  if (isMobile) {
-    return (
-      <div className="landing-sample-mobile">
-        <figure className="landing-sample-mobile-shot">
-          <img
-            src="/demo-mobile-preview.png"
-            alt="ShiftWorksHR review queue and below-minimum flags on sample compensation data"
-            width={390}
-            height={844}
-            loading="lazy"
-          />
-        </figure>
-        <DemoPreviewStats result={result} />
-        <div className="landing-sample-mobile-cta panel">
-          <p>
-            See the full results dashboard — review queue, pay equity, exports, and every analysis tab.
-          </p>
-          <Link className="button button-primary" to="/sample-preview">
-            Open full sample
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <>
-      <DemoPreviewStats result={result} />
-      <figure
-        className="product-demo-frame"
-        aria-label="ShiftWorksHR sample analysis using the live results dashboard"
-      >
-        <div className="product-demo-frame__scroll">
-          <SampleAnalysisEmbed result={result} />
-        </div>
-      </figure>
-    </>
+    <div className="landing-sample-preview">
+      <MarketingPreview focus="full" className="landing-sample-preview__dashboard" />
+      <div className="landing-preview-actions">
+        <Link className="button button-primary" to="/sample-preview">
+          Open full interactive sample
+        </Link>
+      </div>
+    </div>
   );
 }

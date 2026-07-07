@@ -1,9 +1,6 @@
 #!/usr/bin/env node
 /**
- * Captures a mobile-width screenshot of the sample analysis dashboard.
- *
- * Usage:
- *   PLAYWRIGHT_BASE_URL=http://127.0.0.1:8080 node scripts/capture-mobile-preview.mjs
+ * Captures a mobile-width screenshot of the polished marketing dashboard.
  */
 import { chromium } from "playwright";
 import fs from "node:fs";
@@ -30,21 +27,9 @@ async function main() {
       throw new Error(`App not reachable at ${baseUrl}`);
     }
 
-    await page.goto(`${baseUrl}/sample-preview`, { waitUntil: "networkidle" });
-    await page.getByRole("heading", { name: /analysis results|complete analyzer view/i }).first().waitFor({
-      timeout: 20_000,
-    });
-
-    const reviewTab = page.getByRole("tab", { name: /review queue/i });
-    if (await reviewTab.isVisible().catch(() => false)) {
-      await reviewTab.click();
-      await page.waitForTimeout(800);
-    }
-
-    const target = page.locator(".sample-preview-page__dashboard").first();
-    await target.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(400);
-    await target.screenshot({ path: outPath });
+    await page.goto(`${baseUrl}/demo-video?scene=3`, { waitUntil: "networkidle" });
+    await page.waitForSelector(".demo-video-layer--active .marketing-preview", { timeout: 15_000 });
+    await page.locator(".demo-video-layer--active .marketing-preview").screenshot({ path: outPath });
     console.log(`Saved ${outPath}`);
   } finally {
     await browser.close();

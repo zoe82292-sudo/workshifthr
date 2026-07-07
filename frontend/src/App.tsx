@@ -14,6 +14,7 @@ import { MeritChecklistPage } from "./components/MeritChecklistPage";
 import { CompExportQaPage } from "./components/CompExportQaPage";
 import { ConsultantsPage } from "./components/ConsultantsPage";
 import { CustomerStoriesPage } from "./components/CustomerStoriesPage";
+import { DemoVideoPage } from "./components/DemoVideoPage";
 import { SecurityPage } from "./components/SecurityPage";
 import { SecuritySummaryPage } from "./components/SecuritySummaryPage";
 import { RecoverAccessPage } from "./components/RecoverAccessPage";
@@ -126,6 +127,7 @@ export default function App() {
       <Route path="/checklist" element={<MeritChecklistPage />} />
       <Route path="/guides/workday-comp-export-qa" element={<CompExportQaPage />} />
       <Route path="/for-consultants" element={<ConsultantsPage />} />
+      <Route path="/demo-video" element={<DemoVideoPage />} />
       <Route path="/customer-stories" element={<CustomerStoriesPage />} />
       <Route path="/sample-preview" element={<SamplePreviewPage />} />
       <Route path="/try" element={<TryEntry />} />
