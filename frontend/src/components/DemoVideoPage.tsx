@@ -1,20 +1,33 @@
 import { useEffect, useMemo, useState } from "react";
 import { BrandLogo } from "./BrandLogo";
 import { DemoPdfPreview } from "./DemoPdfPreview";
-import { MarketingPreview } from "./MarketingPreview";
+import { DemoVideoResultsScene } from "./DemoVideoResultsScene";
 import { DEMO_VIDEO_SCENES } from "../demoVideoConfig";
 import { getBundledDemoAnalysis } from "../data/bundledDemoAnalysis";
 
 function IntroScene() {
   return (
-    <div className="demo-video-scene-card demo-video-scene-card--intro">
-      <BrandLogo size="hero" layout="lockup" />
-      <p className="demo-video-kicker">Merit-cycle compensation QA</p>
-      <h1>Catch below-minimum pay and manager inversions before merit week.</h1>
-      <p className="demo-video-sub">
-        Upload your HRIS export — get a prioritized review queue and leadership PDF in under a
-        minute.
-      </p>
+    <div className="demo-video-hero demo-video-hero--intro">
+      <div className="demo-video-hero__copy">
+        <BrandLogo size="hero" layout="lockup" />
+        <p className="demo-video-kicker">Merit-cycle compensation QA</p>
+        <h1>Catch below-minimum pay and manager inversions before merit week.</h1>
+        <p className="demo-video-sub">
+          Upload your HRIS export — get a prioritized review queue and leadership PDF in under a
+          minute.
+        </p>
+      </div>
+      <div className="demo-video-hero__visual" aria-hidden>
+        <div className="demo-video-hero__preview panel">
+          <p className="demo-video-hero__preview-label">Cycle readiness</p>
+          <strong className="demo-video-hero__preview-value">High risk</strong>
+          <ul>
+            <li>3 below range minimum</li>
+            <li>2 manager inversions</li>
+            <li>$87k budget exposure</li>
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }
@@ -22,10 +35,22 @@ function IntroScene() {
 function UploadScene() {
   const { summary, detected_columns } = getBundledDemoAnalysis();
   return (
-    <div className="demo-video-scene-card demo-video-scene-card--upload">
-      <p className="demo-video-kicker">Step 1 · Upload</p>
-      <h2>Drop your compensation export</h2>
-      <div className="demo-video-upload panel">
+    <div className="demo-video-hero demo-video-hero--upload">
+      <div className="demo-video-hero__copy">
+        <p className="demo-video-kicker">Step 1 · Upload</p>
+        <h2>Drop your compensation export</h2>
+        <p className="demo-video-sub">
+          Workday, UKG, ADP, or any CSV. Columns map automatically — salary, ranges, merit %,
+          manager ID, and demographics.
+        </p>
+        <div className="demo-video-hero__vendors">
+          <span>Workday</span>
+          <span>UKG</span>
+          <span>ADP</span>
+          <span>Excel / CSV</span>
+        </div>
+      </div>
+      <div className="demo-video-upload panel demo-video-hero__dropzone">
         <div className="demo-video-upload__icon" aria-hidden>
           <span className="demo-video-upload__doc" />
         </div>
@@ -46,63 +71,32 @@ function UploadScene() {
 
 function CtaScene() {
   return (
-    <div className="demo-video-scene-card demo-video-scene-card--cta">
-      <BrandLogo size="hero" layout="lockup" />
-      <h2>Try free with your file</h2>
-      <p className="demo-video-sub">No credit card · 250 rows per day · shiftworkshr.com</p>
-      <span className="demo-video-cta button button-primary">Upload your export</span>
-    </div>
-  );
-}
-
-function ProductScene({ focus }: { focus: "summary" | "table" }) {
-  const { summary } = getBundledDemoAnalysis();
-  return (
-    <div className="demo-video-product">
-      <header className="demo-video-product__bar">
-        <div>
-          <p className="demo-video-product__file">compensation-sample.csv</p>
-          <p className="demo-video-product__status">
-            Analysis complete · {summary.valid_rows} employees
-          </p>
-        </div>
-        <div className="demo-video-product__exports" aria-hidden>
-          <span>PDF summary</span>
-          <span className="demo-video-product__exports--primary">Excel report</span>
-        </div>
-      </header>
-      {focus === "table" ? (
-        <nav className="demo-video-product__tabs" aria-hidden>
-          <span>Overview</span>
-          <span className="is-active">Below minimum</span>
-          <span>Compression</span>
-          <span>Manager pay</span>
-          <span>Pay equity</span>
-        </nav>
-      ) : null}
-      <MarketingPreview
-        focus={focus}
-        className="demo-video-marketing-preview demo-video-marketing-preview--video"
-      />
+    <div className="demo-video-hero demo-video-hero--cta">
+      <div className="demo-video-hero__copy demo-video-hero__copy--center">
+        <BrandLogo size="hero" layout="lockup" />
+        <h2>Try free with your file</h2>
+        <p className="demo-video-sub">No credit card · 250 rows per day · shiftworkshr.com</p>
+        <span className="demo-video-cta button button-primary">Upload your export</span>
+      </div>
     </div>
   );
 }
 
 const SCENES = [
-  { id: "intro", layerClass: "demo-video-layer--card", render: () => <IntroScene /> },
-  { id: "upload", layerClass: "demo-video-layer--card", render: () => <UploadScene /> },
+  { id: "intro", layerClass: "demo-video-layer--hero", render: () => <IntroScene /> },
+  { id: "upload", layerClass: "demo-video-layer--hero", render: () => <UploadScene /> },
   {
     id: "dashboard",
     layerClass: "demo-video-layer--app",
-    render: () => <ProductScene focus="summary" />,
+    render: () => <DemoVideoResultsScene variant="overview" />,
   },
   {
     id: "issues",
     layerClass: "demo-video-layer--app demo-video-layer--app-table",
-    render: () => <ProductScene focus="table" />,
+    render: () => <DemoVideoResultsScene variant="below_minimum" />,
   },
   { id: "pdf", layerClass: "demo-video-layer--pdf", render: () => <DemoPdfPreview /> },
-  { id: "cta", layerClass: "demo-video-layer--card", render: () => <CtaScene /> },
+  { id: "cta", layerClass: "demo-video-layer--hero", render: () => <CtaScene /> },
 ] as const;
 
 function parseSceneDurations(): number[] {

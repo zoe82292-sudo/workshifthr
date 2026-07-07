@@ -23,20 +23,29 @@ When these files exist, `npm run record:demo-video` uses them instead of built-i
 
 # Terminal 2 — refresh demo data, build, and record
 cd frontend
-npm run sync:demo
+../backend/.venv/bin/python ../scripts/sync_demo_snapshot.py
 npm run build
 PLAYWRIGHT_BROWSERS_PATH=../.playwright-browsers PLAYWRIGHT_BASE_URL=http://127.0.0.1:8080 npm run record:demo-video
 ```
 
-Output: `marketing/demo-walkthrough.mp4` (1920×1080, scene screenshots + neural voice)
+Output: `marketing/demo-walkthrough.mp4` (1920×1080, retina screenshots + neural voice)
 
-## Default voice (Microsoft Edge neural TTS)
+## Voice quality (best to worst)
 
-By default the recorder uses **Jenny** (`en-US-JennyNeural`) — much more natural than macOS `say`.
+1. **Custom clips** in this folder (record yourself or export from ElevenLabs)
+2. **ElevenLabs API** — most natural automated voice:
 
 ```bash
-RECORD_EDGE_VOICE=en-US-AriaNeural npm run record:demo-video   # alternate voice
-RECORD_USE_EDGE_TTS=0 RECORD_VOICE=Daniel npm run record:demo-video  # macOS fallback
+export ELEVENLABS_API_KEY=your_key
+# optional: ELEVENLABS_VOICE_ID=pNInz6obpgDQGcFmaJgB
+npm run record:demo-video
 ```
 
-For the most natural result, use ElevenLabs or record yourself in QuickTime, then export clips to this folder.
+3. **Edge neural TTS** (default) — Andrew voice, sentence-chunked with pauses:
+
+```bash
+RECORD_EDGE_VOICE=en-US-AndrewMultilingualNeural npm run record:demo-video
+RECORD_EDGE_RATE=-12% RECORD_EDGE_PAUSE_MS=320 npm run record:demo-video
+```
+
+4. **macOS say** fallback: `RECORD_USE_EDGE_TTS=0 RECORD_VOICE=Daniel npm run record:demo-video`

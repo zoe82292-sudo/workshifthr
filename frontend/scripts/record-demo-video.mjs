@@ -127,12 +127,57 @@ function resolveSayVoice() {
   return "Samantha";
 }
 
+function synthesizeWithElevenLabs(scene, ffmpeg) {
+  const apiKey = process.env.ELEVENLABS_API_KEY;
+  if (!apiKey) return null;
+
+  const voiceId = process.env.ELEVENLABS_VOICE_ID ?? "pNInz6obpgDQGcFmaJgB";
+  const mp3 = path.join(narrationTempDir, `scene-${scene.id}.mp3`);
+  const response = spawnSync(
+    "curl",
+    [
+      "-sS",
+      "-X",
+      "POST",
+      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+      "-H",
+      `xi-api-key: ${apiKey}`,
+      "-H",
+      "Content-Type: application/json",
+      "-d",
+      JSON.stringify({
+        text: scene.narration,
+        model_id: process.env.ELEVENLABS_MODEL_ID ?? "eleven_multilingual_v2",
+        voice_settings: { stability: 0.42, similarity_boost: 0.82, style: 0.18, use_speaker_boost: true },
+      }),
+      "--output",
+      mp3,
+    ],
+    { encoding: "utf8" },
+  );
+
+  if (response.status !== 0 || !fs.existsSync(mp3) || fs.statSync(mp3).size < 1000) {
+    throw new Error(`ElevenLabs failed for scene "${scene.id}"`);
+  }
+
+  const rawWav = path.join(narrationTempDir, `scene-${scene.id}-raw.wav`);
+  execSync(
+    `${shellQuote(ffmpeg)} -y -i ${shellQuote(mp3)} -ar 44100 -ac 1 ${shellQuote(rawWav)}`,
+    { stdio: "ignore" },
+  );
+  console.log(`  voice: ElevenLabs (${voiceId})`);
+  return rawWav;
+}
+
 function synthesizeWithEdgeTts(scene, ffmpeg, python) {
   const mp3 = path.join(narrationTempDir, `scene-${scene.id}.mp3`);
-  const voice = process.env.RECORD_EDGE_VOICE ?? "en-US-JennyNeural";
+  const voice = process.env.RECORD_EDGE_VOICE ?? "en-US-AndrewMultilingualNeural";
+  const rate = process.env.RECORD_EDGE_RATE ?? "-10%";
+  const pitch = process.env.RECORD_EDGE_PITCH ?? "-1Hz";
+  const pauseMs = process.env.RECORD_EDGE_PAUSE_MS ?? "200";
   const script = path.join(repoRoot, "scripts/synthesize_narration.py");
   execSync(
-    `${shellQuote(python)} ${shellQuote(script)} ${shellQuote(scene.narration)} ${shellQuote(mp3)} --voice ${voice}`,
+    `${shellQuote(python)} ${shellQuote(script)} ${shellQuote(scene.narration)} ${shellQuote(mp3)} --voice ${voice} --rate ${rate} --pitch ${pitch} --chunk-pause-ms ${pauseMs} --ffmpeg ${shellQuote(ffmpeg)}`,
     { stdio: "inherit" },
   );
   const rawWav = path.join(narrationTempDir, `scene-${scene.id}-raw.wav`);
@@ -157,6 +202,18 @@ function synthesizeSceneSpeech(scene, ffmpeg, { python, useEdgeTts, sayVoice }) 
     console.log(`  voice: custom file (${path.basename(custom)})`);
     polishVoiceWav(ffmpeg, rawWav, polishedWav, false);
     return polishedWav;
+  }
+
+  if (process.env.ELEVENLABS_API_KEY) {
+    try {
+      const elevenWav = synthesizeWithElevenLabs(scene, ffmpeg);
+      if (elevenWav) {
+        polishVoiceWav(ffmpeg, elevenWav, polishedWav, true);
+        return polishedWav;
+      }
+    } catch (error) {
+      console.warn(`  ElevenLabs failed for ${scene.id}, falling back to Edge TTS.`);
+    }
   }
 
   if (useEdgeTts && python) {
@@ -190,7 +247,9 @@ function buildNarrationTrack(ffmpeg) {
   const useEdgeTts = !hasCustom && process.env.RECORD_USE_EDGE_TTS !== "0" && Boolean(python);
 
   if (useEdgeTts) {
-    console.log(`Narration: Microsoft Edge neural TTS (${process.env.RECORD_EDGE_VOICE ?? "en-US-JennyNeural"})`);
+    console.log(
+      `Narration: Edge neural (${process.env.RECORD_EDGE_VOICE ?? "en-US-AndrewMultilingualNeural"}, chunked)`,
+    );
   } else {
     console.log(`Narration: macOS say (${resolveSayVoice()})`);
   }
@@ -235,15 +294,9 @@ function buildNarrationTrack(ffmpeg) {
 }
 
 function renderSceneClip(ffmpeg, imagePath, durationSec, outputPath) {
-  const frames = Math.max(1, Math.ceil(durationSec * OUTPUT_FPS));
-  const vf = [
-    "scale=1920:1080:flags=lanczos",
-    "format=yuv420p",
-    `zoompan=z='min(1.0+0.0001*on,1.02)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${frames}:s=1920x1080:fps=${OUTPUT_FPS}`,
-  ].join(",");
-
+  const vf = "scale=1920:1080:flags=lanczos,format=yuv420p";
   execSync(
-    `${shellQuote(ffmpeg)} -y -loop 1 -i ${shellQuote(imagePath)} -vf ${shellQuote(vf)} -t ${durationSec.toFixed(3)} -c:v libx264 -preset slow -crf 17 -pix_fmt yuv420p -movflags +faststart ${shellQuote(outputPath)}`,
+    `${shellQuote(ffmpeg)} -y -loop 1 -i ${shellQuote(imagePath)} -vf ${shellQuote(vf)} -t ${durationSec.toFixed(3)} -r ${OUTPUT_FPS} -c:v libx264 -preset slow -crf 15 -pix_fmt yuv420p -movflags +faststart ${shellQuote(outputPath)}`,
     { stdio: "inherit" },
   );
 }
@@ -267,7 +320,7 @@ async function captureSceneScreenshots(sceneDurationsMs) {
         undefined,
         { timeout: 10_000 },
       );
-      await sleep(350);
+      await sleep(600);
 
       const screenshotPath = path.join(videoTempDir, `scene-${scene.id}.png`);
       await page.locator(".demo-video-stage").screenshot({ path: screenshotPath, type: "png" });
