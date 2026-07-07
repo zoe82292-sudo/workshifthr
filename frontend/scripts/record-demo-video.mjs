@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 /**
  * Records a LinkedIn walkthrough to marketing/demo-walkthrough.mp4 (not deployed).
- * Requires app at PLAYWRIGHT_BASE_URL and /demo-video route.
+ *
+ * Voice (best to worst):
+ * 1. Place studio files in marketing/narration/{scene-id}.m4a or .wav
+ * 2. macOS say with RECORD_VOICE (default Ava → Allison → Samantha)
+ * 3. RECORD_VOICEOVER=0 for silent video
  */
 import { chromium } from "playwright";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
@@ -12,6 +16,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const marketingDir = path.resolve(__dirname, "../../marketing");
+const narrationDir = path.join(marketingDir, "narration");
 const configPath = path.resolve(__dirname, "../demo-video.config.json");
 const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:8080";
 const webmOut = path.join(marketingDir, "demo-walkthrough.webm");
@@ -21,7 +26,6 @@ const videoTempDir = path.join(marketingDir, ".record-tmp");
 const narrationTempDir = path.join(marketingDir, ".narration-tmp");
 
 const { scenes } = JSON.parse(fs.readFileSync(configPath, "utf8"));
-const RECORD_MS = scenes.reduce((sum, scene) => sum + scene.durationMs, 0) + 800;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -44,11 +48,16 @@ function shellQuote(value) {
 function probeDurationSeconds(ffmpeg, filePath) {
   const result = spawnSync(ffmpeg, ["-i", filePath, "-f", "null", "-"], { encoding: "utf8" });
   const output = `${result.stderr ?? ""}`;
-  const match =
-    output.match(/Duration: (\d+):(\d+):(\d+(?:\.\d+)?)/) ??
-    output.match(/time=(\d+):(\d+):(\d+(?:\.\d+)?)/);
+  const match = output.match(/Duration: (\d+):(\d+):(\d+(?:\.\d+)?)/);
   if (!match) return 0;
   return Number(match[1]) * 3600 + Number(match[2]) * 60 + Number(match[3]);
+}
+
+function polishVoiceWav(ffmpeg, inputPath, outputPath) {
+  execSync(
+    `${shellQuote(ffmpeg)} -y -i ${shellQuote(inputPath)} -af "highpass=f=90,acompressor=threshold=-22dB:ratio=2.5:attack=12:release=120,alimiter=limit=0.92" ${shellQuote(outputPath)}`,
+    { stdio: "ignore" },
+  );
 }
 
 function convertSpeechToWav(aiffPath, wavPath) {
@@ -65,41 +74,85 @@ function convertSpeechToWav(aiffPath, wavPath) {
   );
 }
 
-function generateNarrationTrack(ffmpeg) {
+function resolveCustomNarration(sceneId) {
+  for (const ext of [".m4a", ".wav", ".mp3", ".aac"]) {
+    const candidate = path.join(narrationDir, `${sceneId}${ext}`);
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
+function resolveSayVoice() {
+  const preferred = process.env.RECORD_VOICE;
+  const candidates = [preferred, "Ava", "Allison", "Daniel", "Samantha"].filter(Boolean);
+  if (process.platform !== "darwin") {
+    return candidates[candidates.length - 1];
+  }
+  const listing = spawnSync("say", ["-v", "?"], { encoding: "utf8" });
+  const available = `${listing.stdout ?? ""}${listing.stderr ?? ""}`;
+  for (const voice of candidates) {
+    if (available.includes(voice)) {
+      return voice;
+    }
+  }
+  return "Samantha";
+}
+
+function synthesizeSceneSpeech(scene, ffmpeg, voice) {
+  const custom = resolveCustomNarration(scene.id);
+  const rawWav = path.join(narrationTempDir, `scene-${scene.id}-raw.wav`);
+  const polishedWav = path.join(narrationTempDir, `scene-${scene.id}-polished.wav`);
+
+  if (custom) {
+    execSync(
+      `${shellQuote(ffmpeg)} -y -i ${shellQuote(custom)} -ar 44100 -ac 1 ${shellQuote(rawWav)}`,
+      { stdio: "ignore" },
+    );
+    console.log(`  voice: custom file (${path.basename(custom)})`);
+  } else {
+    const aiff = path.join(narrationTempDir, `scene-${scene.id}.aiff`);
+    const rate = process.env.RECORD_SPEECH_RATE ?? "168";
+    execSync(`say -v ${voice} -r ${rate} -o ${shellQuote(aiff)} ${shellQuote(scene.narration)}`);
+    convertSpeechToWav(aiff, rawWav);
+    console.log(`  voice: macOS ${voice}`);
+  }
+
+  polishVoiceWav(ffmpeg, rawWav, polishedWav);
+  return polishedWav;
+}
+
+function buildNarrationTrack(ffmpeg) {
   if (process.env.RECORD_VOICEOVER === "0") {
     console.log("Skipping voiceover (RECORD_VOICEOVER=0).");
-    return null;
-  }
-  if (process.platform !== "darwin" || spawnSync("which", ["say"]).status !== 0) {
-    console.log("Skipping voiceover (macOS `say` not available).");
-    return null;
+    return { audioPath: null, sceneDurationsMs: scenes.map((scene) => scene.durationMs) };
   }
 
   fs.mkdirSync(narrationTempDir, { recursive: true });
+  const voice = resolveSayVoice();
+  console.log(`Narration voice: ${voice}`);
   const sceneFiles = [];
+  const sceneDurationsMs = [];
 
-  for (let index = 0; index < scenes.length; index += 1) {
-    const scene = scenes[index];
-    const aiff = path.join(narrationTempDir, `scene-${index}.aiff`);
-    const padded = path.join(narrationTempDir, `scene-${index}-padded.wav`);
-
-    execSync(`say -v Samantha -r 178 -o ${shellQuote(aiff)} ${shellQuote(scene.narration)}`);
-    const wav = path.join(narrationTempDir, `scene-${index}-raw.wav`);
-    convertSpeechToWav(aiff, wav);
-    const speechSeconds = probeDurationSeconds(ffmpeg, wav);
-    if (speechSeconds < 0.5) {
-      throw new Error(
-        `Voiceover for scene "${scene.id}" is empty. Re-run on your Mac (not a sandbox) with Speech enabled.`,
-      );
+  for (const scene of scenes) {
+    const polishedWav = synthesizeSceneSpeech(scene, ffmpeg, voice);
+    const speechSeconds = probeDurationSeconds(ffmpeg, polishedWav);
+    if (speechSeconds < 0.4) {
+      throw new Error(`Voiceover for scene "${scene.id}" is empty or too short.`);
     }
-    const targetSeconds = scene.durationMs / 1000;
-    const padSeconds = Math.max(0.2, targetSeconds - speechSeconds - 0.15);
 
+    const visualPadSeconds = 0.45;
+    const sceneSeconds = speechSeconds + visualPadSeconds;
+    sceneDurationsMs.push(Math.ceil(sceneSeconds * 1000));
+
+    const padded = path.join(narrationTempDir, `scene-${scene.id}-padded.wav`);
     execSync(
-      `${shellQuote(ffmpeg)} -y -i ${shellQuote(wav)} -f lavfi -i anullsrc=r=44100:cl=mono -filter_complex "[0:a][1:a]concat=n=2:v=0:a=1[out]" -map "[out]" -t ${(speechSeconds + padSeconds).toFixed(3)} ${shellQuote(padded)}`,
-      { shell: true, stdio: "ignore" },
+      `${shellQuote(ffmpeg)} -y -i ${shellQuote(polishedWav)} -f lavfi -i anullsrc=r=44100:cl=mono -filter_complex "[0:a][1:a]concat=n=2:v=0:a=1[out]" -map "[out]" -t ${sceneSeconds.toFixed(3)} ${shellQuote(padded)}`,
+      { stdio: "ignore" },
     );
     sceneFiles.push(padded);
+    console.log(`  ${scene.id}: ${speechSeconds.toFixed(1)}s speech → ${sceneSeconds.toFixed(1)}s scene`);
   }
 
   const listFile = path.join(narrationTempDir, "concat.txt");
@@ -109,12 +162,12 @@ function generateNarrationTrack(ffmpeg) {
   );
 
   execSync(
-    `${shellQuote(ffmpeg)} -y -f concat -safe 0 -i ${shellQuote(listFile)} -c:a aac -b:a 128k ${shellQuote(audioOut)}`,
-    { shell: true, stdio: "inherit" },
+    `${shellQuote(ffmpeg)} -y -f concat -safe 0 -i ${shellQuote(listFile)} -c:a aac -b:a 160k ${shellQuote(audioOut)}`,
+    { stdio: "inherit" },
   );
 
   console.log(`Saved ${audioOut}`);
-  return audioOut;
+  return { audioPath: audioOut, sceneDurationsMs };
 }
 
 async function main() {
@@ -123,13 +176,17 @@ async function main() {
 
   const healthCheck = await fetch(`${baseUrl}/api/health`).catch(() => null);
   if (!healthCheck?.ok) {
-    throw new Error(`App not reachable at ${baseUrl}. Start with ./start.sh`);
+    throw new Error(`App not reachable at ${baseUrl}. Start with ./scripts/start-production.sh`);
   }
 
   const ffmpeg = resolveFfmpeg();
   if (!ffmpeg) {
     throw new Error("ffmpeg not found. Install ffmpeg or @ffmpeg-installer/ffmpeg.");
   }
+
+  const { audioPath, sceneDurationsMs } = buildNarrationTrack(ffmpeg);
+  const recordMs = sceneDurationsMs.reduce((sum, ms) => sum + ms, 0) + 600;
+  const durationsQuery = sceneDurationsMs.join(",");
 
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
@@ -143,9 +200,11 @@ async function main() {
   const page = await context.newPage();
 
   try {
-    await page.goto(`${baseUrl}/demo-video?autoplay=1`, { waitUntil: "networkidle" });
+    await page.goto(`${baseUrl}/demo-video?autoplay=1&durations=${durationsQuery}`, {
+      waitUntil: "networkidle",
+    });
     await page.waitForSelector(".demo-video-layer--active", { timeout: 15_000 });
-    await sleep(RECORD_MS);
+    await sleep(recordMs);
   } finally {
     const video = page.video();
     await context.close();
@@ -164,14 +223,13 @@ async function main() {
 
     const videoOnlyMp4 = path.join(marketingDir, "demo-walkthrough-video-only.mp4");
     execSync(
-      `${shellQuote(ffmpeg)} -y -i ${shellQuote(webmOut)} -c:v libx264 -pix_fmt yuv420p -movflags +faststart -an ${shellQuote(videoOnlyMp4)}`,
+      `${shellQuote(ffmpeg)} -y -i ${shellQuote(webmOut)} -c:v libx264 -preset slow -crf 20 -pix_fmt yuv420p -movflags +faststart -an ${shellQuote(videoOnlyMp4)}`,
       { shell: true, stdio: "inherit" },
     );
 
-    const narration = generateNarrationTrack(ffmpeg);
-    if (narration && fs.existsSync(narration)) {
+    if (audioPath && fs.existsSync(audioPath)) {
       execSync(
-        `${shellQuote(ffmpeg)} -y -i ${shellQuote(videoOnlyMp4)} -i ${shellQuote(narration)} -c:v copy -c:a aac -b:a 128k -map 0:v:0 -map 1:a:0 ${shellQuote(mp4Out)}`,
+        `${shellQuote(ffmpeg)} -y -i ${shellQuote(videoOnlyMp4)} -i ${shellQuote(audioPath)} -c:v copy -c:a aac -b:a 160k -map 0:v:0 -map 1:a:0 ${shellQuote(mp4Out)}`,
         { shell: true, stdio: "inherit" },
       );
       fs.unlinkSync(videoOnlyMp4);

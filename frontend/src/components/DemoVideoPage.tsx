@@ -1,37 +1,43 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BrandLogo } from "./BrandLogo";
 import { DemoPdfPreview } from "./DemoPdfPreview";
-import { DemoVideoDashboard } from "./DemoVideoDashboard";
+import { MarketingPreview } from "./MarketingPreview";
 import { DEMO_VIDEO_SCENES } from "../demoVideoConfig";
+import { getBundledDemoAnalysis } from "../data/bundledDemoAnalysis";
 
 function IntroScene() {
   return (
     <div className="demo-video-scene-card demo-video-scene-card--intro">
       <BrandLogo size="hero" layout="lockup" />
-      <p className="demo-video-kicker">Merit-cycle comp QA</p>
+      <p className="demo-video-kicker">Merit-cycle compensation QA</p>
       <h1>Catch below-minimum pay and manager inversions before merit week.</h1>
       <p className="demo-video-sub">
-        Upload your HRIS export — prioritized review queue and leadership PDF in under a minute.
+        Upload your HRIS export — get a prioritized review queue and leadership PDF in under a
+        minute.
       </p>
     </div>
   );
 }
 
 function UploadScene() {
+  const { summary, detected_columns } = getBundledDemoAnalysis();
   return (
     <div className="demo-video-scene-card demo-video-scene-card--upload">
       <p className="demo-video-kicker">Step 1 · Upload</p>
-      <h2>Drop your HRIS export</h2>
+      <h2>Drop your compensation export</h2>
       <div className="demo-video-upload panel">
         <div className="demo-video-upload__icon" aria-hidden>
-          📄
+          <span className="demo-video-upload__doc" />
         </div>
-        <p className="demo-video-upload__file">compensation-export.xlsx</p>
-        <p className="demo-video-upload__meta">18 employees · columns auto-detected</p>
+        <p className="demo-video-upload__file">compensation-sample.csv</p>
+        <p className="demo-video-upload__meta">
+          {summary.valid_rows} employees · {detected_columns.length} columns auto-detected
+        </p>
         <div className="demo-video-upload__checks">
-          <span>Range min / max</span>
+          <span>Salary &amp; range</span>
           <span>Merit %</span>
-          <span>Department &amp; level</span>
+          <span>Gender &amp; race</span>
+          <span>Manager ID</span>
         </div>
       </div>
     </div>
@@ -43,7 +49,7 @@ function CtaScene() {
     <div className="demo-video-scene-card demo-video-scene-card--cta">
       <BrandLogo size="hero" layout="lockup" />
       <h2>Try free with your file</h2>
-      <p className="demo-video-sub">No credit card · 250 rows/day · shiftworkshr.com</p>
+      <p className="demo-video-sub">No credit card · 250 rows per day · shiftworkshr.com</p>
       <span className="demo-video-cta button button-primary">Upload your export</span>
     </div>
   );
@@ -55,22 +61,38 @@ const SCENES = [
   {
     id: "dashboard",
     layerClass: "demo-video-layer--app",
-    render: () => <DemoVideoDashboard focus="overview" />,
+    render: () => <MarketingPreview focus="summary" className="demo-video-marketing-preview" />,
   },
   {
     id: "issues",
-    layerClass: "demo-video-layer--app",
-    render: () => <DemoVideoDashboard focus="table" />,
+    layerClass: "demo-video-layer--app demo-video-layer--app-table",
+    render: () => <MarketingPreview focus="table" className="demo-video-marketing-preview" />,
   },
   { id: "pdf", layerClass: "demo-video-layer--pdf", render: () => <DemoPdfPreview /> },
   { id: "cta", layerClass: "demo-video-layer--card", render: () => <CtaScene /> },
 ] as const;
+
+function parseSceneDurations(): number[] {
+  const params = new URLSearchParams(window.location.search);
+  const override = params.get("durations");
+  if (override) {
+    const values = override
+      .split(",")
+      .map((value) => Number(value.trim()))
+      .filter((value) => Number.isFinite(value) && value > 0);
+    if (values.length === SCENES.length) {
+      return values;
+    }
+  }
+  return DEMO_VIDEO_SCENES.map((scene) => scene.durationMs);
+}
 
 export function DemoVideoPage() {
   const params = new URLSearchParams(window.location.search);
   const autoplay = params.get("autoplay") === "1";
   const showControls = !autoplay && params.get("controls") === "1";
   const sceneParam = params.get("scene");
+  const sceneDurations = useMemo(() => parseSceneDurations(), []);
   const initialScene =
     sceneParam !== null && sceneParam !== ""
       ? Math.min(SCENES.length - 1, Math.max(0, Number(sceneParam)))
@@ -80,13 +102,13 @@ export function DemoVideoPage() {
   useEffect(() => {
     if (!autoplay) return;
     const timers: number[] = [];
-    let elapsed = DEMO_VIDEO_SCENES[0]?.durationMs ?? 5000;
+    let elapsed = sceneDurations[0] ?? 5000;
     for (let index = 1; index < SCENES.length; index += 1) {
       timers.push(window.setTimeout(() => setScene(index), elapsed));
-      elapsed += DEMO_VIDEO_SCENES[index]?.durationMs ?? 5000;
+      elapsed += sceneDurations[index] ?? 5000;
     }
     return () => timers.forEach((timer) => window.clearTimeout(timer));
-  }, [autoplay]);
+  }, [autoplay, sceneDurations]);
 
   const staticScene = !autoplay && sceneParam !== null && sceneParam !== "";
   const visibleScenes = staticScene
