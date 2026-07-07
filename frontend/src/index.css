@@ -1782,7 +1782,8 @@ a:focus-visible {
 }
 
 .landing-sign-in {
-  padding-top: 48px;
+  padding: 40px 0 48px;
+  scroll-margin-top: 88px;
   border-top: 1px solid rgba(47, 125, 90, 0.12);
 }
 
@@ -1798,6 +1799,10 @@ a:focus-visible {
   font-size: 1.75rem;
   font-weight: 400;
   text-align: center;
+}
+
+.landing-sign-in-card .login-form-compact {
+  max-width: none;
 }
 
 .landing-hero-panel {
@@ -1868,8 +1873,9 @@ a:focus-visible {
 }
 
 .landing-resources {
-  padding: 8px 0 40px;
+  padding: 32px 0 40px;
   background: linear-gradient(180deg, transparent 0%, rgba(47, 125, 90, 0.04) 100%);
+  border-top: 1px solid rgba(47, 125, 90, 0.08);
 }
 
 .landing-resources__title {
@@ -1893,6 +1899,7 @@ a:focus-visible {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+  align-items: stretch;
 }
 
 .landing-resource-card {
@@ -1901,6 +1908,8 @@ a:focus-visible {
   padding: 16px 18px;
   text-decoration: none;
   color: inherit;
+  height: 100%;
+  align-content: start;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -4705,14 +4714,21 @@ a:focus-visible {
   gap: 8px 20px;
 }
 
-.landing-faq-footer-links a {
+.landing-faq-footer-links a,
+.landing-faq-footer-link {
   color: var(--accent);
   font-weight: 600;
   font-size: 0.92rem;
   text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
 }
 
-.landing-faq-footer-links a:hover {
+.landing-faq-footer-links a:hover,
+.landing-faq-footer-link:hover {
   text-decoration: underline;
 }
 
@@ -4775,12 +4791,25 @@ a:focus-visible {
 
 .checklist-cta {
   margin-top: 32px;
-  padding: 24px;
+  padding: 24px 26px;
+  border-color: rgba(47, 125, 90, 0.16);
+  background: linear-gradient(165deg, #ffffff 0%, #f8fbf9 100%);
 }
 
 .checklist-cta h2 {
   font-size: 1.25rem;
-  margin-bottom: 8px;
+  margin: 0 0 8px;
+  color: var(--text);
+}
+
+.checklist-cta p {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.checklist-cta .resource-cta-row {
+  margin-top: 16px;
 }
 
 @media (max-width: 768px) {
@@ -5023,9 +5052,9 @@ a:focus-visible {
 }
 
 .landing-footer {
-  max-width: 1200px;
+  max-width: 960px;
   margin: 0 auto;
-  padding: 32px 24px 48px;
+  padding: 32px max(20px, env(safe-area-inset-left)) 48px max(20px, env(safe-area-inset-right));
   display: flex;
   justify-content: space-between;
   gap: 16px;
@@ -5125,7 +5154,7 @@ a:focus-visible {
   gap: 8px;
 }
 
-.legal-content a {
+.legal-content a:not(.button) {
   color: var(--accent);
 }
 

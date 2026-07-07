@@ -202,9 +202,9 @@ const SEO_RESOURCES = [
     href: "/guides/workday-comp-export-qa",
   },
   {
-    title: "Salary range review spreadsheet tool",
-    description: "See a full sample analysis — below-minimum flags, compression, and review queue.",
-    href: "/sample-preview",
+    title: "Security summary for procurement",
+    description: "Data handling, retention, and what IT needs before your first HRIS upload.",
+    href: "/security-summary",
   },
   {
     title: "For compensation consultants",
@@ -494,7 +494,9 @@ export function LandingPage({
             <footer className="landing-faq-footer">
               <p>Still have questions?</p>
               <div className="landing-faq-footer-links">
-                <Link to="/sample-preview">View sample analysis</Link>
+                <button type="button" className="landing-faq-footer-link" onClick={() => selectTab("pricing")}>
+                  See pricing
+                </button>
                 <Link to="/security">Security overview</Link>
                 <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
               </div>
@@ -526,10 +528,12 @@ export function LandingPage({
       </section>
 
       {showLogin ? (
-        <section className="landing-section landing-sign-in" id="sign-in">
-          <div className="landing-sign-in-card panel">
-            <h2>Sign in</h2>
-            <LoginForm onLogin={onLogin} compact />
+        <section className="landing-sign-in" id="sign-in">
+          <div className="landing-shell">
+            <div className="landing-sign-in-card panel">
+              <h2>Sign in</h2>
+              <LoginForm onLogin={onLogin} compact />
+            </div>
           </div>
         </section>
       ) : null}
