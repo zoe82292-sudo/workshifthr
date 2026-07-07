@@ -55,12 +55,12 @@ const SCENES = [
   {
     id: "dashboard",
     layerClass: "demo-video-layer--app",
-    render: () => <DemoVideoDashboard activeTab="review_queue" focus="overview" />,
+    render: () => <DemoVideoDashboard focus="overview" />,
   },
   {
     id: "issues",
     layerClass: "demo-video-layer--app",
-    render: () => <DemoVideoDashboard activeTab="below_minimum" focus="table" />,
+    render: () => <DemoVideoDashboard focus="table" />,
   },
   { id: "pdf", layerClass: "demo-video-layer--pdf", render: () => <DemoPdfPreview /> },
   { id: "cta", layerClass: "demo-video-layer--card", render: () => <CtaScene /> },
@@ -69,6 +69,7 @@ const SCENES = [
 export function DemoVideoPage() {
   const params = new URLSearchParams(window.location.search);
   const autoplay = params.get("autoplay") === "1";
+  const showControls = !autoplay && params.get("controls") === "1";
   const sceneParam = params.get("scene");
   const initialScene =
     sceneParam !== null && sceneParam !== ""
@@ -106,21 +107,21 @@ export function DemoVideoPage() {
             {item.render()}
           </div>
         ))}
+        {showControls ? (
+          <div className="demo-video-controls">
+            {SCENES.map((item, index) => (
+              <button
+                key={item.id}
+                type="button"
+                className={scene === index ? "active" : ""}
+                onClick={() => setScene(index)}
+              >
+                {item.id}
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
-      {!autoplay ? (
-        <div className="demo-video-controls">
-          {SCENES.map((item, index) => (
-            <button
-              key={item.id}
-              type="button"
-              className={scene === index ? "active" : ""}
-              onClick={() => setScene(index)}
-            >
-              {item.id}
-            </button>
-          ))}
-        </div>
-      ) : null}
     </div>
   );
 }
