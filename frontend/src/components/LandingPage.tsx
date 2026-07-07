@@ -29,6 +29,12 @@ const LANDING_TABS: { id: LandingTab; label: string }[] = [
   { id: "faq", label: "FAQ" },
 ];
 
+const HERO_PAIN_POINTS = [
+  "Below-minimum employees flagged before the exec deck",
+  "Manager-paid-below-report surprises surfaced early",
+  "Cost-to-minimum and merit pool exposure for finance",
+];
+
 const TRUST_POINTS = [
   { stat: "< 30 sec", label: "To first insights" },
   { stat: "$249", label: "Per merit cycle" },
@@ -185,10 +191,30 @@ const PRICING_PLANS: Array<{
   },
 ];
 
+const SEO_RESOURCES = [
+  {
+    title: "Merit season comp checklist",
+    description: "Prep your HRIS export, pay equity review, and leadership readout before merit lock.",
+    href: "/checklist",
+  },
+  {
+    title: "Workday comp export QA guide",
+    description: "Which columns to export, how to merge files, and what to check before upload.",
+    href: "/guides/workday-comp-export-qa",
+  },
+  {
+    title: "Salary range review spreadsheet tool",
+    description: "See a full sample analysis — below-minimum flags, compression, and review queue.",
+    href: "/sample-preview",
+  },
+  {
+    title: "For compensation consultants",
+    description: "Per-client Cycle Pass, client-ready PDF exports, no HRIS integration project.",
+    href: "/for-consultants",
+  },
+];
+
 function defaultLandingTab(): LandingTab {
-  if (typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches) {
-    return "product";
-  }
   return "sample";
 }
 
@@ -198,7 +224,6 @@ export function LandingPage({
   trialAvailable = false,
   trialMaxRows = 250,
   onTryTrial,
-  onTryDemo,
 }: LandingPageProps) {
   const [availablePlans, setAvailablePlans] = useState<PlanId[]>([]);
   const [activeTab, setActiveTab] = useState<LandingTab>(defaultLandingTab);
@@ -285,34 +310,36 @@ export function LandingPage({
 
       <div className="landing-shell">
       <section className="landing-hero landing-hero--compact">
+        <div className="landing-hero-panel panel">
         <div className="landing-hero-copy">
-          <span className="hero-badge">Comp spreadsheet QA · for comp analysts &amp; HRBPs</span>
-          <h1>Find pay issues before leadership review.</h1>
+          <span className="hero-badge">Merit-cycle comp QA · not a $10k HRIS platform</span>
+          <h1>Catch below-minimum pay and manager inversions before merit week.</h1>
           <p className="landing-hero-lead">
-            Upload your HRIS export. Get range flags, compression checks, and a leadership PDF — in under a minute.
+            Upload your Workday, UKG, or ADP export. Get a prioritized review queue and leadership-ready
+            PDF in under a minute — no API, no implementation project.
           </p>
+          <ul className="landing-hero-pain">
+            {HERO_PAIN_POINTS.map((point) => (
+              <li key={point}>{point}</li>
+            ))}
+          </ul>
           <div className="landing-hero-actions">
             {trialAvailable && onTryTrial ? (
-              <button className="button button-primary" type="button" onClick={() => tryTrial("hero")}>
+              <button className="button button-primary button-large" type="button" onClick={() => tryTrial("hero")}>
                 Try free with your file
               </button>
             ) : (
-              <button className="button button-primary" type="button" onClick={() => selectTab("pricing")}>
-                See pricing
+              <button className="button button-primary button-large" type="button" onClick={() => selectTab("pricing")}>
+                See pricing — from $249/cycle
               </button>
             )}
             <button className="button button-secondary" type="button" onClick={() => selectTab("sample")}>
-              View sample
+              See sample analysis
             </button>
-            {!showLogin && onTryDemo ? (
-              <button className="button button-secondary" type="button" onClick={onTryDemo}>
-                Try analyzer
-              </button>
-            ) : null}
           </div>
           {trialAvailable ? (
             <p className="landing-hero-trial-note">
-              Trial: 1 file, {trialMaxRows.toLocaleString()} rows/day — no card required.
+              Free trial: 1 file, {trialMaxRows.toLocaleString()} rows/day — no card required.
             </p>
           ) : null}
           <div className="landing-hero-stats" aria-label="Highlights">
@@ -323,6 +350,7 @@ export function LandingPage({
               </div>
             ))}
           </div>
+        </div>
         </div>
       </section>
 
@@ -349,7 +377,7 @@ export function LandingPage({
               </article>
             </div>
             <p className="landing-outcomes-note">
-              From our sample dataset — your HRIS export gets the same checks in under a minute.
+              Sample file results — your HRIS export gets the same checks in under a minute.
             </p>
           </div>
         </section>
@@ -362,7 +390,7 @@ export function LandingPage({
         >
         {activeTab === "sample" ? (
           <div className="landing-tab-panel landing-tab-panel--sample" role="tabpanel" id="panel-sample" aria-labelledby="tab-sample">
-            <p className="landing-tab-intro">Sample analysis — same checks on your HRIS export.</p>
+            <p className="landing-tab-intro">Interactive sample — same checks on your merit spreadsheet.</p>
             <LandingSamplePreview />
           </div>
         ) : null}
@@ -477,6 +505,26 @@ export function LandingPage({
         </div>
       </section>
       </div>
+
+      <section className="landing-resources" aria-labelledby="landing-resources-title">
+        <div className="landing-shell">
+          <h2 id="landing-resources-title" className="landing-resources__title">
+            Merit season resources
+          </h2>
+          <p className="landing-resources__lead">
+            Free guides for comp analysts and HRBPs running range review, merit planning, and leadership
+            readouts — whether or not you use ShiftWorksHR.
+          </p>
+          <div className="landing-resources__grid">
+            {SEO_RESOURCES.map((resource) => (
+              <Link className="landing-resource-card panel" key={resource.href} to={resource.href}>
+                <strong>{resource.title}</strong>
+                <span>{resource.description}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {showLogin ? (
         <section className="landing-section landing-sign-in" id="sign-in">

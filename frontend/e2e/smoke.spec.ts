@@ -7,11 +7,11 @@ const sampleCsv = path.resolve(__dirname, "../../sample-data/compensation-sample
 
 test("landing page loads with pricing and sample preview", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: /find pay issues before leadership review/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /catch below-minimum pay and manager inversions/i })).toBeVisible();
   await page.getByRole("tab", { name: "Pricing" }).click();
   await expect(page.getByText("Cycle Pass")).toBeVisible();
   await page.getByRole("tab", { name: "Sample" }).click();
-  await expect(page.getByText(/live demo/i)).toBeVisible();
+  await expect(page.getByText(/interactive sample/i)).toBeVisible();
 });
 
 test("trial CTA visible when auth enabled", async ({ page }) => {
