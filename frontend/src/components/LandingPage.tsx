@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { checkBillingStatus, fetchDemoAnalysis, type PlanId } from "../api";
 import { trackEvent } from "../analytics";
@@ -223,12 +223,13 @@ function isLandingTab(value: string): value is LandingTab {
 
 function scrollToActiveTabPanel(tab: LandingTab) {
   const panel = document.getElementById(`panel-${tab}`);
-  const target = panel ?? document.getElementById("landing-tab-content");
+  const section = document.getElementById("landing-tabs");
+  const target = panel ?? section ?? document.getElementById("landing-tab-content");
   if (!target) return;
   const nav = document.querySelector<HTMLElement>(".landing-nav");
   const offset = (nav?.offsetHeight ?? 72) + 12;
   const top = target.getBoundingClientRect().top + window.scrollY - offset;
-  window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+  window.scrollTo({ top: Math.max(0, top), behavior: "auto" });
 }
 
 function scrollToSignIn() {
@@ -254,6 +255,7 @@ export function LandingPage({
 }: LandingPageProps) {
   const [availablePlans, setAvailablePlans] = useState<PlanId[]>([]);
   const [activeTab, setActiveTab] = useState<LandingTab>(() => syncTabFromHash() ?? defaultLandingTab());
+  const pendingTabScroll = useRef(false);
   const [tabFlash, setTabFlash] = useState(false);
   const [outcomeStats, setOutcomeStats] = useState<{
     belowMinimum: number;
@@ -283,41 +285,51 @@ export function LandingPage({
     const previousScrollRestoration = history.scrollRestoration;
     history.scrollRestoration = "manual";
 
-    function applyHashScroll() {
-      const hash = window.location.hash.replace("#", "");
-      if (hash === "sign-in") {
-        window.requestAnimationFrame(() => scrollToSignIn());
+    const hash = window.location.hash.replace("#", "");
+    if (hash === "sign-in") {
+      window.setTimeout(() => scrollToSignIn(), 80);
+    } else if (isLandingTab(hash)) {
+      pendingTabScroll.current = true;
+    } else if (!hash) {
+      window.scrollTo(0, 0);
+    }
+
+    function onHashChange() {
+      const nextHash = window.location.hash.replace("#", "");
+      if (nextHash === "sign-in") {
+        window.setTimeout(() => scrollToSignIn(), 80);
         return;
       }
-      if (isLandingTab(hash)) {
-        setActiveTab(hash);
-        window.requestAnimationFrame(() => scrollToActiveTabPanel(hash));
-        return;
-      }
-      if (!window.location.hash) {
-        window.scrollTo(0, 0);
+      if (isLandingTab(nextHash)) {
+        setActiveTab(nextHash);
+        pendingTabScroll.current = true;
       }
     }
 
-    applyHashScroll();
-    window.addEventListener("hashchange", applyHashScroll);
+    window.addEventListener("hashchange", onHashChange);
     return () => {
-      window.removeEventListener("hashchange", applyHashScroll);
+      window.removeEventListener("hashchange", onHashChange);
       history.scrollRestoration = previousScrollRestoration;
     };
   }, []);
 
+  useEffect(() => {
+    if (!pendingTabScroll.current) return;
+    pendingTabScroll.current = false;
+    const tab = activeTab;
+    const timer = window.setTimeout(() => scrollToActiveTabPanel(tab), 80);
+    return () => window.clearTimeout(timer);
+  }, [activeTab]);
+
   function selectTab(tab: LandingTab) {
     setActiveTab(tab);
+    pendingTabScroll.current = true;
     trackEvent("landing_tab", { tab });
     setTabFlash(true);
     window.setTimeout(() => setTabFlash(false), 1400);
     if (window.location.hash !== `#${tab}`) {
       window.history.replaceState(null, "", `#${tab}`);
     }
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => scrollToActiveTabPanel(tab));
-    });
   }
 
   function tryTrial(source: string) {
@@ -566,8 +578,10 @@ export function LandingPage({
         ) : null}
         </div>
       </section>
+      </div>
 
       <div className="landing-below-tabs">
+        <div className="landing-shell">
       <section className="landing-resources" aria-labelledby="landing-resources-title">
         <p className="landing-below-tabs__eyebrow">Free guides</p>
         <h2 id="landing-resources-title" className="landing-resources__title">
@@ -595,7 +609,7 @@ export function LandingPage({
           </div>
         </section>
       ) : null}
-      </div>
+        </div>
       </div>
 
       <footer className="landing-footer">

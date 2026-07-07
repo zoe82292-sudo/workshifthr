@@ -134,6 +134,14 @@ p {
   margin-top: 0;
 }
 
+.landing-pricing-grid > .panel + .panel {
+  margin-top: 0;
+}
+
+.landing-resources__grid > .panel + .panel {
+  margin-top: 0;
+}
+
 .landing-feature-grid > *,
 .landing-audience-grid > *,
 .landing-step-grid > *,
@@ -1793,9 +1801,10 @@ a:focus-visible {
 }
 
 .landing-sign-in {
-  padding: 32px 0 40px;
+  padding: 32px 0 0;
   scroll-margin-top: 88px;
   border-top: 1px solid rgba(47, 125, 90, 0.12);
+  margin-top: 28px;
 }
 
 .landing-sign-in-card {
@@ -1890,10 +1899,16 @@ a:focus-visible {
 }
 
 .landing-below-tabs {
-  margin-top: 8px;
-  padding: 28px 0 0;
+  width: 100%;
+  margin-top: 0;
+  padding: 32px 0 48px;
   border-top: 1px solid rgba(47, 125, 90, 0.14);
-  background: linear-gradient(180deg, rgba(47, 125, 90, 0.05) 0%, transparent 100%);
+  background: linear-gradient(180deg, rgba(47, 125, 90, 0.06) 0%, rgba(47, 125, 90, 0.02) 48%, transparent 100%);
+}
+
+.landing-below-tabs .landing-shell {
+  display: grid;
+  gap: 0;
 }
 
 .landing-below-tabs__eyebrow {
@@ -1932,12 +1947,15 @@ a:focus-visible {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   align-items: stretch;
+  width: 100%;
 }
 
 .landing-resource-card {
   display: grid;
   gap: 6px;
   padding: 16px 18px;
+  margin: 0;
+  min-width: 0;
   text-decoration: none;
   color: inherit;
   height: 100%;
