@@ -221,12 +221,13 @@ function isLandingTab(value: string): value is LandingTab {
   return LANDING_TABS.some((tab) => tab.id === value);
 }
 
-function scrollToTabSection() {
-  const section = document.getElementById("landing-tabs");
-  if (!section) return;
+function scrollToActiveTabPanel(tab: LandingTab) {
+  const panel = document.getElementById(`panel-${tab}`);
+  const target = panel ?? document.getElementById("landing-tab-content");
+  if (!target) return;
   const nav = document.querySelector<HTMLElement>(".landing-nav");
   const offset = (nav?.offsetHeight ?? 72) + 12;
-  const top = section.getBoundingClientRect().top + window.scrollY - offset;
+  const top = target.getBoundingClientRect().top + window.scrollY - offset;
   window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
 }
 
@@ -279,6 +280,9 @@ export function LandingPage({
   }, []);
 
   useEffect(() => {
+    const previousScrollRestoration = history.scrollRestoration;
+    history.scrollRestoration = "manual";
+
     function applyHashScroll() {
       const hash = window.location.hash.replace("#", "");
       if (hash === "sign-in") {
@@ -287,13 +291,20 @@ export function LandingPage({
       }
       if (isLandingTab(hash)) {
         setActiveTab(hash);
-        window.requestAnimationFrame(() => scrollToTabSection());
+        window.requestAnimationFrame(() => scrollToActiveTabPanel(hash));
+        return;
+      }
+      if (!window.location.hash) {
+        window.scrollTo(0, 0);
       }
     }
 
     applyHashScroll();
     window.addEventListener("hashchange", applyHashScroll);
-    return () => window.removeEventListener("hashchange", applyHashScroll);
+    return () => {
+      window.removeEventListener("hashchange", applyHashScroll);
+      history.scrollRestoration = previousScrollRestoration;
+    };
   }, []);
 
   function selectTab(tab: LandingTab) {
@@ -305,7 +316,7 @@ export function LandingPage({
       window.history.replaceState(null, "", `#${tab}`);
     }
     window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => scrollToTabSection());
+      window.requestAnimationFrame(() => scrollToActiveTabPanel(tab));
     });
   }
 
@@ -556,7 +567,9 @@ export function LandingPage({
         </div>
       </section>
 
+      <div className="landing-below-tabs">
       <section className="landing-resources" aria-labelledby="landing-resources-title">
+        <p className="landing-below-tabs__eyebrow">Free guides</p>
         <h2 id="landing-resources-title" className="landing-resources__title">
           Merit season resources
         </h2>
@@ -582,6 +595,7 @@ export function LandingPage({
           </div>
         </section>
       ) : null}
+      </div>
       </div>
 
       <footer className="landing-footer">

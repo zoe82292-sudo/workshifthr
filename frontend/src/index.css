@@ -1884,9 +1884,30 @@ a:focus-visible {
 }
 
 .landing-resources {
+  margin-top: 0;
+  padding: 0 0 8px;
+  border-top: none;
+}
+
+.landing-below-tabs {
   margin-top: 8px;
-  padding: 32px 0 8px;
-  border-top: 1px solid rgba(47, 125, 90, 0.08);
+  padding: 28px 0 0;
+  border-top: 1px solid rgba(47, 125, 90, 0.14);
+  background: linear-gradient(180deg, rgba(47, 125, 90, 0.05) 0%, transparent 100%);
+}
+
+.landing-below-tabs__eyebrow {
+  margin: 0 0 10px;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-secondary);
+}
+
+.landing-tab-panel[role="tabpanel"] {
+  scroll-margin-top: calc(72px + env(safe-area-inset-top, 0px));
 }
 
 .landing-resources__title {
