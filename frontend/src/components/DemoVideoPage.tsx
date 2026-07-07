@@ -55,18 +55,51 @@ function CtaScene() {
   );
 }
 
+function ProductScene({ focus }: { focus: "summary" | "table" }) {
+  const { summary } = getBundledDemoAnalysis();
+  return (
+    <div className="demo-video-product">
+      <header className="demo-video-product__bar">
+        <div>
+          <p className="demo-video-product__file">compensation-sample.csv</p>
+          <p className="demo-video-product__status">
+            Analysis complete · {summary.valid_rows} employees
+          </p>
+        </div>
+        <div className="demo-video-product__exports" aria-hidden>
+          <span>PDF summary</span>
+          <span className="demo-video-product__exports--primary">Excel report</span>
+        </div>
+      </header>
+      {focus === "table" ? (
+        <nav className="demo-video-product__tabs" aria-hidden>
+          <span>Overview</span>
+          <span className="is-active">Below minimum</span>
+          <span>Compression</span>
+          <span>Manager pay</span>
+          <span>Pay equity</span>
+        </nav>
+      ) : null}
+      <MarketingPreview
+        focus={focus}
+        className="demo-video-marketing-preview demo-video-marketing-preview--video"
+      />
+    </div>
+  );
+}
+
 const SCENES = [
   { id: "intro", layerClass: "demo-video-layer--card", render: () => <IntroScene /> },
   { id: "upload", layerClass: "demo-video-layer--card", render: () => <UploadScene /> },
   {
     id: "dashboard",
     layerClass: "demo-video-layer--app",
-    render: () => <MarketingPreview focus="summary" className="demo-video-marketing-preview" />,
+    render: () => <ProductScene focus="summary" />,
   },
   {
     id: "issues",
     layerClass: "demo-video-layer--app demo-video-layer--app-table",
-    render: () => <MarketingPreview focus="table" className="demo-video-marketing-preview" />,
+    render: () => <ProductScene focus="table" />,
   },
   { id: "pdf", layerClass: "demo-video-layer--pdf", render: () => <DemoPdfPreview /> },
   { id: "cta", layerClass: "demo-video-layer--card", render: () => <CtaScene /> },
@@ -89,8 +122,9 @@ function parseSceneDurations(): number[] {
 
 export function DemoVideoPage() {
   const params = new URLSearchParams(window.location.search);
+  const capture = params.get("capture") === "1";
   const autoplay = params.get("autoplay") === "1";
-  const showControls = !autoplay && params.get("controls") === "1";
+  const showControls = !autoplay && !capture && params.get("controls") === "1";
   const sceneParam = params.get("scene");
   const sceneDurations = useMemo(() => parseSceneDurations(), []);
   const initialScene =
@@ -110,21 +144,25 @@ export function DemoVideoPage() {
     return () => timers.forEach((timer) => window.clearTimeout(timer));
   }, [autoplay, sceneDurations]);
 
-  const staticScene = !autoplay && sceneParam !== null && sceneParam !== "";
+  const staticScene = capture || (!autoplay && sceneParam !== null && sceneParam !== "");
   const visibleScenes = staticScene
     ? [{ ...SCENES[scene], index: scene }]
     : SCENES.map((item, index) => ({ ...item, index }));
 
   return (
-    <div className="demo-video-page" data-autoplay={autoplay ? "true" : "false"}>
+    <div
+      className="demo-video-page"
+      data-autoplay={autoplay ? "true" : "false"}
+      data-capture={capture ? "true" : "false"}
+    >
       <div className="demo-video-stage">
         {visibleScenes.map((item) => (
           <div
             key={item.id}
             className={`demo-video-layer ${item.layerClass}${
-              scene === item.index ? " demo-video-layer--active" : ""
+              scene === item.index || capture ? " demo-video-layer--active" : ""
             }`}
-            aria-hidden={scene !== item.index}
+            aria-hidden={scene !== item.index && !capture}
           >
             {item.render()}
           </div>

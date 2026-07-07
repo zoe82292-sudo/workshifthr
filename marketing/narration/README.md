@@ -1,6 +1,6 @@
 # Custom voiceover for demo walkthrough
 
-For a **professional** LinkedIn demo, record or generate one audio file per scene and drop them here:
+For studio-quality audio, record or generate one file per scene and drop them here:
 
 | File | Scene |
 |------|--------|
@@ -13,7 +13,7 @@ For a **professional** LinkedIn demo, record or generate one audio file per scen
 
 Supported formats: `.m4a`, `.wav`, `.mp3`, `.aac`
 
-When these files exist, `npm run record:demo-video` uses them instead of the built-in macOS voice.
+When these files exist, `npm run record:demo-video` uses them instead of built-in TTS.
 
 ## Regenerate the video
 
@@ -21,20 +21,22 @@ When these files exist, `npm run record:demo-video` uses them instead of the bui
 # Terminal 1 — start the app
 ./scripts/start-production.sh
 
-# Terminal 2 — refresh demo data + record
+# Terminal 2 — refresh demo data, build, and record
 cd frontend
 npm run sync:demo
+npm run build
 PLAYWRIGHT_BROWSERS_PATH=../.playwright-browsers PLAYWRIGHT_BASE_URL=http://127.0.0.1:8080 npm run record:demo-video
 ```
 
-Output: `marketing/demo-walkthrough.mp4`
+Output: `marketing/demo-walkthrough.mp4` (1920×1080, scene screenshots + neural voice)
 
-## macOS voice fallback
+## Default voice (Microsoft Edge neural TTS)
 
-If no custom files are present, the script uses macOS `say` with **Ava** (or Allison / Samantha). Tune with:
+By default the recorder uses **Jenny** (`en-US-JennyNeural`) — much more natural than macOS `say`.
 
 ```bash
-RECORD_VOICE=Ava RECORD_SPEECH_RATE=165 npm run record:demo-video
+RECORD_EDGE_VOICE=en-US-AriaNeural npm run record:demo-video   # alternate voice
+RECORD_USE_EDGE_TTS=0 RECORD_VOICE=Daniel npm run record:demo-video  # macOS fallback
 ```
 
-For truly natural audio, use ElevenLabs or record yourself in QuickTime, then export clips to this folder.
+For the most natural result, use ElevenLabs or record yourself in QuickTime, then export clips to this folder.

@@ -2,10 +2,13 @@
 /**
  * Records a LinkedIn walkthrough to marketing/demo-walkthrough.mp4 (not deployed).
  *
+ * Pipeline: high-res per-scene screenshots + neural TTS + ffmpeg assembly.
+ *
  * Voice (best to worst):
  * 1. Place studio files in marketing/narration/{scene-id}.m4a or .wav
- * 2. macOS say with RECORD_VOICE (default Ava → Allison → Samantha)
- * 3. RECORD_VOICEOVER=0 for silent video
+ * 2. Microsoft Edge neural TTS (Jenny / Aria) via scripts/synthesize_narration.py
+ * 3. macOS say with RECORD_VOICE
+ * 4. RECORD_VOICEOVER=0 for silent video
  */
 import { chromium } from "playwright";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
@@ -15,15 +18,18 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const marketingDir = path.resolve(__dirname, "../../marketing");
+const repoRoot = path.resolve(__dirname, "../..");
+const marketingDir = path.join(repoRoot, "marketing");
 const narrationDir = path.join(marketingDir, "narration");
 const configPath = path.resolve(__dirname, "../demo-video.config.json");
 const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:8080";
-const webmOut = path.join(marketingDir, "demo-walkthrough.webm");
 const mp4Out = path.join(marketingDir, "demo-walkthrough.mp4");
 const audioOut = path.join(marketingDir, "demo-walkthrough-audio.m4a");
 const videoTempDir = path.join(marketingDir, ".record-tmp");
 const narrationTempDir = path.join(marketingDir, ".narration-tmp");
+
+const VIEWPORT = { width: 1920, height: 1080 };
+const OUTPUT_FPS = 30;
 
 const { scenes } = JSON.parse(fs.readFileSync(configPath, "utf8"));
 
@@ -41,6 +47,24 @@ function resolveFfmpeg() {
   return null;
 }
 
+function resolvePython() {
+  const candidates = [
+    path.join(repoRoot, "backend/.venv/bin/python"),
+    path.join(repoRoot, "backend/.venv/bin/python3"),
+    "python3",
+    "python",
+  ];
+  for (const candidate of candidates) {
+    if (candidate.includes("/") && fs.existsSync(candidate)) {
+      return candidate;
+    }
+    if (!candidate.includes("/") && spawnSync("which", [candidate]).status === 0) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
 function shellQuote(value) {
   return `"${value.replace(/"/g, '\\"')}"`;
 }
@@ -53,14 +77,17 @@ function probeDurationSeconds(ffmpeg, filePath) {
   return Number(match[1]) * 3600 + Number(match[2]) * 60 + Number(match[3]);
 }
 
-function polishVoiceWav(ffmpeg, inputPath, outputPath) {
+function polishVoiceWav(ffmpeg, inputPath, outputPath, light = false) {
+  const filter = light
+    ? "highpass=f=80,alimiter=limit=0.95"
+    : "highpass=f=90,acompressor=threshold=-22dB:ratio=2.5:attack=12:release=120,alimiter=limit=0.92";
   execSync(
-    `${shellQuote(ffmpeg)} -y -i ${shellQuote(inputPath)} -af "highpass=f=90,acompressor=threshold=-22dB:ratio=2.5:attack=12:release=120,alimiter=limit=0.92" ${shellQuote(outputPath)}`,
+    `${shellQuote(ffmpeg)} -y -i ${shellQuote(inputPath)} -af ${shellQuote(filter)} ${shellQuote(outputPath)}`,
     { stdio: "ignore" },
   );
 }
 
-function convertSpeechToWav(aiffPath, wavPath) {
+function convertSpeechToWav(aiffPath, wavPath, ffmpeg) {
   if (process.platform === "darwin" && spawnSync("which", ["afconvert"]).status === 0) {
     execSync(
       `afconvert -f WAVE -d LEI16@44100 ${shellQuote(aiffPath)} ${shellQuote(wavPath)}`,
@@ -69,8 +96,8 @@ function convertSpeechToWav(aiffPath, wavPath) {
     return;
   }
   execSync(
-    `${shellQuote(resolveFfmpeg())} -y -i ${shellQuote(aiffPath)} -ar 44100 -ac 1 ${shellQuote(wavPath)}`,
-    { shell: true, stdio: "ignore" },
+    `${shellQuote(ffmpeg)} -y -i ${shellQuote(aiffPath)} -ar 44100 -ac 1 ${shellQuote(wavPath)}`,
+    { stdio: "ignore" },
   );
 }
 
@@ -100,7 +127,24 @@ function resolveSayVoice() {
   return "Samantha";
 }
 
-function synthesizeSceneSpeech(scene, ffmpeg, voice) {
+function synthesizeWithEdgeTts(scene, ffmpeg, python) {
+  const mp3 = path.join(narrationTempDir, `scene-${scene.id}.mp3`);
+  const voice = process.env.RECORD_EDGE_VOICE ?? "en-US-JennyNeural";
+  const script = path.join(repoRoot, "scripts/synthesize_narration.py");
+  execSync(
+    `${shellQuote(python)} ${shellQuote(script)} ${shellQuote(scene.narration)} ${shellQuote(mp3)} --voice ${voice}`,
+    { stdio: "inherit" },
+  );
+  const rawWav = path.join(narrationTempDir, `scene-${scene.id}-raw.wav`);
+  execSync(
+    `${shellQuote(ffmpeg)} -y -i ${shellQuote(mp3)} -ar 44100 -ac 1 ${shellQuote(rawWav)}`,
+    { stdio: "ignore" },
+  );
+  console.log(`  voice: Edge neural (${voice})`);
+  return rawWav;
+}
+
+function synthesizeSceneSpeech(scene, ffmpeg, { python, useEdgeTts, sayVoice }) {
   const custom = resolveCustomNarration(scene.id);
   const rawWav = path.join(narrationTempDir, `scene-${scene.id}-raw.wav`);
   const polishedWav = path.join(narrationTempDir, `scene-${scene.id}-polished.wav`);
@@ -111,15 +155,26 @@ function synthesizeSceneSpeech(scene, ffmpeg, voice) {
       { stdio: "ignore" },
     );
     console.log(`  voice: custom file (${path.basename(custom)})`);
-  } else {
-    const aiff = path.join(narrationTempDir, `scene-${scene.id}.aiff`);
-    const rate = process.env.RECORD_SPEECH_RATE ?? "168";
-    execSync(`say -v ${voice} -r ${rate} -o ${shellQuote(aiff)} ${shellQuote(scene.narration)}`);
-    convertSpeechToWav(aiff, rawWav);
-    console.log(`  voice: macOS ${voice}`);
+    polishVoiceWav(ffmpeg, rawWav, polishedWav, false);
+    return polishedWav;
   }
 
-  polishVoiceWav(ffmpeg, rawWav, polishedWav);
+  if (useEdgeTts && python) {
+    try {
+      const edgeWav = synthesizeWithEdgeTts(scene, ffmpeg, python);
+      polishVoiceWav(ffmpeg, edgeWav, polishedWav, true);
+      return polishedWav;
+    } catch (error) {
+      console.warn(`  Edge TTS failed for ${scene.id}, falling back to macOS say.`);
+    }
+  }
+
+  const aiff = path.join(narrationTempDir, `scene-${scene.id}.aiff`);
+  const rate = process.env.RECORD_SPEECH_RATE ?? "168";
+  execSync(`say -v ${sayVoice} -r ${rate} -o ${shellQuote(aiff)} ${shellQuote(scene.narration)}`);
+  convertSpeechToWav(aiff, rawWav, ffmpeg);
+  console.log(`  voice: macOS ${sayVoice}`);
+  polishVoiceWav(ffmpeg, rawWav, polishedWav, false);
   return polishedWav;
 }
 
@@ -130,19 +185,28 @@ function buildNarrationTrack(ffmpeg) {
   }
 
   fs.mkdirSync(narrationTempDir, { recursive: true });
-  const voice = resolveSayVoice();
-  console.log(`Narration voice: ${voice}`);
+  const python = resolvePython();
+  const hasCustom = scenes.some((scene) => resolveCustomNarration(scene.id));
+  const useEdgeTts = !hasCustom && process.env.RECORD_USE_EDGE_TTS !== "0" && Boolean(python);
+
+  if (useEdgeTts) {
+    console.log(`Narration: Microsoft Edge neural TTS (${process.env.RECORD_EDGE_VOICE ?? "en-US-JennyNeural"})`);
+  } else {
+    console.log(`Narration: macOS say (${resolveSayVoice()})`);
+  }
+
+  const sayVoice = resolveSayVoice();
   const sceneFiles = [];
   const sceneDurationsMs = [];
 
   for (const scene of scenes) {
-    const polishedWav = synthesizeSceneSpeech(scene, ffmpeg, voice);
+    const polishedWav = synthesizeSceneSpeech(scene, ffmpeg, { python, useEdgeTts, sayVoice });
     const speechSeconds = probeDurationSeconds(ffmpeg, polishedWav);
     if (speechSeconds < 0.4) {
       throw new Error(`Voiceover for scene "${scene.id}" is empty or too short.`);
     }
 
-    const visualPadSeconds = 0.45;
+    const visualPadSeconds = 0.55;
     const sceneSeconds = speechSeconds + visualPadSeconds;
     sceneDurationsMs.push(Math.ceil(sceneSeconds * 1000));
 
@@ -162,12 +226,95 @@ function buildNarrationTrack(ffmpeg) {
   );
 
   execSync(
-    `${shellQuote(ffmpeg)} -y -f concat -safe 0 -i ${shellQuote(listFile)} -c:a aac -b:a 160k ${shellQuote(audioOut)}`,
+    `${shellQuote(ffmpeg)} -y -f concat -safe 0 -i ${shellQuote(listFile)} -c:a aac -b:a 192k ${shellQuote(audioOut)}`,
     { stdio: "inherit" },
   );
 
   console.log(`Saved ${audioOut}`);
   return { audioPath: audioOut, sceneDurationsMs };
+}
+
+function renderSceneClip(ffmpeg, imagePath, durationSec, outputPath) {
+  const frames = Math.max(1, Math.ceil(durationSec * OUTPUT_FPS));
+  const vf = [
+    "scale=1920:1080:flags=lanczos",
+    "format=yuv420p",
+    `zoompan=z='min(1.0+0.0001*on,1.02)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${frames}:s=1920x1080:fps=${OUTPUT_FPS}`,
+  ].join(",");
+
+  execSync(
+    `${shellQuote(ffmpeg)} -y -loop 1 -i ${shellQuote(imagePath)} -vf ${shellQuote(vf)} -t ${durationSec.toFixed(3)} -c:v libx264 -preset slow -crf 17 -pix_fmt yuv420p -movflags +faststart ${shellQuote(outputPath)}`,
+    { stdio: "inherit" },
+  );
+}
+
+async function captureSceneScreenshots(sceneDurationsMs) {
+  const browser = await chromium.launch({ headless: true });
+  const context = await browser.newContext({
+    viewport: VIEWPORT,
+    deviceScaleFactor: 2,
+  });
+  const page = await context.newPage();
+
+  try {
+    for (let index = 0; index < scenes.length; index += 1) {
+      const scene = scenes[index];
+      const url = `${baseUrl}/demo-video?scene=${index}&capture=1`;
+      await page.goto(url, { waitUntil: "networkidle" });
+      await page.waitForSelector(".demo-video-stage", { timeout: 15_000 });
+      await page.waitForFunction(
+        () => document.fonts?.ready?.then(() => true) ?? true,
+        undefined,
+        { timeout: 10_000 },
+      );
+      await sleep(350);
+
+      const screenshotPath = path.join(videoTempDir, `scene-${scene.id}.png`);
+      await page.locator(".demo-video-stage").screenshot({ path: screenshotPath, type: "png" });
+      console.log(`  captured ${scene.id} → ${path.basename(screenshotPath)} (${sceneDurationsMs[index]}ms)`);
+    }
+  } finally {
+    await context.close();
+    await browser.close();
+  }
+}
+
+function assembleVideo(ffmpeg, sceneDurationsMs, audioPath) {
+  const sceneClips = scenes.map((scene, index) => {
+    const imagePath = path.join(videoTempDir, `scene-${scene.id}.png`);
+    const clipPath = path.join(videoTempDir, `scene-${scene.id}.mp4`);
+    const durationSec = sceneDurationsMs[index] / 1000;
+    if (!fs.existsSync(imagePath)) {
+      throw new Error(`Missing screenshot for scene "${scene.id}"`);
+    }
+    console.log(`  rendering ${scene.id} (${durationSec.toFixed(1)}s)`);
+    renderSceneClip(ffmpeg, imagePath, durationSec, clipPath);
+    return clipPath;
+  });
+
+  const concatList = path.join(videoTempDir, "video-concat.txt");
+  fs.writeFileSync(
+    concatList,
+    sceneClips.map((file) => `file '${file.replace(/'/g, "'\\''")}'`).join("\n"),
+  );
+
+  const videoOnlyMp4 = path.join(marketingDir, "demo-walkthrough-video-only.mp4");
+  execSync(
+    `${shellQuote(ffmpeg)} -y -f concat -safe 0 -i ${shellQuote(concatList)} -c copy ${shellQuote(videoOnlyMp4)}`,
+    { stdio: "inherit" },
+  );
+
+  if (audioPath && fs.existsSync(audioPath)) {
+    execSync(
+      `${shellQuote(ffmpeg)} -y -i ${shellQuote(videoOnlyMp4)} -i ${shellQuote(audioPath)} -c:v copy -c:a aac -b:a 192k -shortest -map 0:v:0 -map 1:a:0 ${shellQuote(mp4Out)}`,
+      { stdio: "inherit" },
+    );
+    fs.unlinkSync(videoOnlyMp4);
+  } else {
+    fs.renameSync(videoOnlyMp4, mp4Out);
+  }
+
+  console.log(`Saved ${mp4Out}`);
 }
 
 async function main() {
@@ -185,60 +332,12 @@ async function main() {
   }
 
   const { audioPath, sceneDurationsMs } = buildNarrationTrack(ffmpeg);
-  const recordMs = sceneDurationsMs.reduce((sum, ms) => sum + ms, 0) + 600;
-  const durationsQuery = sceneDurationsMs.join(",");
 
-  const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({
-    viewport: { width: 1280, height: 720 },
-    deviceScaleFactor: 2,
-    recordVideo: {
-      dir: videoTempDir,
-      size: { width: 1280, height: 720 },
-    },
-  });
-  const page = await context.newPage();
+  console.log("Capturing scene screenshots (1920×1080)…");
+  await captureSceneScreenshots(sceneDurationsMs);
 
-  try {
-    await page.goto(`${baseUrl}/demo-video?autoplay=1&durations=${durationsQuery}`, {
-      waitUntil: "networkidle",
-    });
-    await page.waitForSelector(".demo-video-layer--active", { timeout: 15_000 });
-    await sleep(recordMs);
-  } finally {
-    const video = page.video();
-    await context.close();
-    await browser.close();
-
-    if (!video) {
-      throw new Error("Playwright did not produce a video recording.");
-    }
-
-    const recordedPath = await video.path();
-    if (fs.existsSync(webmOut)) {
-      fs.unlinkSync(webmOut);
-    }
-    fs.renameSync(recordedPath, webmOut);
-    console.log(`Saved ${webmOut}`);
-
-    const videoOnlyMp4 = path.join(marketingDir, "demo-walkthrough-video-only.mp4");
-    execSync(
-      `${shellQuote(ffmpeg)} -y -i ${shellQuote(webmOut)} -c:v libx264 -preset slow -crf 20 -pix_fmt yuv420p -movflags +faststart -an ${shellQuote(videoOnlyMp4)}`,
-      { shell: true, stdio: "inherit" },
-    );
-
-    if (audioPath && fs.existsSync(audioPath)) {
-      execSync(
-        `${shellQuote(ffmpeg)} -y -i ${shellQuote(videoOnlyMp4)} -i ${shellQuote(audioPath)} -c:v copy -c:a aac -b:a 160k -map 0:v:0 -map 1:a:0 ${shellQuote(mp4Out)}`,
-        { shell: true, stdio: "inherit" },
-      );
-      fs.unlinkSync(videoOnlyMp4);
-    } else {
-      fs.renameSync(videoOnlyMp4, mp4Out);
-    }
-
-    console.log(`Saved ${mp4Out}`);
-  }
+  console.log("Assembling video…");
+  assembleVideo(ffmpeg, sceneDurationsMs, audioPath);
 }
 
 main().catch((error) => {

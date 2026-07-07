@@ -3,12 +3,12 @@
     {
       "id": "intro",
       "durationMs": 5500,
-      "narration": "ShiftWorksHR helps compensation teams catch below-minimum pay and manager inversions before merit week."
+      "narration": "ShiftWorksHR helps compensation teams catch below-minimum pay and manager pay inversions — before merit week."
     },
     {
       "id": "upload",
       "durationMs": 6000,
-      "narration": "Export from Workday, UKG, or ADP and upload your spreadsheet. Columns are mapped automatically — no template required."
+      "narration": "Export from Workday, UKG, or ADP and upload your spreadsheet. Columns map automatically — no template required."
     },
     {
       "id": "dashboard",
@@ -18,12 +18,12 @@
     {
       "id": "issues",
       "durationMs": 7000,
-      "narration": "Drill into below-minimum employees with names, departments, and gap-to-minimum — plus compression and manager inversion flags."
+      "narration": "Drill into every below-minimum employee with names, departments, and gap-to-minimum — plus compression and manager inversion flags."
     },
     {
       "id": "pdf",
       "durationMs": 6500,
-      "narration": "Export a leadership-ready PDF with merit scenario, risk level, and key findings — ready for your executive review."
+      "narration": "Export a leadership-ready PDF with your merit scenario, risk level, and key findings — ready for executive review."
     },
     {
       "id": "cta",

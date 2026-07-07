@@ -15,5 +15,8 @@ frontend/test-results/
 frontend/playwright-report/
 *.egg-info/
 backend/data/analysis_history/
-backend/data/provisioned_orgs.json
-frontend/tsconfig.tsbuildinfo
+marketing/.record-tmp/
+marketing/.narration-tmp/
+marketing/demo-walkthrough.webm
+marketing/demo-walkthrough-audio.m4a
+marketing/demo-walkthrough-video-only.mp4
