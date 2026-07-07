@@ -221,10 +221,10 @@ function isLandingTab(value: string): value is LandingTab {
   return LANDING_TABS.some((tab) => tab.id === value);
 }
 
-function scrollToActiveTabPanel(tab: LandingTab) {
-  const panel = document.getElementById(`panel-${tab}`);
-  const section = document.getElementById("landing-tabs");
-  const target = panel ?? section ?? document.getElementById("landing-tab-content");
+function scrollToActiveTabPanel(_tab: LandingTab) {
+  const target =
+    document.getElementById("landing-tabs") ??
+    document.getElementById("landing-tab-content");
   if (!target) return;
   const nav = document.querySelector<HTMLElement>(".landing-nav");
   const offset = (nav?.offsetHeight ?? 72) + 12;
@@ -316,8 +316,9 @@ export function LandingPage({
   useEffect(() => {
     if (!pendingTabScroll.current) return;
     pendingTabScroll.current = false;
-    const tab = activeTab;
-    const timer = window.setTimeout(() => scrollToActiveTabPanel(tab), 80);
+    const timer = window.setTimeout(() => {
+      requestAnimationFrame(() => scrollToActiveTabPanel(activeTab));
+    }, 80);
     return () => window.clearTimeout(timer);
   }, [activeTab]);
 
