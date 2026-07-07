@@ -2,32 +2,32 @@
   "scenes": [
     {
       "id": "intro",
-      "durationMs": 5200,
+      "durationMs": 7000,
       "narration": "Merit week is coming. ShiftWorksHR catches below-minimum pay and manager inversions before your leadership review."
     },
     {
       "id": "upload",
-      "durationMs": 4800,
+      "durationMs": 7600,
       "narration": "Upload your Workday, UKG, or ADP export. Columns are detected automatically. No template required."
     },
     {
       "id": "dashboard",
-      "durationMs": 6200,
+      "durationMs": 7200,
       "narration": "In under thirty seconds you get cycle readiness, merit scenario math for finance, and a prioritized review queue."
     },
     {
       "id": "issues",
-      "durationMs": 6200,
+      "durationMs": 7400,
       "narration": "Drill into below-minimum employees, compression, and manager inversions — the same view your comp team uses after upload."
     },
     {
       "id": "pdf",
-      "durationMs": 6800,
+      "durationMs": 7100,
       "narration": "Export a leadership-ready PDF with merit scenario, risk level, and key findings — ready for the exec deck."
     },
     {
       "id": "cta",
-      "durationMs": 4800,
+      "durationMs": 4900,
       "narration": "Try free with your file at shiftworkshr.com. No credit card required."
     }
   ]

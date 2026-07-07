@@ -43,9 +43,26 @@ function shellQuote(value) {
 
 function probeDurationSeconds(ffmpeg, filePath) {
   const result = spawnSync(ffmpeg, ["-i", filePath, "-f", "null", "-"], { encoding: "utf8" });
-  const match = `${result.stderr ?? ""}`.match(/Duration: (\d+):(\d+):(\d+(?:\.\d+)?)/);
+  const output = `${result.stderr ?? ""}`;
+  const match =
+    output.match(/Duration: (\d+):(\d+):(\d+(?:\.\d+)?)/) ??
+    output.match(/time=(\d+):(\d+):(\d+(?:\.\d+)?)/);
   if (!match) return 0;
   return Number(match[1]) * 3600 + Number(match[2]) * 60 + Number(match[3]);
+}
+
+function convertSpeechToWav(aiffPath, wavPath) {
+  if (process.platform === "darwin" && spawnSync("which", ["afconvert"]).status === 0) {
+    execSync(
+      `afconvert -f WAVE -d LEI16@44100 ${shellQuote(aiffPath)} ${shellQuote(wavPath)}`,
+      { stdio: "ignore" },
+    );
+    return;
+  }
+  execSync(
+    `${shellQuote(resolveFfmpeg())} -y -i ${shellQuote(aiffPath)} -ar 44100 -ac 1 ${shellQuote(wavPath)}`,
+    { shell: true, stdio: "ignore" },
+  );
 }
 
 function generateNarrationTrack(ffmpeg) {
@@ -67,12 +84,14 @@ function generateNarrationTrack(ffmpeg) {
     const padded = path.join(narrationTempDir, `scene-${index}-padded.wav`);
 
     execSync(`say -v Samantha -r 178 -o ${shellQuote(aiff)} ${shellQuote(scene.narration)}`);
-    execSync(
-      `${shellQuote(ffmpeg)} -y -i ${shellQuote(aiff)} -ar 44100 -ac 1 ${shellQuote(padded.replace(".wav", "-raw.wav"))}`,
-      { shell: true, stdio: "ignore" },
-    );
-    const wav = padded.replace(".wav", "-raw.wav");
+    const wav = path.join(narrationTempDir, `scene-${index}-raw.wav`);
+    convertSpeechToWav(aiff, wav);
     const speechSeconds = probeDurationSeconds(ffmpeg, wav);
+    if (speechSeconds < 0.5) {
+      throw new Error(
+        `Voiceover for scene "${scene.id}" is empty. Re-run on your Mac (not a sandbox) with Speech enabled.`,
+      );
+    }
     const targetSeconds = scene.durationMs / 1000;
     const padSeconds = Math.max(0.2, targetSeconds - speechSeconds - 0.15);
 
@@ -152,7 +171,7 @@ async function main() {
     const narration = generateNarrationTrack(ffmpeg);
     if (narration && fs.existsSync(narration)) {
       execSync(
-        `${shellQuote(ffmpeg)} -y -i ${shellQuote(videoOnlyMp4)} -i ${shellQuote(narration)} -c:v copy -c:a aac -b:a 128k -shortest ${shellQuote(mp4Out)}`,
+        `${shellQuote(ffmpeg)} -y -i ${shellQuote(videoOnlyMp4)} -i ${shellQuote(narration)} -c:v copy -c:a aac -b:a 128k -map 0:v:0 -map 1:a:0 ${shellQuote(mp4Out)}`,
         { shell: true, stdio: "inherit" },
       );
       fs.unlinkSync(videoOnlyMp4);

@@ -1645,43 +1645,6 @@ a:focus-visible {
   flex-wrap: wrap;
 }
 
-.landing-sample-preview__desktop {
-  display: block;
-}
-
-.landing-sample-mobile {
-  display: none;
-}
-
-.landing-demo-spotlight {
-  max-width: none;
-  margin: 0;
-  padding: 8px 0 28px;
-}
-
-.landing-demo-spotlight .landing-section-header {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.landing-demo-spotlight .landing-section-header h2 {
-  font-family: "Instrument Serif", Georgia, "Times New Roman", serif;
-  font-size: clamp(1.5rem, 3.5vw, 2rem);
-  font-weight: 400;
-  margin: 10px 0 12px;
-}
-
-.landing-demo-spotlight .landing-section-header p {
-  margin: 0 auto;
-  max-width: 52ch;
-  color: var(--text-muted);
-  line-height: 1.5;
-}
-
-#see-it-in-action {
-  scroll-margin-top: calc(72px + env(safe-area-inset-top, 0px));
-}
-
 .analyzer-sample-link {
   flex-shrink: 0;
   white-space: nowrap;
@@ -1755,20 +1718,6 @@ a:focus-visible {
 
 .landing-footer-links a:hover {
   text-decoration: underline;
-}
-
-.landing-sample-mobile-shot {
-  margin: 0 0 16px;
-  border-radius: 18px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-}
-
-.landing-sample-mobile-shot img {
-  display: block;
-  width: 100%;
-  height: auto;
 }
 
 .landing-tabs-card {
@@ -2329,9 +2278,16 @@ a:focus-visible {
   position: absolute;
   inset: 0;
   opacity: 0;
-  transition: opacity 0.65s ease;
+  transition: opacity 0.9s ease-in-out;
   overflow: hidden;
   box-sizing: border-box;
+  pointer-events: none;
+}
+
+.demo-video-layer--active {
+  opacity: 1;
+  z-index: 1;
+  pointer-events: auto;
 }
 
 .demo-video-layer--card {
@@ -2362,10 +2318,6 @@ a:focus-visible {
 .demo-video-layer--pdf {
   padding: 24px 40px;
   background: linear-gradient(180deg, #e8e2d8 0%, #f4f1e8 100%);
-}
-
-.demo-video-layer--active {
-  opacity: 1;
 }
 
 .demo-video-app {
@@ -6167,31 +6119,6 @@ a:focus-visible {
 }
 
 /* iPhone / mobile landing polish */
-.landing-sample-mobile {
-  display: grid;
-  gap: 16px;
-}
-
-.landing-sample-mobile-cta {
-  display: grid;
-  gap: 14px;
-  padding: 18px;
-  text-align: center;
-  background: linear-gradient(160deg, #fffdf9 0%, #edf8f1 100%);
-  border-color: rgba(47, 125, 90, 0.2);
-}
-
-.landing-sample-mobile-cta p {
-  margin: 0;
-  color: var(--text-muted);
-  line-height: 1.5;
-  font-size: 0.95rem;
-}
-
-.landing-sample-mobile-cta .button {
-  width: 100%;
-}
-
 .landing-hero--compact h1 {
   font-family: "Instrument Serif", Georgia, "Times New Roman", serif;
   font-size: clamp(1.75rem, 8vw, 2.35rem);
@@ -6262,19 +6189,6 @@ a:focus-visible {
 
   .landing-hero-panel {
     padding: 24px 18px 22px;
-  }
-
-  .landing-sample-preview__desktop,
-  .landing-sample-preview__desktop-actions {
-    display: none;
-  }
-
-  .landing-sample-mobile {
-    display: grid;
-  }
-
-  .landing-demo-spotlight {
-    padding: 4px 0 24px;
   }
 
   .landing-hero-pain {
