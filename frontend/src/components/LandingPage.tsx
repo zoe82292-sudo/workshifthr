@@ -217,6 +217,33 @@ function defaultLandingTab(): LandingTab {
   return "sample";
 }
 
+function isLandingTab(value: string): value is LandingTab {
+  return LANDING_TABS.some((tab) => tab.id === value);
+}
+
+function scrollToTabSection() {
+  const section = document.getElementById("landing-tabs");
+  if (!section) return;
+  const nav = document.querySelector<HTMLElement>(".landing-nav");
+  const offset = (nav?.offsetHeight ?? 72) + 12;
+  const top = section.getBoundingClientRect().top + window.scrollY - offset;
+  window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+}
+
+function scrollToSignIn() {
+  const section = document.getElementById("sign-in");
+  if (!section) return;
+  const nav = document.querySelector<HTMLElement>(".landing-nav");
+  const offset = (nav?.offsetHeight ?? 72) + 12;
+  const top = section.getBoundingClientRect().top + window.scrollY - offset;
+  window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+}
+
+function syncTabFromHash(): LandingTab | null {
+  const hash = window.location.hash.replace("#", "");
+  return isLandingTab(hash) ? hash : null;
+}
+
 export function LandingPage({
   onLogin,
   showLogin,
@@ -225,7 +252,7 @@ export function LandingPage({
   onTryTrial,
 }: LandingPageProps) {
   const [availablePlans, setAvailablePlans] = useState<PlanId[]>([]);
-  const [activeTab, setActiveTab] = useState<LandingTab>(defaultLandingTab);
+  const [activeTab, setActiveTab] = useState<LandingTab>(() => syncTabFromHash() ?? defaultLandingTab());
   const [tabFlash, setTabFlash] = useState(false);
   const [outcomeStats, setOutcomeStats] = useState<{
     belowMinimum: number;
@@ -251,12 +278,35 @@ export function LandingPage({
     });
   }, []);
 
+  useEffect(() => {
+    function applyHashScroll() {
+      const hash = window.location.hash.replace("#", "");
+      if (hash === "sign-in") {
+        window.requestAnimationFrame(() => scrollToSignIn());
+        return;
+      }
+      if (isLandingTab(hash)) {
+        setActiveTab(hash);
+        window.requestAnimationFrame(() => scrollToTabSection());
+      }
+    }
+
+    applyHashScroll();
+    window.addEventListener("hashchange", applyHashScroll);
+    return () => window.removeEventListener("hashchange", applyHashScroll);
+  }, []);
+
   function selectTab(tab: LandingTab) {
     setActiveTab(tab);
     trackEvent("landing_tab", { tab });
     setTabFlash(true);
     window.setTimeout(() => setTabFlash(false), 1400);
-    document.getElementById("landing-tab-content")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (window.location.hash !== `#${tab}`) {
+      window.history.replaceState(null, "", `#${tab}`);
+    }
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => scrollToTabSection());
+    });
   }
 
   function tryTrial(source: string) {
@@ -269,7 +319,7 @@ export function LandingPage({
   return (
     <div className="landing-page">
       <header className="landing-nav">
-        <div className="landing-nav-inner">
+        <div className="landing-shell landing-nav-inner">
           <div className="landing-brand">
             <BrandLogo
               size="nav"
@@ -297,7 +347,7 @@ export function LandingPage({
             <button
               type="button"
               className="landing-sign-in-btn"
-              onClick={() => document.getElementById("sign-in")?.scrollIntoView({ behavior: "smooth" })}
+              onClick={() => scrollToSignIn()}
             >
               Sign in
             </button>
@@ -505,41 +555,37 @@ export function LandingPage({
         ) : null}
         </div>
       </section>
-      </div>
 
       <section className="landing-resources" aria-labelledby="landing-resources-title">
-        <div className="landing-shell">
-          <h2 id="landing-resources-title" className="landing-resources__title">
-            Merit season resources
-          </h2>
-          <p className="landing-resources__lead">
-            Free guides for comp analysts and HRBPs running range review, merit planning, and leadership
-            readouts — whether or not you use ShiftWorksHR.
-          </p>
-          <div className="landing-resources__grid">
-            {SEO_RESOURCES.map((resource) => (
-              <Link className="landing-resource-card panel" key={resource.href} to={resource.href}>
-                <strong>{resource.title}</strong>
-                <span>{resource.description}</span>
-              </Link>
-            ))}
-          </div>
+        <h2 id="landing-resources-title" className="landing-resources__title">
+          Merit season resources
+        </h2>
+        <p className="landing-resources__lead">
+          Free guides for comp analysts and HRBPs running range review, merit planning, and leadership
+          readouts — whether or not you use ShiftWorksHR.
+        </p>
+        <div className="landing-resources__grid">
+          {SEO_RESOURCES.map((resource) => (
+            <Link className="landing-resource-card panel" key={resource.href} to={resource.href}>
+              <strong>{resource.title}</strong>
+              <span>{resource.description}</span>
+            </Link>
+          ))}
         </div>
       </section>
 
       {showLogin ? (
         <section className="landing-sign-in" id="sign-in">
-          <div className="landing-shell">
-            <div className="landing-sign-in-card panel">
-              <h2>Sign in</h2>
-              <LoginForm onLogin={onLogin} compact />
-            </div>
+          <div className="landing-sign-in-card panel">
+            <h2>Sign in</h2>
+            <LoginForm onLogin={onLogin} compact />
           </div>
         </section>
       ) : null}
+      </div>
 
       <footer className="landing-footer">
-        <div className="landing-footer-copy">
+        <div className="landing-shell landing-footer-inner">
           <p className="landing-footer-brand">ShiftWorksHR</p>
           <nav className="landing-footer-links" aria-label="Resources">
             <Link to="/sample-preview">Sample analysis</Link>
