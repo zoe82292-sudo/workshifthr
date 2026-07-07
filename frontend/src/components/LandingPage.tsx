@@ -5,7 +5,6 @@ import { trackEvent } from "../analytics";
 import { BrandLogo } from "./BrandLogo";
 import { CheckoutButton } from "./CheckoutButton";
 import { LandingSamplePreview } from "./SampleAnalysisEmbed";
-import { LegalConsentLinks } from "./LegalConsentLinks";
 import { LegalFooter } from "./LegalFooter";
 import { LoginForm } from "./LoginForm";
 
@@ -530,11 +529,7 @@ export function LandingPage({
         <section className="landing-section landing-sign-in" id="sign-in">
           <div className="landing-sign-in-card panel">
             <h2>Sign in</h2>
-            <p className="landing-sign-in-blurb">Work email + your org password.</p>
             <LoginForm onLogin={onLogin} compact />
-            <p className="legal-agreement">
-              By signing in, you agree to our <LegalConsentLinks />.
-            </p>
           </div>
         </section>
       ) : null}
