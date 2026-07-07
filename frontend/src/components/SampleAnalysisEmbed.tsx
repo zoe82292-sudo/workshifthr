@@ -95,6 +95,15 @@ export function LandingSamplePreview() {
   if (isMobile) {
     return (
       <div className="landing-sample-mobile">
+        <figure className="landing-sample-mobile-shot">
+          <img
+            src="/demo-mobile-preview.png"
+            alt="ShiftWorksHR review queue and below-minimum flags on sample compensation data"
+            width={390}
+            height={844}
+            loading="lazy"
+          />
+        </figure>
         <DemoPreviewStats result={result} />
         <div className="landing-sample-mobile-cta panel">
           <p>

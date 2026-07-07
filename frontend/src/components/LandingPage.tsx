@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { checkBillingStatus, type PlanId } from "../api";
+import { checkBillingStatus, fetchDemoAnalysis, type PlanId } from "../api";
 import { trackEvent } from "../analytics";
 import { useIsMobile } from "../useMediaQuery";
 import { BrandLogo } from "./BrandLogo";
@@ -37,15 +37,40 @@ const TRUST_POINTS = [
   { stat: "PDF + Excel", label: "Leadership exports" },
 ];
 
-const FEATURES = [
-  "Below / above range flags",
-  "Compression & manager inversions",
-  "Range penetration & compa-ratio",
-  "Pay equity by level",
-  "Budget & merit impact",
-  "Multi-file merge on Employee ID",
-  "Tenure, location & LTI checks",
-  "Cycle history & comparison",
+/** Outcome-oriented copy for the Product tab */
+const PRODUCT_OUTCOMES = [
+  {
+    title: "Catch pay floor violations early",
+    detail: "Flag below-minimum and above-maximum employees before leadership review.",
+  },
+  {
+    title: "Stop manager inversions",
+    detail: "Surface managers paid below direct reports — a common exec-meeting surprise.",
+  },
+  {
+    title: "Quantify budget exposure",
+    detail: "Show finance the cost-to-minimum and merit pool impact before the pool is locked.",
+  },
+  {
+    title: "Validate merit alignment",
+    detail: "Spot merit matrix outliers and performance × pay misalignment in one pass.",
+  },
+  {
+    title: "Merge messy HRIS exports",
+    detail: "Combine up to five files on Employee ID when base pay, equity, and ratings export separately.",
+  },
+  {
+    title: "Compare cycles after merit",
+    detail: "Re-upload after changes and see what's still open vs. last run.",
+  },
+  {
+    title: "Pay equity signals by level",
+    detail: "Median gaps by gender and race/ethnicity at the same job level — decision support, not legal audit.",
+  },
+  {
+    title: "Leadership-ready exports",
+    detail: "PDF summary for execs; full Excel workbook for your working file.",
+  },
 ];
 
 const FAQ_ITEMS = (trialMaxRows: number) => [
@@ -116,8 +141,13 @@ const PRICING_PLANS: Array<{
     name: "Cycle Pass",
     price: "$249",
     period: "90 days",
-    description: "One merit season.",
-    features: ["Unlimited uploads", "Full analysis & exports", "Email support"],
+    description: "One merit season — no subscription.",
+    features: [
+      "Unlimited uploads for 90 days",
+      "Full analysis & unwatermarked exports",
+      "Multi-file merge (up to 5 files)",
+      "Email support",
+    ],
     cta: "Get cycle pass",
     mailSubject: "ShiftWorksHR Comp Cycle Pass",
     featured: false,
@@ -127,8 +157,13 @@ const PRICING_PLANS: Array<{
     name: "Annual",
     price: "$899",
     period: "per year",
-    description: "Best value.",
-    features: ["Unlimited uploads", "Full analysis & exports", "Priority support"],
+    description: "Best for teams that run multiple cycles or mid-year checks.",
+    features: [
+      "Everything in Cycle Pass, full year",
+      "Cycle history & side-by-side comparison",
+      "Saved column mappings per org",
+      "Priority support",
+    ],
     cta: "Get annual",
     mailSubject: "ShiftWorksHR Annual Plan",
     featured: true,
@@ -138,8 +173,13 @@ const PRICING_PLANS: Array<{
     name: "Monthly",
     price: "$99",
     period: "per month",
-    description: "Cancel anytime.",
-    features: ["Unlimited uploads", "Full analysis & exports", "Email support"],
+    description: "Short engagements — cancel anytime.",
+    features: [
+      "Unlimited uploads while active",
+      "Full analysis & unwatermarked exports",
+      "Multi-file merge (up to 5 files)",
+      "Email support",
+    ],
     cta: "Get monthly",
     mailSubject: "ShiftWorksHR Monthly Plan",
     featured: false,
@@ -163,6 +203,13 @@ export function LandingPage({
 }: LandingPageProps) {
   const [availablePlans, setAvailablePlans] = useState<PlanId[]>([]);
   const [activeTab, setActiveTab] = useState<LandingTab>(defaultLandingTab);
+  const [tabFlash, setTabFlash] = useState(false);
+  const [outcomeStats, setOutcomeStats] = useState<{
+    belowMinimum: number;
+    managerInversions: number;
+    reviewQueue: number;
+    headcount: number;
+  } | null>(null);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -171,9 +218,22 @@ export function LandingPage({
     });
   }, []);
 
+  useEffect(() => {
+    void fetchDemoAnalysis().then((result) => {
+      setOutcomeStats({
+        belowMinimum: result.summary.below_minimum,
+        managerInversions: result.summary.managers_below_reports,
+        reviewQueue: result.review_queue.total_items,
+        headcount: result.summary.valid_rows,
+      });
+    });
+  }, []);
+
   function selectTab(tab: LandingTab) {
     setActiveTab(tab);
     trackEvent("landing_tab", { tab });
+    setTabFlash(true);
+    window.setTimeout(() => setTabFlash(false), 1400);
     document.getElementById("landing-tab-content")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
@@ -227,7 +287,7 @@ export function LandingPage({
 
       <section className="landing-hero landing-hero--compact">
         <div className="landing-hero-copy">
-          <span className="hero-badge">Comp spreadsheet QA</span>
+          <span className="hero-badge">Comp spreadsheet QA · for comp analysts &amp; HRBPs</span>
           <h1>Find pay issues before leadership review.</h1>
           <p className="landing-hero-lead">
             Upload your HRIS export. Get range flags, compression checks, and a leadership PDF — in under a minute.
@@ -267,11 +327,59 @@ export function LandingPage({
         </div>
       </section>
 
+      {outcomeStats ? (
+        <section className="landing-outcomes" aria-label="Sample analysis outcomes">
+          <div className="landing-outcomes-inner">
+            <p className="landing-outcomes-eyebrow">What a first pass surfaces</p>
+            <div className="landing-outcomes-grid">
+              <article className="landing-outcome-card panel">
+                <strong>{outcomeStats.belowMinimum}</strong>
+                <span>Below-minimum flags</span>
+              </article>
+              <article className="landing-outcome-card panel">
+                <strong>{outcomeStats.managerInversions}</strong>
+                <span>Manager inversions</span>
+              </article>
+              <article className="landing-outcome-card panel">
+                <strong>{outcomeStats.reviewQueue}</strong>
+                <span>Review queue items</span>
+              </article>
+              <article className="landing-outcome-card panel">
+                <strong>{outcomeStats.headcount || "—"}</strong>
+                <span>Employees analyzed</span>
+              </article>
+            </div>
+            <p className="landing-outcomes-note">
+              From our sample dataset — your HRIS export gets the same checks in under a minute.
+            </p>
+          </div>
+        </section>
+      ) : null}
+
       <section className="landing-tabs-section" id="landing-tabs">
-        <div className="landing-tabs-card panel" id="landing-tab-content">
+        <div
+          className={`landing-tabs-card panel${tabFlash ? " landing-tabs-card--flash" : ""}`}
+          id="landing-tab-content"
+        >
         {activeTab === "sample" ? (
           <div className="landing-tab-panel" role="tabpanel" id="panel-sample" aria-labelledby="tab-sample">
             <p className="landing-tab-intro">Live demo — same dashboard you get after upload.</p>
+            <div className="landing-demo-media">
+              <video
+                className="landing-demo-video"
+                controls
+                playsInline
+                preload="metadata"
+                poster="/demo-mobile-preview.png"
+                aria-label="ShiftWorksHR product walkthrough"
+              >
+                <source src="/demo-walkthrough.mp4" type="video/mp4" />
+                <source src="/demo-walkthrough.webm" type="video/webm" />
+              </video>
+              <p className="landing-demo-video-caption">
+                Product walkthrough — review queue, issue tabs, and leadership exports on sample data.
+              </p>
+            </div>
             <LandingSamplePreview />
             {!isMobile ? (
               <div className="landing-preview-actions">
@@ -293,9 +401,12 @@ export function LandingPage({
             <p className="landing-tab-intro">
               For in-house comp teams, HRBPs, and consultants — export from Workday, UKG, or ADP and upload as-is.
             </p>
-            <ul className="landing-feature-compact">
-              {FEATURES.map((feature) => (
-                <li key={feature}>{feature}</li>
+            <ul className="landing-outcome-list">
+              {PRODUCT_OUTCOMES.map((item) => (
+                <li key={item.title} className="landing-outcome-list__item panel">
+                  <strong>{item.title}</strong>
+                  <span>{item.detail}</span>
+                </li>
               ))}
             </ul>
             <ol className="landing-steps-compact">
@@ -308,6 +419,7 @@ export function LandingPage({
               <Link to="/checklist">Merit checklist</Link>
               <Link to="/guides/workday-comp-export-qa">Export QA guide</Link>
               <Link to="/for-consultants">For consultants</Link>
+              <Link to="/security-summary">Security summary</Link>
             </div>
           </div>
         ) : null}
@@ -347,6 +459,18 @@ export function LandingPage({
               One org password · teammates use work email · Stripe checkout ·{" "}
               <Link to="/terms">terms</Link>
             </p>
+            <div className="landing-pricing-procurement panel">
+              <div>
+                <strong>Need PO or invoice billing?</strong>
+                <p>We support procurement for HR and finance teams.</p>
+              </div>
+              <a
+                className="button button-secondary"
+                href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("ShiftWorksHR procurement / invoice")}&body=${encodeURIComponent("Organization:\nApprox. employee count:\nPlan interested in (Cycle / Annual / Monthly):\nPO required? Y/N:\n")}`}
+              >
+                Request invoice
+              </a>
+            </div>
           </div>
         ) : null}
 
@@ -398,11 +522,15 @@ export function LandingPage({
       <footer className="landing-footer">
         <div className="landing-footer-copy">
           <p className="landing-footer-brand">ShiftWorksHR</p>
-          <p>
+          <nav className="landing-footer-links" aria-label="Resources">
+            <Link to="/sample-preview">Sample analysis</Link>
+            <Link to="/checklist">Merit checklist</Link>
+            <Link to="/guides/workday-comp-export-qa">Workday export guide</Link>
+            <Link to="/for-consultants">Consultants</Link>
+            <Link to="/security-summary">Security summary</Link>
+            <Link to="/customer-stories">Customer stories</Link>
             <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
-            {" · "}
-            <Link to="/checklist">Checklist</Link>
-          </p>
+          </nav>
           <LegalFooter />
         </div>
       </footer>

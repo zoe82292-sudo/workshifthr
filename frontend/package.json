@@ -9,7 +9,10 @@
     "generate:brand": "python ../scripts/generate_brand_assets.py && node scripts/verify-brand-assets.mjs",
     "preview": "vite preview",
     "sync:demo": "python ../scripts/sync_demo_snapshot.py",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "capture:mobile-preview": "node scripts/capture-mobile-preview.mjs",
+    "record:demo-video": "node scripts/record-demo-video.mjs",
+    "capture:marketing-assets": "node scripts/capture-mobile-preview.mjs && node scripts/record-demo-video.mjs"
   },
   "dependencies": {
     "jspdf": "^4.2.1",
@@ -20,6 +23,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
     "@vitejs/plugin-react": "^4.3.4",

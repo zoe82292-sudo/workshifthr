@@ -21,7 +21,7 @@ test("trial CTA visible when auth enabled", async ({ page }) => {
 
 test("sample preview loads demo analysis", async ({ page }) => {
   await page.goto("/sample-preview");
-  await expect(page.getByRole("heading", { name: /executive summary/i }).first()).toBeVisible({
+  await expect(page.getByRole("heading", { name: /complete analyzer view|analysis results/i }).first()).toBeVisible({
     timeout: 15_000,
   });
 });
