@@ -13,7 +13,7 @@
     {
       "id": "dashboard",
       "durationMs": 6200,
-      "narration": "In under thirty seconds you get cycle readiness, a prioritized review queue, and budget exposure for finance."
+      "narration": "In under thirty seconds you get cycle readiness, merit scenario math for finance, and a prioritized review queue."
     },
     {
       "id": "issues",
@@ -23,7 +23,7 @@
     {
       "id": "pdf",
       "durationMs": 6800,
-      "narration": "Export a leadership-ready PDF with risk level, budget metrics, and key findings — ready for the exec deck."
+      "narration": "Export a leadership-ready PDF with merit scenario, risk level, and key findings — ready for the exec deck."
     },
     {
       "id": "cta",

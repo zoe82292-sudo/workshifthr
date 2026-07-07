@@ -2384,6 +2384,47 @@ a:focus-visible {
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
+.demo-video-app__merit-scenario {
+  padding: 16px 18px;
+}
+
+.demo-video-app__merit-scenario h3 {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.demo-video-app__merit-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.demo-video-app__merit-grid > div {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+
+.demo-video-app__merit-grid span {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.demo-video-app__merit-grid strong {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.demo-video-app__merit-highlight {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  background: var(--accent-soft);
+}
+
 .demo-video-app__exec {
   padding: 18px 20px;
 }

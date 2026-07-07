@@ -1,4 +1,5 @@
 import { getBundledDemoAnalysis } from "../data/bundledDemoAnalysis";
+import { resolveMeritScenario } from "../meritScenario";
 import type { AnalysisResult, EmployeeRecord } from "../types";
 
 type DemoVideoDashboardProps = {
@@ -12,13 +13,13 @@ function formatMoney(value: number) {
 function DemoVideoOverview({ result }: { result: AnalysisResult }) {
   const { summary, insights } = result;
   const exec = insights.executive_summary;
-  const budget = insights.budget_impact;
+  const scenario = resolveMeritScenario(insights);
 
   const metrics = [
     { label: "Review queue", value: String(result.review_queue.total_items) },
     { label: "Below minimum", value: String(summary.below_minimum), tone: "danger" },
     { label: "Mgr inversions", value: String(summary.managers_below_reports), tone: "danger" },
-    { label: "Budget exposure", value: formatMoney(budget.total_budget_impact) },
+    { label: "Budget exposure", value: formatMoney(scenario.total_exposure) },
   ];
 
   return (
@@ -33,6 +34,28 @@ function DemoVideoOverview({ result }: { result: AnalysisResult }) {
           <span className="demo-video-app__export demo-video-app__export--primary">Excel report</span>
         </div>
       </header>
+
+      <section className="demo-video-app__merit-scenario panel">
+        <h3>Merit scenario</h3>
+        <div className="demo-video-app__merit-grid">
+          <div>
+            <span>Cost to minimum</span>
+            <strong>{formatMoney(scenario.cost_to_minimum)}</strong>
+          </div>
+          <div>
+            <span>Payroll base</span>
+            <strong>{formatMoney(scenario.payroll_base)}</strong>
+          </div>
+          <div className="demo-video-app__merit-highlight">
+            <span>Pool at {scenario.reference_merit_percent}%</span>
+            <strong>{formatMoney(scenario.reference_merit_pool)}</strong>
+          </div>
+          <div>
+            <span>Total exposure</span>
+            <strong>{formatMoney(scenario.total_exposure)}</strong>
+          </div>
+        </div>
+      </section>
 
       <section className="demo-video-app__exec panel">
         <div className="demo-video-app__exec-top">
