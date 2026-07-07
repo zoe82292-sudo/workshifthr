@@ -994,6 +994,108 @@ tr:last-child td {
   line-height: 1.45;
 }
 
+.merit-scenario {
+  margin-bottom: 24px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: linear-gradient(180deg, var(--surface) 0%, var(--surface-muted) 100%);
+}
+
+.merit-scenario__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.merit-scenario__title {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+}
+
+.merit-scenario__subtitle {
+  margin: 0;
+  max-width: 52ch;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.merit-scenario__input-wrap {
+  display: grid;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.merit-scenario__input {
+  width: 7rem;
+}
+
+.merit-scenario__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.merit-scenario__metric {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.merit-scenario__metric--highlight {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  background: var(--accent-soft);
+}
+
+.merit-scenario__label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.merit-scenario__value {
+  font-size: 1.35rem;
+  line-height: 1.1;
+}
+
+.merit-scenario__meta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.merit-scenario__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.merit-scenario__chip {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.merit-scenario__chip--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
 .sortable-header {
   border: none;
   background: transparent;
@@ -3648,6 +3750,15 @@ a:focus-visible {
   .insights-panel {
     padding: 14px;
     margin-bottom: 16px;
+  }
+
+  .merit-scenario {
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+
+  .merit-scenario__grid {
+    grid-template-columns: 1fr 1fr;
   }
 
   .insights-panel .panel-header {

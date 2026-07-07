@@ -2,6 +2,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import type { AnalysisResult } from "./types";
+import { resolveMeritScenario } from "./meritScenario";
 import {
   BRAND,
   buildDataSheet,
@@ -519,11 +520,16 @@ export function downloadSummaryPdf(
   const { insights, summary } = result;
   const margin = 48;
   const meritPercent = options?.targetMeritPercent;
+  const scenario = resolveMeritScenario(insights);
+  const activeMeritPercent =
+    meritPercent != null && Number.isFinite(meritPercent)
+      ? meritPercent
+      : scenario.reference_merit_percent;
   const projectedMeritPool =
     meritPercent != null && Number.isFinite(meritPercent)
       ? (insights.merit_calculator.payroll_base * meritPercent) / 100
-      : insights.budget_impact.projected_merit_pool;
-  const totalBudgetImpact = insights.budget_impact.cost_to_minimum + projectedMeritPool;
+      : scenario.reference_merit_pool;
+  const totalBudgetImpact = scenario.cost_to_minimum + projectedMeritPool;
   const generatedAt = new Date().toLocaleString(undefined, {
     dateStyle: "medium",
     timeStyle: "short",
@@ -550,11 +556,36 @@ export function downloadSummaryPdf(
 
   autoTable(doc, {
     startY: y,
-    head: [["Budget metric", "Amount"]],
+    head: [["Merit scenario", "Amount"]],
     body: [
-      ["Cost to range minimum", formatMoney(insights.budget_impact.cost_to_minimum)],
-      ["Projected merit pool", formatMoney(projectedMeritPool)],
-      ["Total budget impact", formatMoney(totalBudgetImpact)],
+      [
+        "Cost to range minimum",
+        `${formatMoney(scenario.cost_to_minimum)} (${scenario.employees_below_minimum} employees)`,
+      ],
+      ["Eligible payroll base", formatMoney(scenario.payroll_base)],
+      [
+        `Merit pool at ${activeMeritPercent.toFixed(1).replace(/\.0$/, "")}%`,
+        formatMoney(projectedMeritPool),
+      ],
+      ["Total budget exposure", formatMoney(totalBudgetImpact)],
+      ...(scenario.uploaded_merit_pool != null
+        ? [["Uploaded file merit pool", formatMoney(scenario.uploaded_merit_pool)]]
+        : []),
+      ...scenario.scenarios.map((row) => [
+        `Scenario: ${row.merit_percent.toFixed(1).replace(/\.0$/, "")}% merit`,
+        formatMoney(row.projected_pool),
+      ]),
+    ],
+    ...TABLE_THEME,
+    columnStyles: { 1: { halign: "right" } },
+  });
+
+  y = ((doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y) + 18;
+
+  autoTable(doc, {
+    startY: y,
+    head: [["Compa-ratio metric", "Value"]],
+    body: [
       [
         "Average compa-ratio",
         insights.compa_ratio.average_compa_ratio != null

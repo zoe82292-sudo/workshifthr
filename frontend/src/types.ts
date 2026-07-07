@@ -85,11 +85,28 @@ export interface CompaRatioSummary {
   above_110_percent: number;
 }
 
+export interface MeritScenarioRow {
+  merit_percent: number;
+  projected_pool: number;
+}
+
+export interface MeritScenario {
+  cost_to_minimum: number;
+  employees_below_minimum: number;
+  payroll_base: number;
+  reference_merit_percent: number;
+  reference_merit_pool: number;
+  total_exposure: number;
+  uploaded_merit_pool: number | null;
+  scenarios: MeritScenarioRow[];
+}
+
 export interface AnalysisInsights {
   executive_summary: ExecutiveSummary;
   cost_metrics: CostMetrics;
   budget_impact: BudgetImpact;
   merit_calculator: MeritCalculator;
+  merit_scenario?: MeritScenario;
   compa_ratio: CompaRatioSummary;
 }
 

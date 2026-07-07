@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { BrandLogo } from "./BrandLogo";
 import { LegalFooter } from "./LegalFooter";
@@ -10,6 +11,10 @@ export function LegalLayout({
   title: string;
   children: ReactNode;
 }) {
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, []);
+
   return (
     <div className="legal-page">
       <div className="legal-page-inner">

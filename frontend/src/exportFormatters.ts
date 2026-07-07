@@ -1,4 +1,5 @@
 import type { AnalysisResult } from "./types";
+import { resolveMeritScenario } from "./meritScenario";
 import * as XLSX from "xlsx";
 
 export type ExportOptions = {
@@ -123,11 +124,16 @@ export function buildOverviewSheet(result: AnalysisResult, options?: ExportOptio
     timeStyle: "short",
   });
   const meritPercent = options?.targetMeritPercent;
+  const scenario = resolveMeritScenario(insights);
+  const activeMeritPercent =
+    meritPercent != null && Number.isFinite(meritPercent)
+      ? meritPercent
+      : scenario.reference_merit_percent;
   const projectedMeritPool =
     meritPercent != null && Number.isFinite(meritPercent)
       ? (insights.merit_calculator.payroll_base * meritPercent) / 100
-      : insights.budget_impact.projected_merit_pool;
-  const totalBudgetImpact = insights.budget_impact.cost_to_minimum + projectedMeritPool;
+      : scenario.reference_merit_pool;
+  const totalBudgetImpact = scenario.cost_to_minimum + projectedMeritPool;
 
   const rows: Array<Array<string | number>> = [
     ...(options?.trialMode
@@ -145,6 +151,24 @@ export function buildOverviewSheet(result: AnalysisResult, options?: ExportOptio
     [],
     ["EXECUTIVE SUMMARY"],
     [insights.executive_summary.headline],
+    [],
+    ["MERIT SCENARIO"],
+    ["Metric", "Value"],
+    ["Cost to bring employees to range minimum", scenario.cost_to_minimum],
+    ["Employees below range minimum", scenario.employees_below_minimum],
+    ["Payroll base (merit eligible)", scenario.payroll_base],
+    [
+      `Merit pool at ${activeMeritPercent}%`,
+      projectedMeritPool,
+    ],
+    ["Total budget exposure", totalBudgetImpact],
+    ...(scenario.uploaded_merit_pool != null
+      ? [["Uploaded file merit pool", scenario.uploaded_merit_pool]]
+      : []),
+    ...scenario.scenarios.map((row) => [
+      `Scenario at ${row.merit_percent}%`,
+      row.projected_pool,
+    ]),
     [],
     ["KEY FINDINGS"],
     ...insights.executive_summary.bullets.map((bullet) => ["", bullet]),

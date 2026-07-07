@@ -44,6 +44,16 @@ const EMPTY_INSIGHTS: AnalysisInsights = {
     projected_merit_pool: 0,
     payroll_base: 0,
   },
+  merit_scenario: {
+    cost_to_minimum: 0,
+    employees_below_minimum: 0,
+    payroll_base: 0,
+    reference_merit_percent: 3.5,
+    reference_merit_pool: 0,
+    total_exposure: 0,
+    uploaded_merit_pool: null,
+    scenarios: [],
+  },
   compa_ratio: {
     average_compa_ratio: null,
     below_90_percent: 0,

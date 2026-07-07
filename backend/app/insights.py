@@ -8,13 +8,18 @@ from app.models import (
     CostMetrics,
     ExecutiveSummary,
     MeritCalculator,
+    MeritScenario,
+    MeritScenarioRow,
 )
+
+DEFAULT_REFERENCE_MERIT_PERCENT = 3.5
 
 
 def build_insights(result: AnalysisResult) -> AnalysisInsights:
     cost_metrics = _build_cost_metrics(result)
     merit_calculator = _build_merit_calculator(result)
     budget_impact = _build_budget_impact(cost_metrics, merit_calculator)
+    merit_scenario = _build_merit_scenario(cost_metrics, merit_calculator)
     compa_ratio = _build_compa_summary(result)
     executive_summary = _build_executive_summary(result, cost_metrics, budget_impact, compa_ratio)
 
@@ -23,6 +28,7 @@ def build_insights(result: AnalysisResult) -> AnalysisInsights:
         cost_metrics=cost_metrics,
         budget_impact=budget_impact,
         merit_calculator=merit_calculator,
+        merit_scenario=merit_scenario,
         compa_ratio=compa_ratio,
     )
 
@@ -70,6 +76,59 @@ def _build_merit_calculator(result: AnalysisResult) -> MeritCalculator:
         average_merit_percent=average_merit,
         projected_merit_pool=round(merit_pool, 2),
         payroll_base=round(payroll_base, 2),
+    )
+
+
+def _pool_at_percent(payroll_base: float, merit_percent: float) -> float:
+    return round(payroll_base * (merit_percent / 100), 2)
+
+
+def _scenario_percents(reference_percent: float) -> list[float]:
+    candidates = [
+        round(reference_percent - 0.5, 1),
+        round(reference_percent, 1),
+        round(reference_percent + 0.5, 1),
+    ]
+    unique: list[float] = []
+    for percent in candidates:
+        if percent < 0:
+            continue
+        if percent not in unique:
+            unique.append(percent)
+    return unique or [DEFAULT_REFERENCE_MERIT_PERCENT]
+
+
+def _build_merit_scenario(
+    cost_metrics: CostMetrics,
+    merit_calculator: MeritCalculator,
+) -> MeritScenario:
+    reference_percent = (
+        merit_calculator.average_merit_percent
+        if merit_calculator.average_merit_percent is not None
+        else DEFAULT_REFERENCE_MERIT_PERCENT
+    )
+    reference_pool = _pool_at_percent(merit_calculator.payroll_base, reference_percent)
+    uploaded_pool = (
+        round(merit_calculator.projected_merit_pool, 2)
+        if merit_calculator.employees_with_merit_data > 0
+        else None
+    )
+
+    return MeritScenario(
+        cost_to_minimum=cost_metrics.total_gap_to_minimum,
+        employees_below_minimum=cost_metrics.employees_below_minimum,
+        payroll_base=merit_calculator.payroll_base,
+        reference_merit_percent=reference_percent,
+        reference_merit_pool=reference_pool,
+        total_exposure=round(cost_metrics.total_gap_to_minimum + reference_pool, 2),
+        uploaded_merit_pool=uploaded_pool,
+        scenarios=[
+            MeritScenarioRow(
+                merit_percent=percent,
+                projected_pool=_pool_at_percent(merit_calculator.payroll_base, percent),
+            )
+            for percent in _scenario_percents(reference_percent)
+        ],
     )
 
 
@@ -396,6 +455,15 @@ def empty_insights() -> AnalysisInsights:
             employees_with_merit_data=0,
             projected_merit_pool=0,
             payroll_base=0,
+        ),
+        merit_scenario=MeritScenario(
+            cost_to_minimum=0,
+            employees_below_minimum=0,
+            payroll_base=0,
+            reference_merit_percent=DEFAULT_REFERENCE_MERIT_PERCENT,
+            reference_merit_pool=0,
+            total_exposure=0,
+            scenarios=[],
         ),
         compa_ratio=CompaRatioSummary(),
     )

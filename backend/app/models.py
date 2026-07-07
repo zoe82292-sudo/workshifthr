@@ -89,6 +89,22 @@ class BudgetImpact(BaseModel):
     note: str
 
 
+class MeritScenarioRow(BaseModel):
+    merit_percent: float
+    projected_pool: float
+
+
+class MeritScenario(BaseModel):
+    cost_to_minimum: float
+    employees_below_minimum: int
+    payroll_base: float
+    reference_merit_percent: float
+    reference_merit_pool: float
+    total_exposure: float
+    uploaded_merit_pool: float | None = None
+    scenarios: list[MeritScenarioRow]
+
+
 class CompaRatioSummary(BaseModel):
     average_compa_ratio: float | None = None
     below_90_percent: int = 0
@@ -101,6 +117,7 @@ class AnalysisInsights(BaseModel):
     cost_metrics: CostMetrics
     budget_impact: BudgetImpact
     merit_calculator: MeritCalculator
+    merit_scenario: MeritScenario
     compa_ratio: CompaRatioSummary
 
 

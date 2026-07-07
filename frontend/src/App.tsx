@@ -4,6 +4,7 @@ import { checkAuthStatus, checkBackendHealth, type AuthStatus } from "./api";
 import { clearSession, getStoredEmail, getStoredOrganization, getStoredToken } from "./auth";
 import { AnalyzerApp } from "./components/AnalyzerApp";
 import { LoadingScreen } from "./components/LoadingScreen";
+import { ScrollToTop } from "./components/ScrollToTop";
 import { CheckoutCancelPage } from "./components/CheckoutCancelPage";
 import { CheckoutSuccessPage } from "./components/CheckoutSuccessPage";
 import { DataProcessingAgreement } from "./components/DataProcessingAgreement";
@@ -115,7 +116,9 @@ function MainApp() {
 
 export default function App() {
   return (
-    <Routes>
+    <>
+      <ScrollToTop />
+      <Routes>
       <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
       <Route path="/checkout/canceled" element={<CheckoutCancelPage />} />
       <Route path="/recover-access" element={<RecoverAccessPage />} />
@@ -133,6 +136,7 @@ export default function App() {
       <Route path="/try" element={<TryEntry />} />
       <Route path="/marketing-preview" element={<Navigate to="/sample-preview" replace />} />
       <Route path="*" element={<MainApp />} />
-    </Routes>
+      </Routes>
+    </>
   );
 }

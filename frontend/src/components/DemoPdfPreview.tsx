@@ -1,4 +1,5 @@
 import { getBundledDemoAnalysis } from "../data/bundledDemoAnalysis";
+import { resolveMeritScenario } from "../meritScenario";
 
 function formatMoney(value: number) {
   return `$${Math.round(value).toLocaleString()}`;
@@ -14,6 +15,17 @@ export function DemoPdfPreview() {
   const exec = insights.executive_summary;
   const budget = insights.budget_impact;
   const compa = insights.compa_ratio;
+  const scenario = resolveMeritScenario(insights);
+
+  const meritScenarioRows = [
+    ["Cost to range minimum", formatMoney(scenario.cost_to_minimum)],
+    ["Eligible payroll base", formatMoney(scenario.payroll_base)],
+    [
+      `Merit pool at ${scenario.reference_merit_percent}%`,
+      formatMoney(scenario.reference_merit_pool),
+    ],
+    ["Total budget exposure", formatMoney(scenario.total_exposure)],
+  ];
 
   const budgetRows = [
     ["Cost to range minimum", formatMoney(budget.cost_to_minimum)],
@@ -48,6 +60,22 @@ export function DemoPdfPreview() {
           <p className="demo-pdf-preview__headline">{exec.headline}</p>
 
           <div className="demo-pdf-preview__tables">
+            <table className="demo-pdf-preview__table">
+              <thead>
+                <tr>
+                  <th colSpan={2}>Merit scenario</th>
+                </tr>
+              </thead>
+              <tbody>
+                {meritScenarioRows.map(([label, value]) => (
+                  <tr key={label}>
+                    <td>{label}</td>
+                    <td>{value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
             <table className="demo-pdf-preview__table">
               <thead>
                 <tr>

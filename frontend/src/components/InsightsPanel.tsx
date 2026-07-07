@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import type { AnalysisResult } from "../types";
+import { MeritScenarioBlock } from "./MeritScenarioBlock";
 
 function formatCurrency(value: number | null | undefined) {
   if (value == null) return "—";
@@ -18,20 +19,29 @@ interface InsightsPanelProps {
 
 export function InsightsPanel({ result, onTargetMeritChange, compact = false }: InsightsPanelProps) {
   const { insights } = result;
-  const defaultMerit =
-    insights.merit_calculator.average_merit_percent?.toString() ?? "3.5";
+  const defaultMerit = insights.merit_calculator.average_merit_percent ?? 3.5;
   const [targetMerit, setTargetMerit] = useState(defaultMerit);
 
   const projectedMeritPool = useMemo(() => {
-    const percent = Number(targetMerit);
-    if (!Number.isFinite(percent) || percent < 0) return 0;
-    return (insights.merit_calculator.payroll_base * percent) / 100;
+    if (!Number.isFinite(targetMerit) || targetMerit < 0) return 0;
+    return (insights.merit_calculator.payroll_base * targetMerit) / 100;
   }, [insights.merit_calculator.payroll_base, targetMerit]);
 
   const combinedBudget = insights.cost_metrics.total_gap_to_minimum + projectedMeritPool;
 
+  function handleTargetMeritChange(percent: number) {
+    setTargetMerit(percent);
+    onTargetMeritChange?.(percent);
+  }
+
   return (
     <>
+      <MeritScenarioBlock
+        insights={insights}
+        targetMeritPercent={targetMerit}
+        onTargetMeritChange={handleTargetMeritChange}
+      />
+
       {!compact ? (
         <section className="insights-panel">
           <div className="panel-header">
@@ -93,10 +103,9 @@ export function InsightsPanel({ result, onTargetMeritChange, compact = false }: 
               step="0.1"
               value={targetMerit}
               onChange={(event) => {
-                setTargetMerit(event.target.value);
                 const parsed = Number(event.target.value);
                 if (Number.isFinite(parsed)) {
-                  onTargetMeritChange?.(parsed);
+                  handleTargetMeritChange(parsed);
                 }
               }}
             />
