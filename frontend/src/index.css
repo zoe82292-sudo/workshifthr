@@ -4883,7 +4883,7 @@ a:focus-visible {
 }
 
 .demo-video-page[data-capture="true"] .demo-video-real-product .pay-equity-panel > .alert-warning,
-.demo-video-page[data-capture="true"] .demo-video-real-product .pay-equity-panel > .equity-section:first-child {
+.demo-video-page[data-capture="true"] .demo-video-real-product .pay-equity-panel > .alert-warning + .equity-section {
   display: none !important;
 }
 
