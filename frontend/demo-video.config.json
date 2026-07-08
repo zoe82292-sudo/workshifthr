@@ -3,32 +3,32 @@
     {
       "id": "intro",
       "durationMs": 5500,
-      "narration": "Merit letters go out soon. You still haven't checked who's below minimum — or whether a manager earns less than their team. Shift Works HR ends that weekly fire drill."
+      "narration": "Merit letters go out soon. You still need to know who is below minimum, and whether any manager earns less than their team. ShiftWorks HR ends that last-minute scramble."
     },
     {
       "id": "upload",
       "durationMs": 6000,
-      "narration": "Just export from Workday, UKG, or ADP and drop the file in. We map your columns automatically. No reformatting. No IT project."
+      "narration": "Export from Workday or your payroll system and drop the file in. We map your columns automatically. No setup project. No I.T. ticket."
     },
     {
       "id": "dashboard",
       "durationMs": 7000,
-      "narration": "About a minute later, you know what has to be fixed before you lock the cycle. Critical flags, range penetration, and real merit pool math for finance."
+      "narration": "About a minute later, you see what to fix before you lock the cycle. Critical flags, pay range gaps, and merit pool numbers for finance."
     },
     {
       "id": "issues",
       "durationMs": 7000,
-      "narration": "This is what your VP will ask about. Every person below minimum — name, department, dollar gap — plus manager inversions and compression sitting right next to them."
+      "narration": "This is what leadership asks about. Every employee below minimum, with name, department, and dollar gap. Manager pay issues right beside them."
     },
     {
       "id": "pdf",
       "durationMs": 6500,
-      "narration": "Need to brief your CHRO? One export gives you a PDF with risk level, budget exposure, and the findings they'll actually ask about."
+      "narration": "Need to brief your chief HR officer? One click exports a PDF with risk level, budget exposure, and the findings they will ask about."
     },
     {
       "id": "cta",
       "durationMs": 4500,
-      "narration": "Try it with your own roster at shiftworkshr.com. Free to start — no credit card."
+      "narration": "Try it free with your own roster on our website. No credit card required."
     }
   ]
 }

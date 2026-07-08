@@ -74,7 +74,15 @@ function DemoVideoTabStrip({ active }: { active: AnalysisTab }) {
 }
 
 function VideoDashboardLayout({ result }: { result: AnalysisResult }) {
-  const topIssues = useMemo(() => buildTopIssues(result, 5), [result]);
+  const topIssues = useMemo(() => {
+    const issues = buildTopIssues(result, 6);
+    return issues.map((issue) => {
+      if (issue.label.includes("compa")) {
+        return { ...issue, label: "Merit vs range misalignment" };
+      }
+      return issue;
+    });
+  }, [result]);
   const queue = result.review_queue;
   const distribution = result.penetration_distribution;
   const { insights } = result;
@@ -129,7 +137,7 @@ function VideoDashboardLayout({ result }: { result: AnalysisResult }) {
         <section className="demo-video-dash__panel panel">
           {distribution.available ? (
             <div className="demo-video-dash__penetration">
-              <h3>Range penetration</h3>
+              <h3>Pay range position</h3>
               {distribution.bands.map((band) => (
                 <div className="demo-video-dash__bar-row" key={band.band}>
                   <span className="demo-video-dash__bar-label">{band.label}</span>
@@ -178,6 +186,18 @@ function VideoDashboardLayout({ result }: { result: AnalysisResult }) {
 }
 
 function VideoIssuesLayout({ result }: { result: AnalysisResult }) {
+  const belowMinimumRows = useMemo(() => {
+    const seen = new Set<string>();
+    return result.below_minimum.filter((row) => {
+      const name = (row.employee_name ?? "").trim();
+      if (!name || name === "Duplicate Row" || seen.has(name.toLowerCase())) {
+        return false;
+      }
+      seen.add(name.toLowerCase());
+      return true;
+    });
+  }, [result]);
+
   const compression = useMemo(() => {
     const seen = new Set<string>();
     const picks = [];
@@ -203,44 +223,52 @@ function VideoIssuesLayout({ result }: { result: AnalysisResult }) {
   );
 
   return (
-    <>
+    <div className="demo-video-issues-body">
       <DemoVideoTabStrip active="below_minimum" />
       <div className="demo-video-issues-layout">
         <section className="demo-video-issues-full panel">
           <header className="demo-video-issues-full__head">
-            <h2>Below range minimum</h2>
-            <span>{result.below_minimum.length} employees</span>
+            <div>
+              <h2>Below range minimum</h2>
+              <p className="demo-video-issues-full__context">
+                {belowMinimumRows.length} employees below range minimum ·{" "}
+                {formatMoney(result.insights.cost_metrics.total_gap_to_minimum)} total gap
+              </p>
+            </div>
+            <span>{belowMinimumRows.length} employees</span>
           </header>
-          <table className="demo-video-issues-full__table">
-            <thead>
-              <tr>
-                <th>Employee</th>
-                <th>Department</th>
-                <th>Salary</th>
-                <th>Range min</th>
-                <th>Gap</th>
-              </tr>
-            </thead>
-            <tbody>
-              {result.below_minimum.map((row) => (
-                <tr key={row.employee_id}>
-                  <td>{row.employee_name}</td>
-                  <td>{row.department}</td>
-                  <td>{formatMoney(row.salary ?? 0)}</td>
-                  <td>{formatMoney(row.range_min ?? 0)}</td>
-                  <td className="gap-cell">{formatMoney(row.gap_to_minimum ?? 0)}</td>
+          <div className="demo-video-issues-full__table-wrap">
+            <table className="demo-video-issues-full__table">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Department</th>
+                  <th>Salary</th>
+                  <th>Range min</th>
+                  <th>Gap</th>
                 </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colSpan={4}>Total gap to minimum</td>
-                <td className="gap-cell">
-                  {formatMoney(result.insights.cost_metrics.total_gap_to_minimum)}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
+              </thead>
+              <tbody>
+                {belowMinimumRows.map((row) => (
+                  <tr key={row.employee_id}>
+                    <td>{row.employee_name}</td>
+                    <td>{row.department}</td>
+                    <td className="num-cell">{formatMoney(row.salary ?? 0)}</td>
+                    <td className="num-cell">{formatMoney(row.range_min ?? 0)}</td>
+                    <td className="gap-cell num-cell">{formatMoney(row.gap_to_minimum ?? 0)}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colSpan={4}>Total gap to minimum</td>
+                  <td className="gap-cell num-cell">
+                    {formatMoney(result.insights.cost_metrics.total_gap_to_minimum)}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
         </section>
 
         <div className="demo-video-issues-cards">
@@ -280,7 +308,7 @@ function VideoIssuesLayout({ result }: { result: AnalysisResult }) {
           </section>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

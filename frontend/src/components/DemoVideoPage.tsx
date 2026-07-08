@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { BrandLogo } from "./BrandLogo";
 import { DemoPdfPreview } from "./DemoPdfPreview";
-import { DemoVideoResultsScene } from "./DemoVideoResultsScene";
+import { MarketingPreview } from "./MarketingPreview";
 import { DemoVideoBrowserFrame } from "./DemoVideoBrowserFrame";
 import { DEMO_VIDEO_SCENES } from "../demoVideoConfig";
 import { getBundledDemoAnalysis } from "../data/bundledDemoAnalysis";
@@ -9,6 +9,11 @@ import { getBundledDemoAnalysis } from "../data/bundledDemoAnalysis";
 function IntroScene() {
   const { summary, insights, review_queue } = getBundledDemoAnalysis();
   const budget = insights.budget_impact;
+  const topIssues = [
+    { label: "Below range minimum", count: summary.below_minimum, tone: "danger" },
+    { label: "Manager inversions", count: summary.managers_below_reports, tone: "danger" },
+    { label: "Compression flags", count: summary.compression_issues, tone: "warning" },
+  ];
   return (
     <div className="demo-video-hero demo-video-hero--intro">
       <div className="demo-video-hero__copy">
@@ -20,34 +25,59 @@ function IntroScene() {
           minute.
         </p>
       </div>
-      <div className="demo-video-hero__visual" aria-hidden>
-        <DemoVideoBrowserFrame path="shiftworkshr.com/analyze">
-          <div className="demo-video-hero__preview">
-            <p className="demo-video-hero__preview-label">Cycle readiness</p>
-            <strong className="demo-video-hero__preview-value">
-              {insights.executive_summary.risk_level.charAt(0).toUpperCase()}
-              {insights.executive_summary.risk_level.slice(1)} risk
-            </strong>
-            <div className="demo-video-hero__preview-grid">
-              <div>
-                <span>Below minimum</span>
-                <strong>{summary.below_minimum}</strong>
-              </div>
-              <div>
-                <span>Mgr inversions</span>
-                <strong>{summary.managers_below_reports}</strong>
-              </div>
-              <div>
-                <span>Review queue</span>
-                <strong>{review_queue.total_items}</strong>
-              </div>
-              <div>
-                <span>Budget exposure</span>
-                <strong>{formatBudget(budget.total_budget_impact)}</strong>
-              </div>
+      <div className="demo-video-hero__visual demo-video-hero__visual--dashboard" aria-hidden>
+        <div className="demo-video-intro-dash">
+          <header className="demo-video-intro-dash__head">
+            <div>
+              <p className="demo-video-intro-dash__file">compensation-sample.csv</p>
+              <span className={`pill risk-${insights.executive_summary.risk_level}`}>
+                {insights.executive_summary.risk_level} risk
+              </span>
+            </div>
+            <div className="demo-video-intro-dash__exports">
+              <span>PDF summary</span>
+              <span className="is-primary">Excel report</span>
+            </div>
+          </header>
+          <div className="demo-video-intro-dash__kpis">
+            <div>
+              <span>Review queue</span>
+              <strong>{review_queue.total_items}</strong>
+            </div>
+            <div className="tone-danger">
+              <span>Below minimum</span>
+              <strong>{summary.below_minimum}</strong>
+            </div>
+            <div className="tone-warning">
+              <span>Compression</span>
+              <strong>{summary.compression_issues}</strong>
+            </div>
+            <div className="tone-danger">
+              <span>Mgr inversions</span>
+              <strong>{summary.managers_below_reports}</strong>
             </div>
           </div>
-        </DemoVideoBrowserFrame>
+          <div className="demo-video-intro-dash__body">
+            <section className="demo-video-intro-dash__panel">
+              <h3>Cycle readiness</h3>
+              <ul>
+                {topIssues.map((issue) => (
+                  <li key={issue.label} className={`tone-${issue.tone}`}>
+                    <span>{issue.label}</span>
+                    <strong>{issue.count}</strong>
+                  </li>
+                ))}
+              </ul>
+            </section>
+            <section className="demo-video-intro-dash__panel demo-video-intro-dash__panel--budget">
+              <h3>Budget exposure</h3>
+              <strong className="demo-video-intro-dash__exposure">
+                {formatBudget(budget.total_budget_impact)}
+              </strong>
+              <p>{insights.executive_summary.headline}</p>
+            </section>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -77,11 +107,14 @@ function UploadScene() {
           <span>Excel / CSV</span>
         </div>
       </div>
-      <div className="demo-video-hero__visual" aria-hidden>
+      <div className="demo-video-hero__visual demo-video-hero__visual--upload" aria-hidden>
         <DemoVideoBrowserFrame path="shiftworkshr.com/upload">
           <div className="demo-video-upload__inner">
-            <div className="demo-video-upload__icon" aria-hidden>
-              <span className="demo-video-upload__doc" />
+            <div className="demo-video-upload__dropzone">
+              <div className="demo-video-upload__icon" aria-hidden>
+                <span className="demo-video-upload__doc" />
+              </div>
+              <p className="demo-video-upload__hint">Drop your file here</p>
             </div>
             <p className="demo-video-upload__file">compensation-sample.csv</p>
             <p className="demo-video-upload__meta">
@@ -106,7 +139,7 @@ function CtaScene() {
       <div className="demo-video-hero__copy demo-video-hero__copy--center">
         <BrandLogo size="hero" layout="lockup" />
         <h2>Try free with your file</h2>
-        <p className="demo-video-sub">No credit card · 250 rows per day · shiftworkshr.com</p>
+        <p className="demo-video-sub">No credit card · 250 rows per day · visit shiftworkshr.com</p>
         <span className="demo-video-cta button button-primary">Upload your export</span>
       </div>
     </div>
@@ -119,12 +152,21 @@ const SCENES = [
   {
     id: "dashboard",
     layerClass: "demo-video-layer--app",
-    render: () => <DemoVideoResultsScene variant="overview" />,
+    render: () => (
+      <MarketingPreview focus="summary" videoMode className="demo-video-marketing-preview--video" />
+    ),
   },
   {
     id: "issues",
     layerClass: "demo-video-layer--app demo-video-layer--app-table",
-    render: () => <DemoVideoResultsScene variant="below_minimum" />,
+    render: () => (
+      <MarketingPreview
+        focus="table"
+        videoMode
+        showAlerts
+        className="demo-video-marketing-preview--video"
+      />
+    ),
   },
   {
     id: "pdf",

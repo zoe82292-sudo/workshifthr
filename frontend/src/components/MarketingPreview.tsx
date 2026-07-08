@@ -1,9 +1,14 @@
+import { useMemo } from "react";
 import { getBundledDemoAnalysis } from "../data/bundledDemoAnalysis";
 import type { EmployeeRecord } from "../types";
 
 type MarketingPreviewProps = {
   /** Crop the preview for video scenes */
   focus?: "full" | "summary" | "table";
+  /** Use real file name and meta for demo video captures */
+  videoMode?: boolean;
+  /** Show manager/compression alerts under the table (video issues scene) */
+  showAlerts?: boolean;
   className?: string;
 };
 
@@ -11,12 +16,41 @@ function formatMoney(value: number) {
   return `$${Math.round(value).toLocaleString()}`;
 }
 
-export function MarketingPreview({ focus = "full", className = "" }: MarketingPreviewProps) {
+export function MarketingPreview({
+  focus = "full",
+  videoMode = false,
+  showAlerts = false,
+  className = "",
+}: MarketingPreviewProps) {
   const result = getBundledDemoAnalysis();
   const { summary, insights, below_minimum } = result;
   const exec = insights.executive_summary;
   const cost = insights.cost_metrics;
   const budget = insights.budget_impact;
+
+  const managerIssues = useMemo(
+    () =>
+      result.managers_below_reports
+        .filter((issue) => {
+          const name = (issue.manager_name ?? "").trim();
+          return name && name !== "Duplicate Row";
+        })
+        .slice(0, 2),
+    [result],
+  );
+
+  const compressionAlerts = useMemo(() => {
+    const seen = new Set<string>();
+    const picks = [];
+    for (const issue of result.compression) {
+      const name = (issue.employee_name ?? issue.issue_type.replace(/_/g, " ")).trim();
+      if (!name || seen.has(name.toLowerCase())) continue;
+      seen.add(name.toLowerCase());
+      picks.push({ name, detail: compressionDetail(issue) });
+      if (picks.length >= 2) break;
+    }
+    return picks;
+  }, [result]);
 
   const stats = [
     { label: "Review queue", value: result.review_queue.total_items, tone: "" },
@@ -62,7 +96,17 @@ export function MarketingPreview({ focus = "full", className = "" }: MarketingPr
       <header className="marketing-preview__header">
         <div>
           <p className="marketing-preview__eyebrow">Analysis results</p>
-          <h1>Compensation QA dashboard</h1>
+          {videoMode ? (
+            <>
+              <h1 className="marketing-preview__filename">compensation-sample.csv</h1>
+              <p className="marketing-preview__meta">
+                <span>{summary.valid_rows} employees analyzed</span>
+                <span className={`pill risk-${exec.risk_level}`}>{exec.risk_level} risk</span>
+              </p>
+            </>
+          ) : (
+            <h1>Compensation QA dashboard</h1>
+          )}
         </div>
         <div className="marketing-preview__actions" aria-hidden="true">
           <span className="marketing-preview__btn">PDF summary</span>
@@ -110,7 +154,14 @@ export function MarketingPreview({ focus = "full", className = "" }: MarketingPr
       {showTable ? (
         <section className="marketing-preview__table-section">
           <div className="marketing-preview__table-header">
-            <h2>Below range minimum</h2>
+            <div>
+              <h2>Below range minimum</h2>
+              {videoMode ? (
+                <p className="marketing-preview__table-sub">
+                  {below_minimum.length} employees · {formatMoney(cost.total_gap_to_minimum)} total gap
+                </p>
+              ) : null}
+            </div>
             <span className="marketing-preview__table-count">{below_minimum.length} employees</span>
           </div>
           <div className="marketing-preview__table-wrap">
@@ -137,10 +188,67 @@ export function MarketingPreview({ focus = "full", className = "" }: MarketingPr
                   </tr>
                 ))}
               </tbody>
+              {videoMode ? (
+                <tfoot>
+                  <tr>
+                    <td colSpan={4}>Total gap to minimum</td>
+                    <td className="marketing-preview__gap">{formatMoney(cost.total_gap_to_minimum)}</td>
+                  </tr>
+                </tfoot>
+              ) : null}
             </table>
           </div>
+
+          {showAlerts ? (
+            <div className="marketing-preview__alerts">
+              <article className="marketing-preview__alert panel">
+                <header>
+                  <h3>Manager inversions</h3>
+                  <span>{summary.managers_below_reports}</span>
+                </header>
+                <ul>
+                  {managerIssues.map((issue) => (
+                    <li key={`${issue.manager_id}-${issue.report_id}`}>
+                      <strong>{issue.manager_name}</strong>
+                      <span>
+                        Mgr {formatMoney(issue.manager_salary ?? 0)} · Report{" "}
+                        {formatMoney(issue.report_salary ?? 0)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+              <article className="marketing-preview__alert panel">
+                <header>
+                  <h3>Compression flags</h3>
+                  <span>{summary.compression_issues}</span>
+                </header>
+                <ul>
+                  {compressionAlerts.map((alert) => (
+                    <li key={alert.name}>
+                      <strong>{alert.name}</strong>
+                      <span>{alert.detail}</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            </div>
+          ) : null}
         </section>
       ) : null}
     </div>
   );
+}
+
+function compressionDetail(issue: ReturnType<typeof getBundledDemoAnalysis>["compression"][number]) {
+  if (issue.issue_type === "overlap") {
+    return "Level 3 max overlaps level 4 median — range structure needs review.";
+  }
+  if (issue.issue_type === "employee_inversion") {
+    const salary = issue.higher_salary ?? issue.lower_salary;
+    return salary != null
+      ? `Earns ${formatMoney(salary)} — at or above a higher-level peer.`
+      : "Paid at or above a higher-level peer in the same department.";
+  }
+  return issue.description.length > 90 ? `${issue.description.slice(0, 87)}…` : issue.description;
 }

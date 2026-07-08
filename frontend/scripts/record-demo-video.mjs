@@ -171,8 +171,8 @@ function synthesizeWithElevenLabs(scene, ffmpeg) {
 
 function synthesizeWithEdgeTts(scene, ffmpeg, python) {
   const mp3 = path.join(narrationTempDir, `scene-${scene.id}.mp3`);
-  const voice = process.env.RECORD_EDGE_VOICE ?? "en-US-AndrewMultilingualNeural";
-  const rate = process.env.RECORD_EDGE_RATE ?? "+10%";
+  const voice = process.env.RECORD_EDGE_VOICE ?? "en-US-JennyNeural";
+  const rate = process.env.RECORD_EDGE_RATE ?? "+5%";
   const pitch = process.env.RECORD_EDGE_PITCH ?? "-1Hz";
   const pauseMs = process.env.RECORD_EDGE_PAUSE_MS ?? "140";
   const script = path.join(repoRoot, "scripts/synthesize_narration.py");
@@ -248,7 +248,7 @@ function buildNarrationTrack(ffmpeg) {
 
   if (useEdgeTts) {
     console.log(
-      `Narration: Edge neural (${process.env.RECORD_EDGE_VOICE ?? "en-US-AndrewMultilingualNeural"}, chunked)`,
+      `Narration: Edge neural (${process.env.RECORD_EDGE_VOICE ?? "en-US-JennyNeural"}, chunked)`,
     );
   } else {
     console.log(`Narration: macOS say (${resolveSayVoice()})`);

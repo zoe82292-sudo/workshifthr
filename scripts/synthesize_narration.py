@@ -40,15 +40,10 @@ def ensure_edge_tts():
 
 
 def normalize_speech(text: str) -> str:
-    """Rewrite text for natural TTS pronunciation."""
+    """Minimal rewrites — scripts are written for TTS-friendly phrasing."""
     normalized = text
-    normalized = re.sub(r"ShiftWorksHR", "Shift Works HR", normalized, flags=re.IGNORECASE)
-    normalized = re.sub(
-        r"shiftworkshr\.com",
-        "shift works HR dot com",
-        normalized,
-        flags=re.IGNORECASE,
-    )
+    normalized = re.sub(r"ShiftWorksHR", "ShiftWorks HR", normalized, flags=re.IGNORECASE)
+    normalized = re.sub(r"\bI\.T\.\b", "I T", normalized)
     return normalized
 
 
@@ -161,8 +156,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Generate natural neural voiceover clip")
     parser.add_argument("text", help="Narration script")
     parser.add_argument("output", help="Output audio path (.mp3)")
-    parser.add_argument("--voice", default="en-US-AndrewMultilingualNeural")
-    parser.add_argument("--rate", default="+10%")
+    parser.add_argument("--voice", default="en-US-JennyNeural")
+    parser.add_argument("--rate", default="+5%")
     parser.add_argument("--pitch", default="-1Hz")
     parser.add_argument("--chunk-pause-ms", type=int, default=140)
     parser.add_argument("--ffmpeg", default=None)
