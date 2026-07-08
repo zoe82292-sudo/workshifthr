@@ -77,8 +77,8 @@ function probeDurationSeconds(ffmpeg, filePath) {
   return Number(match[1]) * 3600 + Number(match[2]) * 60 + Number(match[3]);
 }
 
-function polishVoiceWav(ffmpeg, inputPath, outputPath, light = false) {
-  if (process.env.RECORD_VOICE_POLISH === "0") {
+function polishVoiceWav(ffmpeg, inputPath, outputPath, light = true) {
+  if (process.env.RECORD_VOICE_POLISH === "0" || light) {
     fs.copyFileSync(inputPath, outputPath);
     return;
   }
@@ -175,9 +175,9 @@ function synthesizeWithElevenLabs(scene, ffmpeg) {
 
 function synthesizeWithEdgeTts(scene, ffmpeg, python) {
   const mp3 = path.join(narrationTempDir, `scene-${scene.id}.mp3`);
-  const voice = process.env.RECORD_EDGE_VOICE ?? "en-US-GuyNeural";
-  const rate = process.env.RECORD_EDGE_RATE ?? "+8%";
-  const pitch = process.env.RECORD_EDGE_PITCH ?? "+0Hz";
+  const voice = process.env.RECORD_EDGE_VOICE ?? "en-US-BrianNeural";
+  const rate = process.env.RECORD_EDGE_RATE ?? "+5%";
+  const pitch = process.env.RECORD_EDGE_PITCH ?? "-2Hz";
   const pauseMs = process.env.RECORD_EDGE_PAUSE_MS ?? "80";
   const singlePass = process.env.RECORD_EDGE_SINGLE_PASS !== "0" ? " --single-pass" : " --no-single-pass";
   const script = path.join(repoRoot, "scripts/synthesize_narration.py");
@@ -253,7 +253,7 @@ function buildNarrationTrack(ffmpeg) {
 
   if (useEdgeTts) {
     console.log(
-      `Narration: Edge neural (${process.env.RECORD_EDGE_VOICE ?? "en-US-GuyNeural"}, ${process.env.RECORD_EDGE_RATE ?? "+8%"})`,
+      `Narration: Edge neural (${process.env.RECORD_EDGE_VOICE ?? "en-US-BrianNeural"}, ${process.env.RECORD_EDGE_RATE ?? "+5%"})`,
     );
   } else {
     console.log(`Narration: macOS say (${resolveSayVoice()}, natural)`);

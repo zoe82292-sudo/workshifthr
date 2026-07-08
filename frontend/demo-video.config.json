@@ -3,42 +3,42 @@
     {
       "id": "intro",
       "durationMs": 4500,
-      "narration": "Merit week's almost here. Who's below minimum? Any manager making less than their team? ShiftWorks HR catches that before letters go out."
+      "narration": "So merit week's coming up, and if you haven't checked who's below minimum or whether any manager earns less than their team, you're not alone. ShiftWorks HR is built for that last-minute comp review."
     },
     {
       "id": "upload",
       "durationMs": 4500,
-      "narration": "Just drop your payroll export in. Workday, ADP, whatever you've got — columns map themselves. No IT ticket."
+      "narration": "You pull your export from Workday or whatever payroll system you use, drop it in, and we map the columns automatically. No IT project needed."
     },
     {
       "id": "dashboard",
       "durationMs": 5000,
-      "narration": "About a minute later you've got cycle readiness — what's critical, what to fix, before you lock the cycle."
+      "narration": "About a minute later you're looking at cycle readiness in the real product, with critical flags up top and a clear picture of what still needs attention before you lock merit."
     },
     {
       "id": "issues",
       "durationMs": 5000,
-      "narration": "Below minimum? Every name, department, and dollar gap — right in the issue table your comp team already uses."
+      "narration": "From there you drill into below-minimum employees and see every name, department, and dollar gap in the same issue table your comp team uses every day."
     },
     {
       "id": "equity",
       "durationMs": 5000,
-      "narration": "Pay equity's in there too — gender and race median gaps by group, so you can answer DEI questions with data."
+      "narration": "When DEI questions come up, gender and race median pay gaps are already here by group, pulled straight from the columns in your file."
     },
     {
       "id": "location",
       "durationMs": 4500,
-      "narration": "Location pay works the same way. Median by office, gaps across cities — straight from your file."
+      "narration": "Location pay works the same way, with median pay by office and gaps across cities, so you're not building a separate geographic analysis."
     },
     {
       "id": "pdf",
       "durationMs": 4500,
-      "narration": "Need to brief your CHRO? One click gets you a leadership PDF — risk, exposure, and what they'll actually ask about."
+      "narration": "And when leadership wants a summary, you export a one-click PDF with risk level, budget exposure, and the findings they'll actually ask about."
     },
     {
       "id": "cta",
       "durationMs": 3500,
-      "narration": "Try it free at shiftworkshr.com with your own roster. No credit card."
+      "narration": "Try it free at shiftworkshr.com with your own roster. No credit card required."
     }
   ]
 }

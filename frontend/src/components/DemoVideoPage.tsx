@@ -7,13 +7,6 @@ import { DEMO_VIDEO_SCENES } from "../demoVideoConfig";
 import { getBundledDemoAnalysis } from "../data/bundledDemoAnalysis";
 
 function IntroScene() {
-  const { summary, insights, review_queue } = getBundledDemoAnalysis();
-  const budget = insights.budget_impact;
-  const topIssues = [
-    { label: "Below range minimum", count: summary.below_minimum, tone: "danger" },
-    { label: "Manager inversions", count: summary.managers_below_reports, tone: "danger" },
-    { label: "Compression flags", count: summary.compression_issues, tone: "warning" },
-  ];
   return (
     <div className="demo-video-hero demo-video-hero--intro">
       <div className="demo-video-hero__copy">
@@ -21,73 +14,21 @@ function IntroScene() {
         <p className="demo-video-kicker">Merit-cycle compensation QA</p>
         <h1>Catch below-minimum pay and manager inversions before merit week.</h1>
         <p className="demo-video-sub">
-          Upload your HRIS export — get a prioritized review queue and leadership PDF in under a
+          Upload your HRIS export and get a prioritized review queue plus a leadership PDF in under a
           minute.
         </p>
       </div>
-      <div className="demo-video-hero__visual demo-video-hero__visual--dashboard" aria-hidden>
-        <div className="demo-video-intro-dash">
-          <header className="demo-video-intro-dash__head">
-            <div>
-              <p className="demo-video-intro-dash__file">compensation-sample.csv</p>
-              <span className={`pill risk-${insights.executive_summary.risk_level}`}>
-                {insights.executive_summary.risk_level} risk
-              </span>
-            </div>
-            <div className="demo-video-intro-dash__exports">
-              <span>PDF summary</span>
-              <span className="is-primary">Excel report</span>
-            </div>
-          </header>
-          <div className="demo-video-intro-dash__kpis">
-            <div>
-              <span>Review queue</span>
-              <strong>{review_queue.total_items}</strong>
-            </div>
-            <div className="tone-danger">
-              <span>Below minimum</span>
-              <strong>{summary.below_minimum}</strong>
-            </div>
-            <div className="tone-warning">
-              <span>Compression</span>
-              <strong>{summary.compression_issues}</strong>
-            </div>
-            <div className="tone-danger">
-              <span>Mgr inversions</span>
-              <strong>{summary.managers_below_reports}</strong>
-            </div>
+      <div className="demo-video-hero__visual demo-video-hero__visual--product" aria-hidden>
+        <DemoVideoBrowserFrame path="shiftworkshr.com/results">
+          <div className="demo-video-intro-product">
+            <DemoVideoProductScene activeTab="review_queue" mode="overview" />
           </div>
-          <div className="demo-video-intro-dash__body">
-            <section className="demo-video-intro-dash__panel">
-              <h3>Cycle readiness</h3>
-              <ul>
-                {topIssues.map((issue) => (
-                  <li key={issue.label} className={`tone-${issue.tone}`}>
-                    <span>{issue.label}</span>
-                    <strong>{issue.count}</strong>
-                  </li>
-                ))}
-              </ul>
-            </section>
-            <section className="demo-video-intro-dash__panel demo-video-intro-dash__panel--budget">
-              <h3>Budget exposure</h3>
-              <strong className="demo-video-intro-dash__exposure">
-                {formatBudget(budget.total_budget_impact)}
-              </strong>
-              <p>{insights.executive_summary.headline}</p>
-            </section>
-          </div>
-        </div>
+        </DemoVideoBrowserFrame>
       </div>
     </div>
   );
 }
 
-function formatBudget(value: number) {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `$${Math.round(value / 1000)}k`;
-  return `$${Math.round(value)}`;
-}
 
 function UploadScene() {
   const { summary, detected_columns } = getBundledDemoAnalysis();
@@ -171,12 +112,8 @@ const SCENES = [
   },
   {
     id: "pdf",
-    layerClass: "demo-video-layer--pdf",
-    render: () => (
-      <DemoVideoBrowserFrame path="shiftworkshr.com/export/summary.pdf">
-        <DemoPdfPreview video />
-      </DemoVideoBrowserFrame>
-    ),
+    layerClass: "demo-video-layer--pdf demo-video-layer--pdf-full",
+    render: () => <DemoPdfPreview video />,
   },
   { id: "cta", layerClass: "demo-video-layer--hero demo-video-layer--hero-cta", render: () => <CtaScene /> },
 ] as const;
