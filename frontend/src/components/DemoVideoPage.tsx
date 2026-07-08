@@ -12,10 +12,9 @@ function IntroScene() {
       <div className="demo-video-hero__copy">
         <BrandLogo size="hero" layout="lockup" />
         <p className="demo-video-kicker">Merit-cycle compensation QA</p>
-        <h1>Catch below-minimum pay and manager inversions before merit week.</h1>
+        <h1>Catch below-minimum pay, manager inversions, and pay equity gaps before merit week.</h1>
         <p className="demo-video-sub">
-          Upload your HRIS export and get a prioritized review queue plus a leadership PDF in under a
-          minute.
+          One upload — prioritized flags, dollar gaps, and a leadership-ready PDF in under a minute.
         </p>
       </div>
       <div className="demo-video-hero__visual demo-video-hero__visual--product" aria-hidden>
@@ -99,6 +98,11 @@ const SCENES = [
     id: "issues",
     layerClass: "demo-video-layer--app demo-video-layer--app-table",
     render: () => <DemoVideoProductScene activeTab="below_minimum" mode="tab" />,
+  },
+  {
+    id: "managers",
+    layerClass: "demo-video-layer--app demo-video-layer--app-table",
+    render: () => <DemoVideoProductScene activeTab="managers_below_reports" mode="tab" />,
   },
   {
     id: "equity",

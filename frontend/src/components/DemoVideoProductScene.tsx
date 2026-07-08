@@ -14,7 +14,7 @@ export function DemoVideoProductScene({ activeTab, mode }: DemoVideoProductScene
   const result = getBundledDemoAnalysis();
 
   return (
-    <div className="demo-video-real-product" data-mode={mode}>
+    <div className="demo-video-real-product" data-mode={mode} data-tab={activeTab}>
       <ResultsDashboard
         result={result}
         activeTab={tab}

@@ -3,37 +3,42 @@
     {
       "id": "intro",
       "durationMs": 4500,
-      "narration": "Merit week's coming, and if you haven't checked who's below minimum yet, ShiftWorks HR catches it in about a minute."
+      "narration": "Merit week's coming, and you need to know who's below minimum, which managers earn less than their team, and what it'll cost to fix. ShiftWorks HR gives you that in about a minute."
     },
     {
       "id": "upload",
       "durationMs": 4500,
-      "narration": "You pull your export from Workday or whatever payroll system you use, drop it in, and we map the columns automatically. No IT project needed."
+      "narration": "Just drop your payroll export in — Workday, ADP, or any CSV. ShiftWorks maps your columns automatically. No IT project needed."
     },
     {
       "id": "dashboard",
       "durationMs": 5000,
-      "narration": "About a minute later you're looking at cycle readiness in the real product, with critical flags up top and a clear picture of what still needs attention before you lock merit."
+      "narration": "You get a full cycle-readiness view — critical flags, budget exposure, and every issue that could hold up merit, from below-minimum pay to compression and manager inversions."
     },
     {
       "id": "issues",
       "durationMs": 5000,
-      "narration": "From there you drill into below-minimum employees and see every name, department, and dollar gap in the same issue table your comp team uses every day."
+      "narration": "Drill into below-minimum employees with names, departments, and exact dollar gaps — so you know what needs fixing before letters go out."
+    },
+    {
+      "id": "managers",
+      "durationMs": 5000,
+      "narration": "ShiftWorks flags manager inversions too — when someone earns less than the people they manage, you see both names and salaries side by side."
     },
     {
       "id": "equity",
       "durationMs": 5000,
-      "narration": "When DEI questions come up, gender and race median pay gaps are already here by group, pulled straight from the columns in your file."
+      "narration": "Gender and race median pay gaps are built in by group, using the demographic columns already in your export."
     },
     {
       "id": "location",
       "durationMs": 4500,
-      "narration": "Location pay works the same way, with median pay by office and gaps across cities, so you're not building a separate geographic analysis."
+      "narration": "Location pay is covered too — median salary by office and how your workforce spreads across cities, all from the same upload."
     },
     {
       "id": "pdf",
       "durationMs": 4500,
-      "narration": "And when leadership wants a summary, you export a one-click PDF with risk level, budget exposure, and the findings they'll actually ask about."
+      "narration": "When leadership wants a summary, one export gives you a PDF with risk level, total exposure, and the findings they'll press you on."
     },
     {
       "id": "cta",
