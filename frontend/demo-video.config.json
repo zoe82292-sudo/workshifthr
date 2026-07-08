@@ -3,12 +3,12 @@
     {
       "id": "intro",
       "durationMs": 5500,
-      "narration": "Merit letters go out soon. You still haven't checked who's below minimum — or whether a manager earns less than their team. That's the fire drill ShiftWorksHR is built to stop."
+      "narration": "Merit letters go out soon. You still haven't checked who's below minimum — or whether a manager earns less than their team. Shift Works HR ends that weekly fire drill."
     },
     {
       "id": "upload",
       "durationMs": 6000,
-      "narration": "Just export from Workday, UKG, or ADP and drop the file in. We map your columns automatically. No template. No IT project."
+      "narration": "Just export from Workday, UKG, or ADP and drop the file in. We map your columns automatically. No reformatting. No IT project."
     },
     {
       "id": "dashboard",

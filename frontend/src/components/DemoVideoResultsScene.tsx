@@ -35,10 +35,11 @@ function shortCompressionDetail(issue: AnalysisResult["compression"][number]) {
 function DemoVideoAppChrome({ result, fileName }: { result: AnalysisResult; fileName: string }) {
   return (
     <header className="demo-video-app-chrome">
-      <div>
+      <div className="demo-video-app-chrome__title">
+        <p className="demo-video-app-chrome__eyebrow">Analysis results</p>
         <p className="demo-video-app-chrome__file">{fileName}</p>
         <p className="demo-video-app-chrome__meta">
-          <span>Analysis complete · {result.summary.valid_rows} employees</span>
+          <span>{result.summary.valid_rows} employees analyzed</span>
           <span className={`pill risk-${result.insights.executive_summary.risk_level}`}>
             {result.insights.executive_summary.risk_level} risk
           </span>
@@ -80,17 +81,24 @@ function VideoDashboardLayout({ result }: { result: AnalysisResult }) {
   const budget = insights.budget_impact;
   const merit = insights.merit_calculator;
 
-  const statCards = [
+  const kpiCards = [
     { label: "Review queue", value: queue.total_items, meta: `${queue.critical_count} critical`, tone: "" },
     { label: "Below minimum", value: result.summary.below_minimum, tone: "stat-card--danger" },
     { label: "Compression", value: result.summary.compression_issues, tone: "stat-card--warning" },
     { label: "Mgr inversions", value: result.summary.managers_below_reports, tone: "stat-card--danger" },
-    { label: "Merit matrix", value: result.summary.merit_matrix_flags ?? 0, tone: "stat-card--warning" },
-    { label: "Pay equity gaps", value: result.summary.pay_equity_gaps, tone: "stat-card--info" },
   ];
 
   return (
     <div className="demo-video-dash">
+      <div className="demo-video-dash__kpis">
+        {kpiCards.map((card) => (
+          <article key={card.label} className={`demo-video-dash__kpi ${card.tone}`.trim()}>
+            <span>{card.label}</span>
+            <strong>{card.value}</strong>
+            {card.meta ? <small>{card.meta}</small> : null}
+          </article>
+        ))}
+      </div>
       <div className="demo-video-dash__grid">
         <section className="demo-video-dash__panel panel">
           <header className="demo-video-dash__panel-head">
@@ -165,16 +173,6 @@ function VideoDashboardLayout({ result }: { result: AnalysisResult }) {
           </div>
         </section>
       </div>
-
-      <div className="demo-video-dash__stats">
-        {statCards.map((card) => (
-          <article key={card.label} className={`demo-video-dash__stat ${card.tone}`.trim()}>
-            <span>{card.label}</span>
-            <strong>{card.value}</strong>
-            {card.meta ? <small>{card.meta}</small> : null}
-          </article>
-        ))}
-      </div>
     </div>
   );
 }
@@ -184,21 +182,30 @@ function VideoIssuesLayout({ result }: { result: AnalysisResult }) {
     const seen = new Set<string>();
     const picks = [];
     for (const issue of result.compression) {
-      const key = issue.issue_type;
-      if (seen.has(key) && issue.issue_type !== "employee_inversion") continue;
-      seen.add(key);
+      const name = (issue.employee_name ?? "").trim();
+      if (!name || seen.has(name.toLowerCase())) continue;
+      seen.add(name.toLowerCase());
       picks.push(issue);
       if (picks.length >= 3) break;
     }
     return picks;
   }, [result]);
 
-  const managerIssues = result.managers_below_reports.slice(0, 2);
+  const managerIssues = useMemo(
+    () =>
+      result.managers_below_reports
+        .filter((issue) => {
+          const name = (issue.manager_name ?? "").trim();
+          return name && name !== "Duplicate Row";
+        })
+        .slice(0, 2),
+    [result],
+  );
 
   return (
     <>
       <DemoVideoTabStrip active="below_minimum" />
-      <div className="demo-video-issues-split">
+      <div className="demo-video-issues-layout">
         <section className="demo-video-issues-full panel">
           <header className="demo-video-issues-full__head">
             <h2>Below range minimum</h2>
@@ -225,10 +232,18 @@ function VideoIssuesLayout({ result }: { result: AnalysisResult }) {
                 </tr>
               ))}
             </tbody>
+            <tfoot>
+              <tr>
+                <td colSpan={4}>Total gap to minimum</td>
+                <td className="gap-cell">
+                  {formatMoney(result.insights.cost_metrics.total_gap_to_minimum)}
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </section>
 
-        <div className="demo-video-issues-side">
+        <div className="demo-video-issues-cards">
           {managerIssues.length > 0 ? (
             <section className="demo-video-side-panel panel">
               <header className="demo-video-side-panel__head">
@@ -240,7 +255,8 @@ function VideoIssuesLayout({ result }: { result: AnalysisResult }) {
                   <li key={`${issue.manager_id}-${issue.report_id}`}>
                     <strong>{issue.manager_name}</strong>
                     <span>
-                      Mgr {formatMoney(issue.manager_salary ?? 0)} · Report {formatMoney(issue.report_salary ?? 0)}
+                      Mgr {formatMoney(issue.manager_salary ?? 0)} · Report{" "}
+                      {formatMoney(issue.report_salary ?? 0)}
                     </span>
                   </li>
                 ))}
@@ -255,7 +271,7 @@ function VideoIssuesLayout({ result }: { result: AnalysisResult }) {
             </header>
             <ul className="demo-video-side-panel__list">
               {compression.map((issue, index) => (
-                <li key={`${issue.issue_type}-${index}`}>
+                <li key={`${issue.employee_name ?? issue.issue_type}-${index}`}>
                   <strong>{issue.employee_name ?? issue.issue_type.replace(/_/g, " ")}</strong>
                   <span>{shortCompressionDetail(issue)}</span>
                 </li>

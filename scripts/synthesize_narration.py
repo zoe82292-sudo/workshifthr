@@ -39,9 +39,22 @@ def ensure_edge_tts():
         )
 
 
+def normalize_speech(text: str) -> str:
+    """Rewrite text for natural TTS pronunciation."""
+    normalized = text
+    normalized = re.sub(r"ShiftWorksHR", "Shift Works HR", normalized, flags=re.IGNORECASE)
+    normalized = re.sub(
+        r"shiftworkshr\.com",
+        "shift works HR dot com",
+        normalized,
+        flags=re.IGNORECASE,
+    )
+    return normalized
+
+
 def split_chunks(text: str) -> list[str]:
     """Split into short phrases for more natural cadence."""
-    normalized = re.sub(r"\s+", " ", text.strip())
+    normalized = re.sub(r"\s+", " ", normalize_speech(text).strip())
     if not normalized:
         return []
 
@@ -149,9 +162,9 @@ def main() -> None:
     parser.add_argument("text", help="Narration script")
     parser.add_argument("output", help="Output audio path (.mp3)")
     parser.add_argument("--voice", default="en-US-AndrewMultilingualNeural")
-    parser.add_argument("--rate", default="+5%")
+    parser.add_argument("--rate", default="+10%")
     parser.add_argument("--pitch", default="-1Hz")
-    parser.add_argument("--chunk-pause-ms", type=int, default=200)
+    parser.add_argument("--chunk-pause-ms", type=int, default=140)
     parser.add_argument("--ffmpeg", default=None)
     args = parser.parse_args()
 
