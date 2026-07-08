@@ -2409,7 +2409,7 @@ a:focus-visible {
 }
 
 .demo-video-layer--hero .demo-video-browser {
-  width: min(520px, 100%);
+  width: min(560px, 100%);
   box-shadow: 0 32px 88px rgba(31, 41, 51, 0.16);
 }
 
@@ -2666,7 +2666,7 @@ a:focus-visible {
 
 .demo-video-issues-layout {
   display: grid;
-  grid-template-rows: 1fr auto;
+  grid-template-rows: auto 1fr;
   gap: 14px;
   min-height: 0;
   height: 100%;
@@ -2677,6 +2677,11 @@ a:focus-visible {
   grid-template-columns: 1fr 1fr;
   gap: 14px;
   align-items: stretch;
+  min-height: 0;
+}
+
+.demo-video-issues-cards .demo-video-side-panel {
+  min-height: 180px;
 }
 
 .demo-video-issues-split {
@@ -3227,11 +3232,6 @@ a:focus-visible {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.95rem;
-  flex: 1;
-}
-
-.demo-video-issues-full__table tbody tr {
-  height: 1px;
 }
 
 .demo-video-issues-full__table th,
