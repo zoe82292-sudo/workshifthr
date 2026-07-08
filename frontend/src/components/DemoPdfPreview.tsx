@@ -9,7 +9,7 @@ function formatPercent(value: number) {
   return `${value.toFixed(1)}%`;
 }
 
-export function DemoPdfPreview() {
+export function DemoPdfPreview({ video = false }: { video?: boolean }) {
   const result = getBundledDemoAnalysis();
   const { insights, summary } = result;
   const exec = insights.executive_summary;
@@ -43,7 +43,7 @@ export function DemoPdfPreview() {
   ].filter((row) => row[1] !== "0");
 
   return (
-    <div className="demo-pdf-preview">
+    <div className={`demo-pdf-preview${video ? " demo-pdf-preview--video" : ""}`}>
       <article className="demo-pdf-preview__page">
         <header className="demo-pdf-preview__header">
           <p className="demo-pdf-preview__brand">ShiftWorksHR</p>
@@ -79,22 +79,6 @@ export function DemoPdfPreview() {
             <table className="demo-pdf-preview__table">
               <thead>
                 <tr>
-                  <th colSpan={2}>Budget metric</th>
-                </tr>
-              </thead>
-              <tbody>
-                {budgetRows.map(([label, value]) => (
-                  <tr key={label}>
-                    <td>{label}</td>
-                    <td>{value}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            <table className="demo-pdf-preview__table">
-              <thead>
-                <tr>
                   <th colSpan={2}>Priority issues</th>
                 </tr>
               </thead>
@@ -107,11 +91,29 @@ export function DemoPdfPreview() {
                 ))}
               </tbody>
             </table>
+
+            {!video ? (
+              <table className="demo-pdf-preview__table">
+                <thead>
+                  <tr>
+                    <th colSpan={2}>Budget metric</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {budgetRows.map(([label, value]) => (
+                    <tr key={label}>
+                      <td>{label}</td>
+                      <td>{value}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : null}
           </div>
 
           <h3 className="demo-pdf-preview__section-title">Key findings</h3>
           <ul className="demo-pdf-preview__bullets">
-            {exec.bullets.slice(0, 4).map((bullet) => (
+            {exec.bullets.slice(0, video ? 3 : 4).map((bullet) => (
               <li key={bullet}>{bullet}</li>
             ))}
           </ul>

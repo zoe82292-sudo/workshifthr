@@ -6,6 +6,8 @@ import { DEMO_VIDEO_SCENES } from "../demoVideoConfig";
 import { getBundledDemoAnalysis } from "../data/bundledDemoAnalysis";
 
 function IntroScene() {
+  const { summary, insights, review_queue } = getBundledDemoAnalysis();
+  const budget = insights.budget_impact;
   return (
     <div className="demo-video-hero demo-video-hero--intro">
       <div className="demo-video-hero__copy">
@@ -20,16 +22,26 @@ function IntroScene() {
       <div className="demo-video-hero__visual" aria-hidden>
         <div className="demo-video-hero__preview panel">
           <p className="demo-video-hero__preview-label">Cycle readiness</p>
-          <strong className="demo-video-hero__preview-value">High risk</strong>
+          <strong className="demo-video-hero__preview-value">
+            {insights.executive_summary.risk_level.charAt(0).toUpperCase()}
+            {insights.executive_summary.risk_level.slice(1)} risk
+          </strong>
           <ul>
-            <li>3 below range minimum</li>
-            <li>2 manager inversions</li>
-            <li>$87k budget exposure</li>
+            <li>{summary.below_minimum} below range minimum</li>
+            <li>{summary.managers_below_reports} manager inversions</li>
+            <li>{formatBudget(budget.total_budget_impact)} budget exposure</li>
+            <li>{review_queue.total_items} items in review queue</li>
           </ul>
         </div>
       </div>
     </div>
   );
+}
+
+function formatBudget(value: number) {
+  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `$${Math.round(value / 1000)}k`;
+  return `$${Math.round(value)}`;
 }
 
 function UploadScene() {
@@ -95,8 +107,8 @@ const SCENES = [
     layerClass: "demo-video-layer--app demo-video-layer--app-table",
     render: () => <DemoVideoResultsScene variant="below_minimum" />,
   },
-  { id: "pdf", layerClass: "demo-video-layer--pdf", render: () => <DemoPdfPreview /> },
-  { id: "cta", layerClass: "demo-video-layer--hero", render: () => <CtaScene /> },
+  { id: "pdf", layerClass: "demo-video-layer--pdf", render: () => <DemoPdfPreview video /> },
+  { id: "cta", layerClass: "demo-video-layer--hero demo-video-layer--hero-cta", render: () => <CtaScene /> },
 ] as const;
 
 function parseSceneDurations(): number[] {

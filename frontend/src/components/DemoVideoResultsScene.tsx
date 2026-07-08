@@ -1,17 +1,35 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { AnalysisResult, AnalysisTab } from "../types";
 import { getBundledDemoAnalysis } from "../data/bundledDemoAnalysis";
-import { tabIsVisible } from "../tabConfig";
-import { CycleReadinessPanel } from "./CycleReadinessPanel";
-import { InsightsPanel } from "./InsightsPanel";
-import { ReviewQueuePanel } from "./ReviewQueuePanel";
+import { buildTopIssues } from "../tabConfig";
 
 type DemoVideoResultsSceneProps = {
-  variant: "overview" | "review_queue" | "below_minimum";
+  variant: "overview" | "below_minimum";
+};
+
+const BAND_COLORS: Record<string, string> = {
+  below_range: "var(--danger)",
+  bottom_quartile: "var(--warning)",
+  mid_range: "var(--accent-vivid)",
+  top_quartile: "var(--info)",
+  above_range: "var(--danger)",
 };
 
 function formatMoney(value: number) {
   return `$${Math.round(value).toLocaleString()}`;
+}
+
+function shortCompressionDetail(issue: AnalysisResult["compression"][number]) {
+  if (issue.issue_type === "overlap") {
+    return "Level 3 max overlaps level 4 median — range structure needs review.";
+  }
+  if (issue.issue_type === "employee_inversion") {
+    const salary = issue.higher_salary ?? issue.lower_salary;
+    return salary != null
+      ? `Earns ${formatMoney(salary)} — at or above a higher-level peer.`
+      : "Paid at or above a higher-level peer in the same department.";
+  }
+  return issue.description.length > 90 ? `${issue.description.slice(0, 87)}…` : issue.description;
 }
 
 function DemoVideoAppChrome({ result, fileName }: { result: AnalysisResult; fileName: string }) {
@@ -20,7 +38,7 @@ function DemoVideoAppChrome({ result, fileName }: { result: AnalysisResult; file
       <div>
         <p className="demo-video-app-chrome__file">{fileName}</p>
         <p className="demo-video-app-chrome__meta">
-          Analysis complete · {result.summary.valid_rows} employees ·{" "}
+          <span>Analysis complete · {result.summary.valid_rows} employees</span>
           <span className={`pill risk-${result.insights.executive_summary.risk_level}`}>
             {result.insights.executive_summary.risk_level} risk
           </span>
@@ -54,176 +72,210 @@ function DemoVideoTabStrip({ active }: { active: AnalysisTab }) {
   );
 }
 
-function BelowMinimumScene({ result }: { result: AnalysisResult }) {
-  const compression = result.compression.slice(0, 4);
+function VideoDashboardLayout({ result }: { result: AnalysisResult }) {
+  const topIssues = useMemo(() => buildTopIssues(result, 5), [result]);
+  const queue = result.review_queue;
+  const distribution = result.penetration_distribution;
+  const { insights } = result;
+  const budget = insights.budget_impact;
+  const merit = insights.merit_calculator;
+
+  const statCards = [
+    { label: "Review queue", value: queue.total_items, meta: `${queue.critical_count} critical`, tone: "" },
+    { label: "Below minimum", value: result.summary.below_minimum, tone: "stat-card--danger" },
+    { label: "Compression", value: result.summary.compression_issues, tone: "stat-card--warning" },
+    { label: "Mgr inversions", value: result.summary.managers_below_reports, tone: "stat-card--danger" },
+    { label: "Merit matrix", value: result.summary.merit_matrix_flags ?? 0, tone: "stat-card--warning" },
+    { label: "Pay equity gaps", value: result.summary.pay_equity_gaps, tone: "stat-card--info" },
+  ];
+
+  return (
+    <div className="demo-video-dash">
+      <div className="demo-video-dash__grid">
+        <section className="demo-video-dash__panel panel">
+          <header className="demo-video-dash__panel-head">
+            <div>
+              <h2>Cycle readiness</h2>
+              <p>
+                {queue.critical_count} critical · {queue.high_count} high-priority · {queue.total_items}{" "}
+                in review queue
+              </p>
+            </div>
+            <span className="demo-video-dash__queue-pill">Open queue</span>
+          </header>
+          <ul className="demo-video-dash__issues">
+            {topIssues.map((issue) => (
+              <li key={issue.tabId} className={`demo-video-dash__issue demo-video-dash__issue--${issue.severity}`}>
+                <span className={`tab-severity tab-severity--${issue.severity}`} aria-hidden />
+                <span>{issue.label}</span>
+                <strong>{issue.count}</strong>
+              </li>
+            ))}
+          </ul>
+          <div className="demo-video-dash__callout">
+            <p>{insights.executive_summary.headline}</p>
+            <strong>{formatMoney(budget.total_budget_impact)} total exposure</strong>
+          </div>
+        </section>
+
+        <section className="demo-video-dash__panel panel">
+          {distribution.available ? (
+            <div className="demo-video-dash__penetration">
+              <h3>Range penetration</h3>
+              {distribution.bands.map((band) => (
+                <div className="demo-video-dash__bar-row" key={band.band}>
+                  <span className="demo-video-dash__bar-label">{band.label}</span>
+                  <div className="demo-video-dash__bar-track">
+                    <div
+                      className="demo-video-dash__bar-fill"
+                      style={{
+                        width: `${Math.max(band.percent, band.count > 0 ? 6 : 0)}%`,
+                        background: BAND_COLORS[band.band] ?? "var(--accent)",
+                      }}
+                    />
+                  </div>
+                  <span className="demo-video-dash__bar-meta">
+                    {band.count} ({band.percent}%)
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          <div className="demo-video-dash__budget">
+            <h3>Merit pool vs target</h3>
+            <div className="demo-video-dash__budget-grid">
+              <div>
+                <span>Average merit</span>
+                <strong>{merit.average_merit_percent}%</strong>
+              </div>
+              <div>
+                <span>Uploaded pool</span>
+                <strong>{formatMoney(budget.projected_merit_pool)}</strong>
+              </div>
+              <div>
+                <span>Cost to minimum</span>
+                <strong>{formatMoney(insights.cost_metrics.total_gap_to_minimum)}</strong>
+              </div>
+              <div>
+                <span>Total exposure</span>
+                <strong>{formatMoney(budget.total_budget_impact)}</strong>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div className="demo-video-dash__stats">
+        {statCards.map((card) => (
+          <article key={card.label} className={`demo-video-dash__stat ${card.tone}`.trim()}>
+            <span>{card.label}</span>
+            <strong>{card.value}</strong>
+            {card.meta ? <small>{card.meta}</small> : null}
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function VideoIssuesLayout({ result }: { result: AnalysisResult }) {
+  const compression = useMemo(() => {
+    const seen = new Set<string>();
+    const picks = [];
+    for (const issue of result.compression) {
+      const key = issue.issue_type;
+      if (seen.has(key) && issue.issue_type !== "employee_inversion") continue;
+      seen.add(key);
+      picks.push(issue);
+      if (picks.length >= 3) break;
+    }
+    return picks;
+  }, [result]);
+
+  const managerIssues = result.managers_below_reports.slice(0, 2);
 
   return (
     <>
       <DemoVideoTabStrip active="below_minimum" />
-      <div className="demo-video-issues-grid">
-        <section className="demo-video-issues-panel">
-          <div className="demo-video-issues-panel__head">
+      <div className="demo-video-issues-split">
+        <section className="demo-video-issues-full panel">
+          <header className="demo-video-issues-full__head">
             <h2>Below range minimum</h2>
-            <span className="demo-video-issues-panel__count">{result.below_minimum.length} employees</span>
-          </div>
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Employee</th>
-                  <th>Department</th>
-                  <th>Salary</th>
-                  <th>Range min</th>
-                  <th>Gap</th>
+            <span>{result.below_minimum.length} employees</span>
+          </header>
+          <table className="demo-video-issues-full__table">
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Department</th>
+                <th>Salary</th>
+                <th>Range min</th>
+                <th>Gap</th>
+              </tr>
+            </thead>
+            <tbody>
+              {result.below_minimum.map((row) => (
+                <tr key={row.employee_id}>
+                  <td>{row.employee_name}</td>
+                  <td>{row.department}</td>
+                  <td>{formatMoney(row.salary ?? 0)}</td>
+                  <td>{formatMoney(row.range_min ?? 0)}</td>
+                  <td className="gap-cell">{formatMoney(row.gap_to_minimum ?? 0)}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {result.below_minimum.map((row) => (
-                  <tr key={row.employee_id}>
-                    <td>{row.employee_name}</td>
-                    <td>{row.department}</td>
-                    <td>{formatMoney(row.salary ?? 0)}</td>
-                    <td>{formatMoney(row.range_min ?? 0)}</td>
-                    <td className="gap-cell">{formatMoney(row.gap_to_minimum ?? 0)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </section>
 
-        <section className="demo-video-issues-panel demo-video-issues-panel--secondary">
-          <div className="demo-video-issues-panel__head">
-            <h2>Compression flags</h2>
-            <span className="demo-video-issues-panel__count">{result.summary.compression_issues} issues</span>
-          </div>
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Employee</th>
-                  <th>Issue</th>
-                  <th>Detail</th>
-                </tr>
-              </thead>
-              <tbody>
-                {compression.map((issue, index) => (
-                  <tr key={`${issue.employee_id}-${index}`}>
-                    <td>{issue.employee_name}</td>
-                    <td>{issue.issue_type}</td>
-                    <td>{issue.description}</td>
-                  </tr>
+        <div className="demo-video-issues-side">
+          {managerIssues.length > 0 ? (
+            <section className="demo-video-side-panel panel">
+              <header className="demo-video-side-panel__head">
+                <h3>Manager inversions</h3>
+                <span>{result.summary.managers_below_reports}</span>
+              </header>
+              <ul className="demo-video-side-panel__list">
+                {managerIssues.map((issue) => (
+                  <li key={`${issue.manager_id}-${issue.report_id}`}>
+                    <strong>{issue.manager_name}</strong>
+                    <span>
+                      Mgr {formatMoney(issue.manager_salary ?? 0)} · Report {formatMoney(issue.report_salary ?? 0)}
+                    </span>
+                  </li>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+              </ul>
+            </section>
+          ) : null}
+
+          <section className="demo-video-side-panel panel">
+            <header className="demo-video-side-panel__head">
+              <h3>Compression flags</h3>
+              <span>{result.summary.compression_issues}</span>
+            </header>
+            <ul className="demo-video-side-panel__list">
+              {compression.map((issue, index) => (
+                <li key={`${issue.issue_type}-${index}`}>
+                  <strong>{issue.employee_name ?? issue.issue_type.replace(/_/g, " ")}</strong>
+                  <span>{shortCompressionDetail(issue)}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
       </div>
     </>
   );
 }
 
-function OverviewStatCards({ result, onNavigate }: { result: AnalysisResult; onNavigate: () => void }) {
-  const cards = useMemo(
-    () =>
-      [
-        {
-          tab: "review_queue" as AnalysisTab,
-          label: "Review queue",
-          count: result.review_queue.total_items,
-          meta: `${result.review_queue.critical_count} critical`,
-          tone: "",
-        },
-        {
-          tab: "below_minimum" as AnalysisTab,
-          label: "Below minimum",
-          count: result.summary.below_minimum,
-          tone: "stat-card--danger",
-        },
-        {
-          tab: "compression" as AnalysisTab,
-          label: "Compression",
-          count: result.summary.compression_issues,
-          tone: "stat-card--warning",
-        },
-        {
-          tab: "managers_below_reports" as AnalysisTab,
-          label: "Mgr inversions",
-          count: result.summary.managers_below_reports,
-          tone: "stat-card--danger",
-        },
-        {
-          tab: "merit_matrix" as AnalysisTab,
-          label: "Merit matrix",
-          count: result.summary.merit_matrix_flags ?? 0,
-          tone: "stat-card--warning",
-        },
-        {
-          tab: "pay_equity" as AnalysisTab,
-          label: "Pay equity gaps",
-          count: result.summary.pay_equity_gaps,
-          tone: "stat-card--info",
-        },
-      ].filter(
-        (card) => card.tab === "review_queue" || card.count > 0 || tabIsVisible(card.tab, result),
-      ),
-    [result],
-  );
-
-  return (
-    <div className="summary-grid card-grid card-grid--6 demo-video-stat-row" aria-label="Priority counts">
-      {cards.map((card) => (
-        <button
-          key={card.tab}
-          type="button"
-          className={`summary-card stat-card stat-card--clickable ${card.tone ?? ""}`.trim()}
-          onClick={onNavigate}
-        >
-          <span className="stat-card__label">{card.label}</span>
-          <strong className="stat-card__value">{card.count}</strong>
-          {card.meta ? <span className="stat-card__meta">{card.meta}</span> : null}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 export function DemoVideoResultsScene({ variant }: DemoVideoResultsSceneProps) {
   const result = getBundledDemoAnalysis();
-  const [targetMeritPercent, setTargetMeritPercent] = useState<number | null>(
-    () => result.insights.merit_calculator.average_merit_percent ?? 3.5,
-  );
-  const noop = () => {};
 
   return (
     <div className={`demo-video-results demo-video-results--${variant}`}>
       <DemoVideoAppChrome result={result} fileName="compensation-sample.csv" />
-
-      {variant === "overview" ? (
-        <>
-          <CycleReadinessPanel
-            result={result}
-            onNavigateTab={noop}
-            onTargetMeritChange={setTargetMeritPercent}
-            targetMeritPercent={targetMeritPercent}
-          />
-          <InsightsPanel
-            result={result}
-            onTargetMeritChange={setTargetMeritPercent}
-            compact
-          />
-          <OverviewStatCards result={result} onNavigate={noop} />
-        </>
-      ) : null}
-
-      {variant === "review_queue" ? (
-        <>
-          <DemoVideoTabStrip active="review_queue" />
-          <ReviewQueuePanel result={result} onNavigateTab={noop} />
-        </>
-      ) : null}
-
-      {variant === "below_minimum" ? <BelowMinimumScene result={result} /> : null}
+      {variant === "overview" ? <VideoDashboardLayout result={result} /> : null}
+      {variant === "below_minimum" ? <VideoIssuesLayout result={result} /> : null}
     </div>
   );
 }
