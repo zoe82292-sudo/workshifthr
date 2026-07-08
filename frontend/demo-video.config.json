@@ -3,7 +3,7 @@
     {
       "id": "intro",
       "durationMs": 4500,
-      "narration": "Before merit cycle, comp teams need a full read on flagged pay issues — below minimum, compression, pay equity, location gaps, and range position. ShiftWorks HR turns one roster upload into a complete compensation review in about a minute."
+      "narration": "Before merit cycle, comp teams need a full read on flagged pay issues — below minimum, compression, pay equity, location pay, and range position. ShiftWorks HR turns one roster upload into a complete compensation review in about a minute."
     },
     {
       "id": "upload",
@@ -33,7 +33,7 @@
     {
       "id": "location",
       "durationMs": 4500,
-      "narration": "Location pay is covered too — median salary by office and how your workforce spreads across cities, all from the same upload."
+      "narration": "When your file includes a Location or City column, ShiftWorks compares median pay across geographies and shows how headcount splits by site — from the same upload, no extra analysis."
     },
     {
       "id": "pdf",
