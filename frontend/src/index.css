@@ -4306,9 +4306,184 @@ a:focus-visible {
   min-height: 0;
 }
 
+.demo-video-marketing-preview--video[data-focus="sell"] {
+  display: grid;
+  grid-template-rows: auto auto auto 1fr;
+  gap: 14px;
+  height: 100%;
+}
+
+.marketing-preview__hero-band {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px 28px;
+  background: linear-gradient(135deg, #fff8f4 0%, #fff 55%, #f3faf6 100%);
+}
+
+.marketing-preview__hero-band__eyebrow {
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.marketing-preview__hero-band__copy h2 {
+  margin: 0 0 10px;
+  font-size: 1.35rem;
+  line-height: 1.25;
+  max-width: 36ch;
+}
+
+.marketing-preview__hero-band__exposure {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.marketing-preview__hero-band__exposure span {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.marketing-preview__hero-band__exposure strong {
+  display: block;
+  font-size: 2.6rem;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.marketing-preview__hero-band__exposure small {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.marketing-preview__sell-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.marketing-preview__sell-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 22px;
+  min-height: 168px;
+}
+
+.marketing-preview__sell-card h3 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.marketing-preview__sell-card strong {
+  font-size: 2rem;
+  line-height: 1.05;
+}
+
+.marketing-preview__sell-card__meta {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.marketing-preview__sell-card__detail {
+  margin: auto 0 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.marketing-preview__sell-card--danger {
+  background: linear-gradient(165deg, #fff 0%, var(--danger-soft) 100%);
+  border-color: rgba(201, 74, 74, 0.22);
+}
+
+.marketing-preview__sell-card--warning {
+  background: linear-gradient(165deg, #fff 0%, var(--warning-soft) 100%);
+  border-color: rgba(201, 138, 42, 0.22);
+}
+
+.marketing-preview__insights--sell {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 0;
+}
+
+.marketing-preview__insights--sell .marketing-preview__insight {
+  padding: 16px 18px;
+}
+
+.marketing-preview__insights--sell .marketing-preview__insight-label {
+  display: none;
+}
+
+.marketing-preview__sell-callout {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(47, 125, 90, 0.12), rgba(47, 125, 90, 0.04));
+  border: 1px solid rgba(47, 125, 90, 0.18);
+}
+
+.marketing-preview__sell-callout strong {
+  font-size: 1rem;
+}
+
+.marketing-preview__sell-callout span {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
 .demo-video-marketing-preview--video[data-focus="table"] .marketing-preview__table-section {
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto auto 1fr auto;
+  min-height: 0;
+  height: 100%;
+  gap: 12px;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-marketing-preview--video[data-focus="sell"] .marketing-preview__hero-band__copy h2 {
+  font-size: 1.65rem;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-marketing-preview--video[data-focus="sell"] .marketing-preview__hero-band__exposure strong {
+  font-size: 3.2rem;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-marketing-preview--video[data-focus="sell"] .marketing-preview__sell-card {
+  min-height: 200px;
+  padding: 24px 26px;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-marketing-preview--video[data-focus="sell"] .marketing-preview__sell-card strong {
+  font-size: 2.4rem;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-marketing-preview--video[data-focus="sell"] .marketing-preview__insights--sell .marketing-preview__insight-value {
+  font-size: 1.5rem;
+}
+
+.demo-video-page[data-capture="true"] .marketing-preview__sell-callout strong {
+  font-size: 1.15rem;
+}
+
+.demo-video-marketing-preview--video[data-focus="table"] .marketing-preview__table-section {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
   min-height: 0;
   height: 100%;
   gap: 14px;

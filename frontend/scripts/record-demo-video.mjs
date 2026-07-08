@@ -78,8 +78,12 @@ function probeDurationSeconds(ffmpeg, filePath) {
 }
 
 function polishVoiceWav(ffmpeg, inputPath, outputPath, light = false) {
+  if (process.env.RECORD_VOICE_POLISH === "0") {
+    fs.copyFileSync(inputPath, outputPath);
+    return;
+  }
   const filter = light
-    ? "highpass=f=80,alimiter=limit=0.95"
+    ? "highpass=f=70"
     : "highpass=f=90,acompressor=threshold=-22dB:ratio=2.5:attack=12:release=120,alimiter=limit=0.92";
   execSync(
     `${shellQuote(ffmpeg)} -y -i ${shellQuote(inputPath)} -af ${shellQuote(filter)} ${shellQuote(outputPath)}`,
@@ -171,13 +175,14 @@ function synthesizeWithElevenLabs(scene, ffmpeg) {
 
 function synthesizeWithEdgeTts(scene, ffmpeg, python) {
   const mp3 = path.join(narrationTempDir, `scene-${scene.id}.mp3`);
-  const voice = process.env.RECORD_EDGE_VOICE ?? "en-US-JennyNeural";
-  const rate = process.env.RECORD_EDGE_RATE ?? "+5%";
-  const pitch = process.env.RECORD_EDGE_PITCH ?? "-1Hz";
-  const pauseMs = process.env.RECORD_EDGE_PAUSE_MS ?? "140";
+  const voice = process.env.RECORD_EDGE_VOICE ?? "en-US-GuyNeural";
+  const rate = process.env.RECORD_EDGE_RATE ?? "+0%";
+  const pitch = process.env.RECORD_EDGE_PITCH ?? "+0Hz";
+  const pauseMs = process.env.RECORD_EDGE_PAUSE_MS ?? "80";
+  const singlePass = process.env.RECORD_EDGE_SINGLE_PASS !== "0" ? " --single-pass" : " --no-single-pass";
   const script = path.join(repoRoot, "scripts/synthesize_narration.py");
   execSync(
-    `${shellQuote(python)} ${shellQuote(script)} ${shellQuote(scene.narration)} ${shellQuote(mp3)} --voice ${voice} --rate ${rate} --pitch ${pitch} --chunk-pause-ms ${pauseMs} --ffmpeg ${shellQuote(ffmpeg)}`,
+    `${shellQuote(python)} ${shellQuote(script)} ${shellQuote(scene.narration)} ${shellQuote(mp3)} --voice ${voice} --rate ${rate} --pitch ${pitch} --chunk-pause-ms ${pauseMs}${singlePass} --ffmpeg ${shellQuote(ffmpeg)}`,
     { stdio: "inherit" },
   );
   const rawWav = path.join(narrationTempDir, `scene-${scene.id}-raw.wav`);
@@ -248,7 +253,7 @@ function buildNarrationTrack(ffmpeg) {
 
   if (useEdgeTts) {
     console.log(
-      `Narration: Edge neural (${process.env.RECORD_EDGE_VOICE ?? "en-US-JennyNeural"}, chunked)`,
+      `Narration: Edge neural (${process.env.RECORD_EDGE_VOICE ?? "en-US-GuyNeural"}, single-pass)`,
     );
   } else {
     console.log(`Narration: macOS say (${resolveSayVoice()})`);

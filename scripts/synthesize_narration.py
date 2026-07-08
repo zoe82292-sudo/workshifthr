@@ -88,12 +88,19 @@ async def synthesize_natural(
     pitch: str,
     chunk_pause_ms: int,
     ffmpeg_bin: str,
+    *,
+    single_pass: bool = True,
 ) -> None:
     ensure_edge_tts()
-    chunks = split_chunks(text)
-    if not chunks:
+    normalized = re.sub(r"\s+", " ", normalize_speech(text).strip())
+    if not normalized:
         raise ValueError("Narration text is empty.")
 
+    if single_pass:
+        await synthesize_chunk(normalized, output_path, voice, rate, pitch)
+        return
+
+    chunks = split_chunks(text)
     if len(chunks) == 1:
         await synthesize_chunk(chunks[0], output_path, voice, rate, pitch)
         return
@@ -156,10 +163,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Generate natural neural voiceover clip")
     parser.add_argument("text", help="Narration script")
     parser.add_argument("output", help="Output audio path (.mp3)")
-    parser.add_argument("--voice", default="en-US-JennyNeural")
-    parser.add_argument("--rate", default="+5%")
-    parser.add_argument("--pitch", default="-1Hz")
-    parser.add_argument("--chunk-pause-ms", type=int, default=140)
+    parser.add_argument("--voice", default="en-US-GuyNeural")
+    parser.add_argument("--rate", default="+0%")
+    parser.add_argument("--pitch", default="+0Hz")
+    parser.add_argument("--chunk-pause-ms", type=int, default=80)
+    parser.add_argument("--single-pass", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--ffmpeg", default=None)
     args = parser.parse_args()
 
@@ -174,6 +182,7 @@ def main() -> None:
             args.pitch,
             args.chunk_pause_ms,
             ffmpeg_bin,
+            single_pass=args.single_pass,
         )
     )
 

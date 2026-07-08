@@ -4,7 +4,7 @@ import type { EmployeeRecord } from "../types";
 
 type MarketingPreviewProps = {
   /** Crop the preview for video scenes */
-  focus?: "full" | "summary" | "table";
+  focus?: "full" | "summary" | "table" | "sell";
   /** Use real file name and meta for demo video captures */
   videoMode?: boolean;
   /** Show manager/compression alerts under the table (video issues scene) */
@@ -89,7 +89,32 @@ export function MarketingPreview({
   ];
 
   const showSummary = focus === "full" || focus === "summary";
+  const showSell = focus === "sell";
   const showTable = focus === "full" || focus === "table";
+
+  const sellCards = [
+    {
+      title: "Below range minimum",
+      value: formatMoney(cost.total_gap_to_minimum),
+      meta: `${summary.below_minimum} employees need raises to hit range floor`,
+      tone: "marketing-preview__sell-card--danger",
+      detail: exec.bullets.find((b) => b.includes("below range minimum")) ?? exec.bullets[1],
+    },
+    {
+      title: "Manager inversions",
+      value: String(summary.managers_below_reports),
+      meta: "managers earning less than a direct report",
+      tone: "marketing-preview__sell-card--danger",
+      detail: "Catch pay hierarchy issues before merit letters go out.",
+    },
+    {
+      title: "Review queue",
+      value: String(result.review_queue.total_items),
+      meta: `${result.review_queue.critical_count} critical · ranked by severity`,
+      tone: "marketing-preview__sell-card--warning",
+      detail: "Prioritized list so comp teams know what to fix first.",
+    },
+  ];
 
   return (
     <div className={`marketing-preview ${className}`.trim()} data-focus={focus}>
@@ -113,6 +138,47 @@ export function MarketingPreview({
           <span className="marketing-preview__btn marketing-preview__btn--primary">Excel report</span>
         </div>
       </header>
+
+      {showSell ? (
+        <>
+          <section className="marketing-preview__hero-band panel">
+            <div className="marketing-preview__hero-band__copy">
+              <p className="marketing-preview__hero-band__eyebrow">Before you lock merit</p>
+              <h2>{exec.headline}</h2>
+              <span className={`pill risk-${exec.risk_level}`}>{exec.risk_level} risk</span>
+            </div>
+            <div className="marketing-preview__hero-band__exposure">
+              <span>Total budget exposure</span>
+              <strong>{formatMoney(budget.total_budget_impact)}</strong>
+              <small>Adjustments + projected merit pool</small>
+            </div>
+          </section>
+
+          <div className="marketing-preview__sell-grid">
+            {sellCards.map((card) => (
+              <article
+                key={card.title}
+                className={`marketing-preview__sell-card panel ${card.tone}`.trim()}
+              >
+                <h3>{card.title}</h3>
+                <strong>{card.value}</strong>
+                <p className="marketing-preview__sell-card__meta">{card.meta}</p>
+                <p className="marketing-preview__sell-card__detail">{card.detail}</p>
+              </article>
+            ))}
+          </div>
+
+          <div className="marketing-preview__insights marketing-preview__insights--sell">
+            {insightCards.map((card) => (
+              <article className="marketing-preview__insight" key={card.title}>
+                <h3>{card.title}</h3>
+                <strong className="marketing-preview__insight-value">{card.value}</strong>
+                <p className="marketing-preview__insight-meta">{card.meta}</p>
+              </article>
+            ))}
+          </div>
+        </>
+      ) : null}
 
       {showSummary ? (
         <>
@@ -153,6 +219,14 @@ export function MarketingPreview({
 
       {showTable ? (
         <section className="marketing-preview__table-section">
+          {videoMode ? (
+            <div className="marketing-preview__sell-callout">
+              <strong>What leadership asks about</strong>
+              <span>
+                Dollar gaps by employee before merit week — not just a count on a spreadsheet.
+              </span>
+            </div>
+          ) : null}
           <div className="marketing-preview__table-header">
             <div>
               <h2>Below range minimum</h2>

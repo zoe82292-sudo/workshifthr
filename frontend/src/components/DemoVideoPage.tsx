@@ -153,7 +153,7 @@ const SCENES = [
     id: "dashboard",
     layerClass: "demo-video-layer--app",
     render: () => (
-      <MarketingPreview focus="summary" videoMode className="demo-video-marketing-preview--video" />
+      <MarketingPreview focus="sell" videoMode className="demo-video-marketing-preview--video" />
     ),
   },
   {
