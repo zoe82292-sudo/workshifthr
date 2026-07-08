@@ -2,43 +2,43 @@
   "scenes": [
     {
       "id": "intro",
-      "durationMs": 5500,
-      "narration": "Merit letters go out soon. You still haven't checked who's below minimum — or whether a manager earns less than their team. ShiftWorks HR ends that weekly fire drill."
+      "durationMs": 4500,
+      "narration": "Merit week's almost here. Who's below minimum? Any manager making less than their team? ShiftWorks HR catches that before letters go out."
     },
     {
       "id": "upload",
-      "durationMs": 6000,
-      "narration": "Just export from Workday or your payroll system and drop the file in. We map your columns automatically. No setup project. No IT ticket."
+      "durationMs": 4500,
+      "narration": "Just drop your payroll export in. Workday, ADP, whatever you've got — columns map themselves. No IT ticket."
     },
     {
       "id": "dashboard",
-      "durationMs": 7000,
-      "narration": "About a minute later, you get the same results view your comp team sees every day — cycle readiness, priority counts, and what to fix before you lock merit."
+      "durationMs": 5000,
+      "narration": "About a minute later you've got cycle readiness — what's critical, what to fix, before you lock the cycle."
     },
     {
       "id": "issues",
-      "durationMs": 7000,
-      "narration": "Drill into below-minimum employees with the real issue table — name, department, salary, range, and dollar gap — exactly like the live product."
+      "durationMs": 5000,
+      "narration": "Below minimum? Every name, department, and dollar gap — right in the issue table your comp team already uses."
     },
     {
       "id": "equity",
-      "durationMs": 7000,
-      "narration": "Pay equity is built in. Gender and race median gaps by group, with level-by-level breakdowns when you need to answer DEI questions with data."
+      "durationMs": 5000,
+      "narration": "Pay equity's in there too — gender and race median gaps by group, so you can answer DEI questions with data."
     },
     {
       "id": "location",
-      "durationMs": 6500,
-      "narration": "Location pay works the same way. Median pay by office, geographic gaps, and same-level comparisons across cities — straight from your HRIS export."
+      "durationMs": 4500,
+      "narration": "Location pay works the same way. Median by office, gaps across cities — straight from your file."
     },
     {
       "id": "pdf",
-      "durationMs": 6500,
-      "narration": "Need to brief leadership? One export gives you a PDF with risk level, budget exposure, and the findings they'll actually ask about."
+      "durationMs": 4500,
+      "narration": "Need to brief your CHRO? One click gets you a leadership PDF — risk, exposure, and what they'll actually ask about."
     },
     {
       "id": "cta",
-      "durationMs": 4500,
-      "narration": "Try it with your own roster at shiftworkshr.com. Free to start — no credit card."
+      "durationMs": 3500,
+      "narration": "Try it free at shiftworkshr.com with your own roster. No credit card."
     }
   ]
 }

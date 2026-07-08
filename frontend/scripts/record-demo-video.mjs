@@ -176,7 +176,7 @@ function synthesizeWithElevenLabs(scene, ffmpeg) {
 function synthesizeWithEdgeTts(scene, ffmpeg, python) {
   const mp3 = path.join(narrationTempDir, `scene-${scene.id}.mp3`);
   const voice = process.env.RECORD_EDGE_VOICE ?? "en-US-GuyNeural";
-  const rate = process.env.RECORD_EDGE_RATE ?? "+0%";
+  const rate = process.env.RECORD_EDGE_RATE ?? "+8%";
   const pitch = process.env.RECORD_EDGE_PITCH ?? "+0Hz";
   const pauseMs = process.env.RECORD_EDGE_PAUSE_MS ?? "80";
   const singlePass = process.env.RECORD_EDGE_SINGLE_PASS !== "0" ? " --single-pass" : " --no-single-pass";
@@ -249,11 +249,11 @@ function buildNarrationTrack(ffmpeg) {
   fs.mkdirSync(narrationTempDir, { recursive: true });
   const python = resolvePython();
   const hasCustom = scenes.some((scene) => resolveCustomNarration(scene.id));
-  const useEdgeTts = !hasCustom && process.env.RECORD_USE_EDGE_TTS === "1" && Boolean(python);
+  const useEdgeTts = !hasCustom && process.env.RECORD_USE_EDGE_TTS !== "0" && Boolean(python);
 
   if (useEdgeTts) {
     console.log(
-      `Narration: Edge neural (${process.env.RECORD_EDGE_VOICE ?? "en-US-GuyNeural"}, single-pass)`,
+      `Narration: Edge neural (${process.env.RECORD_EDGE_VOICE ?? "en-US-GuyNeural"}, ${process.env.RECORD_EDGE_RATE ?? "+8%"})`,
     );
   } else {
     console.log(`Narration: macOS say (${resolveSayVoice()}, natural)`);
@@ -270,7 +270,7 @@ function buildNarrationTrack(ffmpeg) {
       throw new Error(`Voiceover for scene "${scene.id}" is empty or too short.`);
     }
 
-    const visualPadSeconds = 0.55;
+    const visualPadSeconds = 0.35;
     const sceneSeconds = speechSeconds + visualPadSeconds;
     sceneDurationsMs.push(Math.ceil(sceneSeconds * 1000));
 

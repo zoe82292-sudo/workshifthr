@@ -164,7 +164,7 @@ def main() -> None:
     parser.add_argument("text", help="Narration script")
     parser.add_argument("output", help="Output audio path (.mp3)")
     parser.add_argument("--voice", default="en-US-GuyNeural")
-    parser.add_argument("--rate", default="+0%")
+    parser.add_argument("--rate", default="+8%")
     parser.add_argument("--pitch", default="+0Hz")
     parser.add_argument("--chunk-pause-ms", type=int, default=80)
     parser.add_argument("--single-pass", action=argparse.BooleanOptionalAction, default=True)
