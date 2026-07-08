@@ -353,13 +353,13 @@ function assembleVideo(ffmpeg, sceneDurationsMs, audioPath) {
 
   const videoOnlyMp4 = path.join(marketingDir, "demo-walkthrough-video-only.mp4");
   execSync(
-    `${shellQuote(ffmpeg)} -y -f concat -safe 0 -i ${shellQuote(concatList)} -c copy ${shellQuote(videoOnlyMp4)}`,
+    `${shellQuote(ffmpeg)} -y -f concat -safe 0 -i ${shellQuote(concatList)} -c:v libx264 -preset fast -crf 17 -pix_fmt yuv420p -movflags +faststart -an ${shellQuote(videoOnlyMp4)}`,
     { stdio: "inherit" },
   );
 
   if (audioPath && fs.existsSync(audioPath)) {
     execSync(
-      `${shellQuote(ffmpeg)} -y -i ${shellQuote(videoOnlyMp4)} -i ${shellQuote(audioPath)} -c:v copy -c:a aac -b:a 192k -shortest -map 0:v:0 -map 1:a:0 ${shellQuote(mp4Out)}`,
+      `${shellQuote(ffmpeg)} -y -i ${shellQuote(videoOnlyMp4)} -i ${shellQuote(audioPath)} -c:v copy -c:a aac -b:a 192k -ar 44100 -ac 1 -map 0:v:0 -map 1:a:0 -movflags +faststart ${shellQuote(mp4Out)}`,
       { stdio: "inherit" },
     );
     fs.unlinkSync(videoOnlyMp4);
@@ -367,7 +367,29 @@ function assembleVideo(ffmpeg, sceneDurationsMs, audioPath) {
     fs.renameSync(videoOnlyMp4, mp4Out);
   }
 
+  validateOutput(ffmpeg, mp4Out, audioPath);
   console.log(`Saved ${mp4Out}`);
+}
+
+function validateOutput(ffmpeg, mp4Path, audioPath) {
+  const videoSeconds = probeDurationSeconds(ffmpeg, mp4Path);
+  if (videoSeconds < 20) {
+    throw new Error(`Output video is too short (${videoSeconds.toFixed(1)}s).`);
+  }
+
+  if (audioPath) {
+    const result = spawnSync(
+      ffmpeg,
+      ["-i", mp4Path, "-af", "volumedetect", "-f", "null", "-"],
+      { encoding: "utf8" },
+    );
+    const output = `${result.stderr ?? ""}`;
+    const meanMatch = output.match(/mean_volume: ([-\d.]+) dB/);
+    const meanDb = meanMatch ? Number(meanMatch[1]) : -100;
+    if (meanDb < -45) {
+      throw new Error(`Output audio is too quiet (${meanDb} dB).`);
+    }
+  }
 }
 
 async function main() {
