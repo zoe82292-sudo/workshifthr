@@ -12,9 +12,9 @@ function IntroScene() {
       <div className="demo-video-hero__copy">
         <BrandLogo size="hero" layout="lockup" />
         <p className="demo-video-kicker">Merit-cycle compensation QA</p>
-        <h1>Catch below-minimum pay, manager inversions, and pay equity gaps before merit week.</h1>
+        <h1>Full compensation review from one upload — flagged issues, pay equity, location pay, and a leadership PDF.</h1>
         <p className="demo-video-sub">
-          One upload — prioritized flags, dollar gaps, and a leadership-ready PDF in under a minute.
+          Prioritized flags, dollar gaps, range position, and a leadership-ready summary in under a minute.
         </p>
       </div>
       <div className="demo-video-hero__visual demo-video-hero__visual--product" aria-hidden>
@@ -37,8 +37,8 @@ function UploadScene() {
         <p className="demo-video-kicker">Step 1 · Upload</p>
         <h2>Drop your compensation export</h2>
         <p className="demo-video-sub">
-          Workday, UKG, ADP, or any CSV. Columns map automatically — salary, ranges, merit %,
-          manager ID, and demographics.
+          Pull from Workday, ADP, UKG — or use your own spreadsheet. Drop it into ShiftWorks and
+          columns map automatically — salary, ranges, merit %, manager ID, and demographics.
         </p>
         <div className="demo-video-hero__vendors">
           <span>Workday</span>

@@ -3,22 +3,22 @@
     {
       "id": "intro",
       "durationMs": 4500,
-      "narration": "Merit week's coming, and you need to know who's below minimum, which managers earn less than their team, and what it'll cost to fix. ShiftWorks HR gives you that in about a minute."
+      "narration": "Before merit cycle, comp teams need a full read on flagged pay issues — below minimum, compression, pay equity, location gaps, and range position. ShiftWorks HR turns one roster upload into a complete compensation review in about a minute."
     },
     {
       "id": "upload",
       "durationMs": 4500,
-      "narration": "Just drop your payroll export in — Workday, ADP, or any CSV. ShiftWorks maps your columns automatically. No IT project needed."
+      "narration": "Pull an export from your HRIS — Workday, ADP, UKG — or build your own spreadsheet. Drop that file into ShiftWorks HR and your columns map automatically. No IT project needed."
     },
     {
       "id": "dashboard",
       "durationMs": 5000,
-      "narration": "You get a full cycle-readiness view — critical flags, budget exposure, and every issue that could hold up merit, from below-minimum pay to compression and manager inversions."
+      "narration": "You get a full cycle-readiness view — flagged issues, budget exposure, compa-ratio gaps, and everything that could hold up merit before letters go out."
     },
     {
       "id": "issues",
       "durationMs": 5000,
-      "narration": "Drill into below-minimum employees with names, departments, and exact dollar gaps — so you know what needs fixing before letters go out."
+      "narration": "Drill into flagged employees with names, departments, and exact dollar gaps — below minimum, compression, and more — so you know what needs fixing."
     },
     {
       "id": "managers",
