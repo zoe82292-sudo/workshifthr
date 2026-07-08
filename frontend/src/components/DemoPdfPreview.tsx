@@ -102,11 +102,13 @@ export function DemoPdfPreview({ video = false }: { video?: boolean }) {
       : [];
 
   const reviewQueueRows =
-    result.review_queue?.items?.slice(0, video ? 4 : 8).map((item) => [
-      item.reason.length > 72 ? `${item.reason.slice(0, 69)}…` : item.reason,
-      item.severity,
-      item.category,
-    ]) ?? [];
+    !video && result.review_queue?.items
+      ? result.review_queue.items.slice(0, 8).map((item) => [
+          item.reason.length > 72 ? `${item.reason.slice(0, 69)}…` : item.reason,
+          item.severity,
+          item.category,
+        ])
+      : [];
 
   return (
     <div className={`demo-pdf-preview${video ? " demo-pdf-preview--video" : ""}`}>
@@ -143,7 +145,7 @@ export function DemoPdfPreview({ video = false }: { video?: boolean }) {
 
           <h3 className="demo-pdf-preview__section-title">Key findings</h3>
           <ul className="demo-pdf-preview__bullets">
-            {exec.bullets.slice(0, video ? 5 : 8).map((bullet) => (
+            {exec.bullets.slice(0, video ? 4 : 8).map((bullet) => (
               <li key={bullet}>{bullet}</li>
             ))}
           </ul>

@@ -5077,6 +5077,18 @@ a:focus-visible {
   max-width: none;
   min-height: auto;
   max-height: 100%;
+  transform: scale(0.93);
+  transform-origin: center top;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-layer--pdf-full .demo-pdf-preview--video .demo-pdf-preview__table td,
+.demo-video-page[data-capture="true"] .demo-video-layer--pdf-full .demo-pdf-preview--video .demo-pdf-preview__table th {
+  padding: 5px 7px;
+  font-size: 0.66rem;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-layer--pdf-full .demo-pdf-preview--video .demo-pdf-preview__bullets {
+  font-size: 0.62rem;
 }
 
 .demo-video-page[data-capture="true"] .demo-video-layer--app,
