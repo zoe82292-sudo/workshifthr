@@ -13,12 +13,22 @@
     {
       "id": "dashboard",
       "durationMs": 7000,
-      "narration": "About a minute later, you know exactly what has to be fixed before you lock the cycle. Critical flags, dollar gaps, and merit pool math your CFO will ask about."
+      "narration": "About a minute later, you get the same results view your comp team sees every day — cycle readiness, priority counts, and what to fix before you lock merit."
     },
     {
       "id": "issues",
       "durationMs": 7000,
-      "narration": "This is what leadership asks about. Every person below minimum — name, department, dollar gap — plus manager inversions sitting right next to them."
+      "narration": "Drill into below-minimum employees with the real issue table — name, department, salary, range, and dollar gap — exactly like the live product."
+    },
+    {
+      "id": "equity",
+      "durationMs": 7000,
+      "narration": "Pay equity is built in. Gender and race median gaps by group, with level-by-level breakdowns when you need to answer DEI questions with data."
+    },
+    {
+      "id": "location",
+      "durationMs": 6500,
+      "narration": "Location pay works the same way. Median pay by office, geographic gaps, and same-level comparisons across cities — straight from your HRIS export."
     },
     {
       "id": "pdf",

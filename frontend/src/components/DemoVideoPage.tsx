@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { BrandLogo } from "./BrandLogo";
 import { DemoPdfPreview } from "./DemoPdfPreview";
-import { MarketingPreview } from "./MarketingPreview";
+import { DemoVideoProductScene } from "./DemoVideoProductScene";
 import { DemoVideoBrowserFrame } from "./DemoVideoBrowserFrame";
 import { DEMO_VIDEO_SCENES } from "../demoVideoConfig";
 import { getBundledDemoAnalysis } from "../data/bundledDemoAnalysis";
@@ -152,21 +152,22 @@ const SCENES = [
   {
     id: "dashboard",
     layerClass: "demo-video-layer--app",
-    render: () => (
-      <MarketingPreview focus="sell" videoMode className="demo-video-marketing-preview--video" />
-    ),
+    render: () => <DemoVideoProductScene activeTab="review_queue" mode="overview" />,
   },
   {
     id: "issues",
     layerClass: "demo-video-layer--app demo-video-layer--app-table",
-    render: () => (
-      <MarketingPreview
-        focus="table"
-        videoMode
-        showAlerts
-        className="demo-video-marketing-preview--video"
-      />
-    ),
+    render: () => <DemoVideoProductScene activeTab="below_minimum" mode="tab" />,
+  },
+  {
+    id: "equity",
+    layerClass: "demo-video-layer--app demo-video-layer--app-table",
+    render: () => <DemoVideoProductScene activeTab="pay_equity" mode="tab" />,
+  },
+  {
+    id: "location",
+    layerClass: "demo-video-layer--app demo-video-layer--app-table",
+    render: () => <DemoVideoProductScene activeTab="location_pay" mode="tab" />,
   },
   {
     id: "pdf",

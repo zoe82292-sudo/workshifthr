@@ -232,11 +232,11 @@ function synthesizeSceneSpeech(scene, ffmpeg, { python, useEdgeTts, sayVoice }) 
   }
 
   const aiff = path.join(narrationTempDir, `scene-${scene.id}.aiff`);
-  const rate = process.env.RECORD_SPEECH_RATE ?? "168";
+  const rate = process.env.RECORD_SPEECH_RATE ?? "182";
   execSync(`say -v ${sayVoice} -r ${rate} -o ${shellQuote(aiff)} ${shellQuote(scene.narration)}`);
   convertSpeechToWav(aiff, rawWav, ffmpeg);
   console.log(`  voice: macOS ${sayVoice}`);
-  polishVoiceWav(ffmpeg, rawWav, polishedWav, false);
+  polishVoiceWav(ffmpeg, rawWav, polishedWav, true);
   return polishedWav;
 }
 
@@ -249,14 +249,14 @@ function buildNarrationTrack(ffmpeg) {
   fs.mkdirSync(narrationTempDir, { recursive: true });
   const python = resolvePython();
   const hasCustom = scenes.some((scene) => resolveCustomNarration(scene.id));
-  const useEdgeTts = !hasCustom && process.env.RECORD_USE_EDGE_TTS !== "0" && Boolean(python);
+  const useEdgeTts = !hasCustom && process.env.RECORD_USE_EDGE_TTS === "1" && Boolean(python);
 
   if (useEdgeTts) {
     console.log(
       `Narration: Edge neural (${process.env.RECORD_EDGE_VOICE ?? "en-US-GuyNeural"}, single-pass)`,
     );
   } else {
-    console.log(`Narration: macOS say (${resolveSayVoice()})`);
+    console.log(`Narration: macOS say (${resolveSayVoice()}, natural)`);
   }
 
   const sayVoice = resolveSayVoice();

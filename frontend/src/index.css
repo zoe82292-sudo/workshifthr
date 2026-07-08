@@ -4800,6 +4800,86 @@ a:focus-visible {
   border-color: var(--accent);
 }
 
+/* Real product UI for demo video captures */
+.demo-video-real-product {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.demo-video-real-product .first-run-tour,
+.demo-video-real-product .start-here-banner,
+.demo-video-real-product .mapping-summary,
+.demo-video-real-product .results-sticky-toolbar,
+.demo-video-real-product .table-pagination,
+.demo-video-real-product .legal-consent-checkbox,
+.demo-video-real-product .export-anonymize-toggle {
+  display: none !important;
+}
+
+.demo-video-real-product[data-mode="overview"] .results-tab-content,
+.demo-video-real-product[data-mode="overview"] .merit-scenario,
+.demo-video-real-product[data-mode="overview"] .insights-grid,
+.demo-video-real-product[data-mode="overview"] .penetration-chart,
+.demo-video-real-product[data-mode="overview"] .merit-budget-variance {
+  display: none !important;
+}
+
+.demo-video-real-product[data-mode="tab"] .mapping-summary,
+.demo-video-real-product[data-mode="tab"] .cycle-readiness,
+.demo-video-real-product[data-mode="tab"] .merit-scenario,
+.demo-video-real-product[data-mode="tab"] .insights-grid,
+.demo-video-real-product[data-mode="tab"] .cycle-stat-cards {
+  display: none !important;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-real-product .pay-equity-panel .equity-level-card {
+  display: none !important;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-real-product .results-tab-content {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-real-product .panel-header {
+  margin-bottom: 10px !important;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-real-product .panel-header h2 {
+  font-size: 1.15rem;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-real-product .cycle-readiness {
+  padding: 16px 18px;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-real-product .cycle-readiness h2 {
+  font-size: 1.2rem;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-real-product .cycle-stat-cards .stat-card__value {
+  font-size: 1.45rem;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-real-product .results-tab-nav .tab {
+  font-size: 0.82rem;
+  padding: 8px 12px;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-real-product .table-wrap table {
+  font-size: 0.88rem;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-real-product .equity-section h3 {
+  font-size: 1rem;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-layer--app,
+.demo-video-page[data-capture="true"] .demo-video-layer--app-table {
+  padding: 20px 28px;
+}
+
 @media (max-width: 900px) {
   .demo-video-stage {
     width: 100%;
