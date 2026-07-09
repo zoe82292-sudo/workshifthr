@@ -461,7 +461,7 @@ function assembleVideo(ffmpeg, sceneDurationsMs, audioPath) {
     );
     fs.unlinkSync(videoOnlyMp4);
 
-    if (process.env.RECORD_CAPTIONS !== "0") {
+    if (process.env.RECORD_CAPTIONS === "1") {
       const srtPath = path.join(videoTempDir, "captions.srt");
       const captionedMp4 = path.join(marketingDir, "demo-walkthrough-captioned.mp4");
       const marketingSrt = path.join(marketingDir, "demo-walkthrough-captions.srt");
