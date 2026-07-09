@@ -253,7 +253,7 @@ function buildNarrationTrack(ffmpeg) {
 
   if (useEdgeTts) {
     console.log(
-      `Narration: Edge neural (${process.env.RECORD_EDGE_VOICE ?? "en-US-BrianNeural"}, ${process.env.RECORD_EDGE_RATE ?? "+5%"})`,
+      `Narration: Edge neural (${process.env.RECORD_EDGE_VOICE ?? "en-US-BrianNeural"}, ${process.env.RECORD_EDGE_RATE ?? "+2%"}, chunked)`,
     );
   } else {
     console.log(`Narration: macOS say (${resolveSayVoice()}, natural)`);
