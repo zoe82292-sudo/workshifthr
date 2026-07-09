@@ -1,4 +1,5 @@
 import { getBundledDemoAnalysis } from "../data/bundledDemoAnalysis";
+import { BRAND } from "../exportFormatters";
 import { resolveMeritScenario } from "../meritScenario";
 
 function formatMoney(value: number) {
@@ -62,13 +63,17 @@ export function DemoPdfPreview({ video = false }: { video?: boolean }) {
       formatMoney(scenario.reference_merit_pool),
     ],
     ["Total budget exposure", formatMoney(scenario.total_exposure)],
-    ...(scenario.uploaded_merit_pool != null
-      ? [["Uploaded file merit pool", formatMoney(scenario.uploaded_merit_pool)]]
-      : []),
-    ...scenario.scenarios.slice(0, video ? 1 : 3).map((row) => [
-      `Scenario: ${row.merit_percent.toFixed(1).replace(/\.0$/, "")}% merit`,
-      formatMoney(row.projected_pool),
-    ]),
+    ...(video
+      ? []
+      : [
+          ...(scenario.uploaded_merit_pool != null
+            ? [["Uploaded file merit pool", formatMoney(scenario.uploaded_merit_pool)]]
+            : []),
+          ...scenario.scenarios.map((row) => [
+            `Scenario: ${row.merit_percent.toFixed(1).replace(/\.0$/, "")}% merit`,
+            formatMoney(row.projected_pool),
+          ]),
+        ]),
   ];
 
   const compaRows = [
@@ -110,11 +115,13 @@ export function DemoPdfPreview({ video = false }: { video?: boolean }) {
         ])
       : [];
 
+  const keyFindingBullets = exec.bullets.slice(0, video ? 4 : 8);
+
   return (
     <div className={`demo-pdf-preview${video ? " demo-pdf-preview--video" : ""}`}>
       <article className="demo-pdf-preview__page">
         <header className="demo-pdf-preview__header">
-          <p className="demo-pdf-preview__brand">ShiftWorksHR</p>
+          <p className="demo-pdf-preview__brand">{BRAND.name}</p>
           <p className="demo-pdf-preview__subtitle">Compensation Cycle Summary</p>
           <div className="demo-pdf-preview__meta">
             <p>Generated {generatedAt}</p>
@@ -123,6 +130,7 @@ export function DemoPdfPreview({ video = false }: { video?: boolean }) {
             </p>
             <p>Confidential — internal use only</p>
           </div>
+          <div className="demo-pdf-preview__header-accent" aria-hidden />
         </header>
 
         <div className="demo-pdf-preview__body">
@@ -145,7 +153,7 @@ export function DemoPdfPreview({ video = false }: { video?: boolean }) {
 
           <h3 className="demo-pdf-preview__section-title">Key findings</h3>
           <ul className="demo-pdf-preview__bullets">
-            {exec.bullets.slice(0, video ? 4 : 8).map((bullet) => (
+            {keyFindingBullets.map((bullet) => (
               <li key={bullet}>{bullet}</li>
             ))}
           </ul>
@@ -162,7 +170,7 @@ export function DemoPdfPreview({ video = false }: { video?: boolean }) {
         </div>
 
         <footer className="demo-pdf-preview__footer">
-          <span>ShiftWorksHR · Confidential · For internal compensation planning only</span>
+          <span>{BRAND.name} · Confidential · For internal compensation planning only</span>
           <span>Page 1 of 1</span>
         </footer>
       </article>

@@ -33,11 +33,11 @@
     {
       "id": "location",
       "durationMs": 4500,
-      "narration": "When your file includes a Location or City column, ShiftWorks compares median pay across geographies and shows how headcount splits by site — from the same upload, no extra analysis."
+      "narration": "If your file has a location or city column, ShiftWorks compares median pay across geographies and shows how headcount is distributed — no separate spreadsheet or model."
     },
     {
       "id": "pdf",
-      "durationMs": 4500,
+      "durationMs": 5500,
       "narration": "When leadership wants a summary, one export gives you a PDF with risk level, total exposure, and the findings they'll press you on."
     },
     {
