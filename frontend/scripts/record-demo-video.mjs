@@ -176,10 +176,10 @@ function synthesizeWithElevenLabs(scene, ffmpeg) {
 function synthesizeWithEdgeTts(scene, ffmpeg, python) {
   const mp3 = path.join(narrationTempDir, `scene-${scene.id}.mp3`);
   const voice = process.env.RECORD_EDGE_VOICE ?? "en-US-BrianNeural";
-  const rate = process.env.RECORD_EDGE_RATE ?? "+5%";
+  const rate = process.env.RECORD_EDGE_RATE ?? "+2%";
   const pitch = process.env.RECORD_EDGE_PITCH ?? "-2Hz";
-  const pauseMs = process.env.RECORD_EDGE_PAUSE_MS ?? "80";
-  const singlePass = process.env.RECORD_EDGE_SINGLE_PASS !== "0" ? " --single-pass" : " --no-single-pass";
+  const pauseMs = process.env.RECORD_EDGE_PAUSE_MS ?? "140";
+  const singlePass = process.env.RECORD_EDGE_SINGLE_PASS === "1" ? " --single-pass" : " --no-single-pass";
   const script = path.join(repoRoot, "scripts/synthesize_narration.py");
   execSync(
     `${shellQuote(python)} ${shellQuote(script)} ${shellQuote(scene.narration)} ${shellQuote(mp3)} --voice ${voice} --rate ${rate} --pitch ${pitch} --chunk-pause-ms ${pauseMs}${singlePass} --ffmpeg ${shellQuote(ffmpeg)}`,
