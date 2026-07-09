@@ -8,7 +8,7 @@
     {
       "id": "upload",
       "durationMs": 4500,
-      "narration": "Pull your roster from Workday, ADP, or any spreadsheet. Drop it into ShiftWorks HR and you're ready to go — no IT project, no custom build."
+      "narration": "Pull your roster from Workday, ADP, or any spreadsheet. Drop it into ShiftWorks HR and you're ready to go — no configuration or implementation."
     },
     {
       "id": "dashboard",
