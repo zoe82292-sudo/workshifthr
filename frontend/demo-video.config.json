@@ -3,7 +3,7 @@
     {
       "id": "intro",
       "durationMs": 5000,
-      "narration": "Merit week is when pay problems show up — people below their range, managers earning less than their team, and budget surprises you did not plan for. ShiftWorks HR surfaces all of it from one roster upload in about a minute."
+      "narration": "Merit week is when pay problems show up — people below their range, managers earning less than their team, and budget surprises you did not plan for. ShiftWorks HR surfaces all of it from one roster upload in under a minute."
     },
     {
       "id": "upload",
@@ -33,12 +33,12 @@
     {
       "id": "equity",
       "durationMs": 5000,
-      "narration": "When leadership asks about pay equity, you already have gender and race pay gaps broken out — with real dollar differences, not a separate analysis."
+      "narration": "When leadership asks about pay fairness, you see median pay by gender and race — and the dollar gap between groups, pulled straight from your roster."
     },
     {
       "id": "location",
       "durationMs": 4500,
-      "narration": "Pay across locations is covered too — median salary by city or region, and how your workforce is spread geographically."
+      "narration": "If your roster includes work location, ShiftWorks HR shows median pay by city and what share of your team is in each — geographic pay patterns without another spreadsheet."
     },
     {
       "id": "pdf",
@@ -48,7 +48,7 @@
     {
       "id": "cta",
       "durationMs": 3500,
-      "narration": "Try it free at shiftworkshr.com with your own roster. No credit card required."
+      "narration": "Try ShiftWorks HR free with your own roster. No credit card required."
     }
   ]
 }

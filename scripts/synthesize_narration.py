@@ -43,6 +43,8 @@ def normalize_speech(text: str) -> str:
     """Minimal rewrites — scripts are written for TTS-friendly phrasing."""
     normalized = text
     normalized = re.sub(r"ShiftWorksHR", "ShiftWorks HR", normalized, flags=re.IGNORECASE)
+    normalized = re.sub(r"shiftworkshr\.com", "shift works HR dot com", normalized, flags=re.IGNORECASE)
+    normalized = re.sub(r"\bShiftWorks\b(?! HR)", "ShiftWorks HR", normalized)
     normalized = re.sub(r"\bI\.T\.\b", "I T", normalized)
     return normalized
 

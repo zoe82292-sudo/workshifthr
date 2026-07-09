@@ -1459,12 +1459,12 @@
       {
         "dimension": "location",
         "group_name": "Remote",
-        "headcount": 4,
-        "median_salary": null,
-        "mean_salary": null,
+        "headcount": 5,
+        "median_salary": 98500.0,
+        "mean_salary": 97200.0,
         "median_compa_ratio": null,
-        "workforce_percent": 21.1,
-        "suppressed": true
+        "workforce_percent": 27.8,
+        "suppressed": false
       },
       {
         "dimension": "location",
@@ -1479,12 +1479,12 @@
       {
         "dimension": "location",
         "group_name": "New York",
-        "headcount": 3,
-        "median_salary": null,
-        "mean_salary": null,
+        "headcount": 5,
+        "median_salary": 112000.0,
+        "mean_salary": 110400.0,
         "median_compa_ratio": null,
         "workforce_percent": 15.8,
-        "suppressed": true
+        "suppressed": false
       },
       {
         "dimension": "location",

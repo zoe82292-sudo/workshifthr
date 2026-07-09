@@ -11,10 +11,10 @@ function IntroScene() {
     <div className="demo-video-hero demo-video-hero--intro">
       <div className="demo-video-hero__copy">
         <BrandLogo size="hero" layout="lockup" />
-        <p className="demo-video-kicker">Compensation review in one minute</p>
+        <p className="demo-video-kicker">Compensation review in under a minute</p>
         <h1>See who's underpaid, what it'll cost to fix, and what leadership needs to know — before merit week.</h1>
         <p className="demo-video-sub">
-          One roster upload — prioritized flags, dollar gaps, pay equity, and an exec-ready PDF.
+          One roster upload — prioritized flags, dollar gaps, pay equity, and a leadership-ready PDF in under a minute.
         </p>
       </div>
       <div className="demo-video-hero__visual demo-video-hero__visual--product" aria-hidden>
@@ -79,7 +79,7 @@ function CtaScene() {
       <div className="demo-video-hero__copy demo-video-hero__copy--center">
         <BrandLogo size="hero" layout="lockup" />
         <h2>Try free with your file</h2>
-        <p className="demo-video-sub">No credit card · 250 rows per day · visit shiftworkshr.com</p>
+        <p className="demo-video-sub">No credit card · 250 rows per day · shiftworkshr.com</p>
         <span className="demo-video-cta button button-primary">Upload your export</span>
       </div>
     </div>

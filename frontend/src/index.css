@@ -4868,9 +4868,17 @@ a:focus-visible {
   display: none !important;
 }
 
-.demo-video-page[data-capture="true"] .demo-video-real-product[data-tab="pay_equity"] .pay-equity-panel > .equity-section:nth-child(4),
 .demo-video-page[data-capture="true"] .demo-video-real-product[data-tab="pay_equity"] .pay-equity-panel > .equity-section:nth-child(6) {
   display: none !important;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-real-product[data-tab="location_pay"] .pay-equity-panel > .equity-section:nth-child(2) .table-wrap {
+  max-width: none;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-layer--app-table .demo-video-real-product[data-tab="location_pay"] .results-tab-content,
+.demo-video-page[data-capture="true"] .demo-video-layer--app-table .demo-video-real-product[data-tab="pay_equity"] .results-tab-content {
+  padding-top: 0;
 }
 
 .demo-video-intro-product {
