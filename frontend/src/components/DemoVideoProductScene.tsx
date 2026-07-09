@@ -5,8 +5,8 @@ import { ResultsDashboard } from "./ResultsDashboard";
 
 type DemoVideoProductSceneProps = {
   activeTab: AnalysisTab;
-  /** overview = cycle readiness + stat cards; tab = single tab panel only */
-  mode: "overview" | "tab";
+  /** overview = cycle readiness + stat cards; budget = merit dollars; tab = single tab panel only */
+  mode: "overview" | "budget" | "tab";
 };
 
 export function DemoVideoProductScene({ activeTab, mode }: DemoVideoProductSceneProps) {

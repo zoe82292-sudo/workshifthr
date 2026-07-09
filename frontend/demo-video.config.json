@@ -2,43 +2,48 @@
   "scenes": [
     {
       "id": "intro",
-      "durationMs": 4500,
-      "narration": "Before merit cycle, comp teams need a full read on flagged pay issues — below minimum, compression, pay equity, location pay, and range position. ShiftWorks HR turns one roster upload into a complete compensation review in about a minute."
+      "durationMs": 5000,
+      "narration": "Merit week is when pay problems show up — people below their range, managers earning less than their team, and budget surprises you did not plan for. ShiftWorks HR surfaces all of it from one roster upload in about a minute."
     },
     {
       "id": "upload",
       "durationMs": 4500,
-      "narration": "Pull an export from your HRIS — Workday, ADP, UKG — or build your own spreadsheet. Drop that file into ShiftWorks HR and your columns map automatically. No IT project needed."
+      "narration": "Pull your roster from Workday, ADP, or any spreadsheet. Drop it into ShiftWorks HR and you're ready to go — no IT project, no custom build."
     },
     {
       "id": "dashboard",
       "durationMs": 5000,
-      "narration": "You get a full cycle-readiness view — flagged issues, budget exposure, compa-ratio gaps, and everything that could hold up merit before letters go out."
+      "narration": "Right away you see what needs attention before merit letters go out — who's flagged, how urgent it is, and where to start."
+    },
+    {
+      "id": "budget",
+      "durationMs": 5000,
+      "narration": "You also get the dollars — what it costs to fix underpaid employees, your merit pool, and total budget exposure. So when finance asks, you have an answer."
     },
     {
       "id": "issues",
       "durationMs": 5000,
-      "narration": "Drill into flagged employees with names, departments, and exact dollar gaps — below minimum, compression, and more — so you know what needs fixing."
+      "narration": "Every flag comes with names, departments, and exact dollar gaps — not just a row count buried in a spreadsheet."
     },
     {
       "id": "managers",
-      "durationMs": 5000,
-      "narration": "ShiftWorks flags manager inversions too — when someone earns less than the people they manage, you see both names and salaries side by side."
+      "durationMs": 4500,
+      "narration": "Awkward manager situations get caught too — when someone earns less than the people they manage, you see both names and salaries side by side."
     },
     {
       "id": "equity",
       "durationMs": 5000,
-      "narration": "Gender and race median pay gaps are built in by group, using the demographic columns already in your export."
+      "narration": "When leadership asks about pay equity, you already have gender and race pay gaps broken out — with real dollar differences, not a separate analysis."
     },
     {
       "id": "location",
       "durationMs": 4500,
-      "narration": "If your file has a location or city column, ShiftWorks compares median pay across geographies and shows how headcount is distributed — no separate spreadsheet or model."
+      "narration": "Pay across locations is covered too — median salary by city or region, and how your workforce is spread geographically."
     },
     {
       "id": "pdf",
       "durationMs": 5500,
-      "narration": "When leadership wants a summary, one export gives you a PDF with risk level, total exposure, and the findings they'll press you on."
+      "narration": "Need to brief executives? One click gives you a summary with risk level, total exposure, and the talking points they'll actually ask about."
     },
     {
       "id": "cta",

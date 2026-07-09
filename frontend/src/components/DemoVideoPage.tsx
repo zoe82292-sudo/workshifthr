@@ -11,10 +11,10 @@ function IntroScene() {
     <div className="demo-video-hero demo-video-hero--intro">
       <div className="demo-video-hero__copy">
         <BrandLogo size="hero" layout="lockup" />
-        <p className="demo-video-kicker">Merit-cycle compensation QA</p>
-        <h1>Full compensation review from one upload — flagged issues, pay equity, location pay, and a leadership PDF.</h1>
+        <p className="demo-video-kicker">Compensation review in one minute</p>
+        <h1>See who's underpaid, what it'll cost to fix, and what leadership needs to know — before merit week.</h1>
         <p className="demo-video-sub">
-          Prioritized flags, dollar gaps, range position, and a leadership-ready summary in under a minute.
+          One roster upload — prioritized flags, dollar gaps, pay equity, and an exec-ready PDF.
         </p>
       </div>
       <div className="demo-video-hero__visual demo-video-hero__visual--product" aria-hidden>
@@ -35,10 +35,10 @@ function UploadScene() {
     <div className="demo-video-hero demo-video-hero--upload">
       <div className="demo-video-hero__copy">
         <p className="demo-video-kicker">Step 1 · Upload</p>
-        <h2>Drop your compensation export</h2>
+        <h2>Drop your roster file</h2>
         <p className="demo-video-sub">
-          Pull from Workday, ADP, UKG — or use your own spreadsheet. Drop it into ShiftWorks and
-          columns map automatically — salary, ranges, merit %, manager ID, and demographics.
+          Pull from Workday, ADP, UKG — or use your own spreadsheet. ShiftWorks reads salary,
+          ranges, merit, manager, and demographic columns automatically.
         </p>
         <div className="demo-video-hero__vendors">
           <span>Workday</span>
@@ -93,6 +93,11 @@ const SCENES = [
     id: "dashboard",
     layerClass: "demo-video-layer--app",
     render: () => <DemoVideoProductScene activeTab="review_queue" mode="overview" />,
+  },
+  {
+    id: "budget",
+    layerClass: "demo-video-layer--app",
+    render: () => <DemoVideoProductScene activeTab="review_queue" mode="budget" />,
   },
   {
     id: "issues",

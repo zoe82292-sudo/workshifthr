@@ -1,6 +1,7 @@
 file '/Users/zoevidal/Desktop/WorkShiftHR/marketing/.narration-tmp/scene-intro-padded.wav'
 file '/Users/zoevidal/Desktop/WorkShiftHR/marketing/.narration-tmp/scene-upload-padded.wav'
 file '/Users/zoevidal/Desktop/WorkShiftHR/marketing/.narration-tmp/scene-dashboard-padded.wav'
+file '/Users/zoevidal/Desktop/WorkShiftHR/marketing/.narration-tmp/scene-budget-padded.wav'
 file '/Users/zoevidal/Desktop/WorkShiftHR/marketing/.narration-tmp/scene-issues-padded.wav'
 file '/Users/zoevidal/Desktop/WorkShiftHR/marketing/.narration-tmp/scene-managers-padded.wav'
 file '/Users/zoevidal/Desktop/WorkShiftHR/marketing/.narration-tmp/scene-equity-padded.wav'

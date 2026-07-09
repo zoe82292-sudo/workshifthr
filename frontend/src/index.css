@@ -4948,6 +4948,13 @@ a:focus-visible {
   display: none !important;
 }
 
+.demo-video-real-product[data-mode="budget"] .cycle-readiness,
+.demo-video-real-product[data-mode="budget"] .cycle-stat-cards,
+.demo-video-real-product[data-mode="budget"] .results-tab-content,
+.demo-video-real-product[data-mode="budget"] .merit-budget-variance {
+  display: none !important;
+}
+
 .demo-video-real-product[data-mode="tab"] .mapping-summary,
 .demo-video-real-product[data-mode="tab"] .cycle-readiness,
 .demo-video-real-product[data-mode="tab"] .merit-scenario,
@@ -4998,12 +5005,42 @@ a:focus-visible {
   font-size: 1rem;
 }
 
-.demo-video-page[data-capture="true"] .demo-video-real-product[data-mode="overview"] .cycle-stat-cards .stat-card:nth-child(n + 5) {
+.demo-video-page[data-capture="true"] .demo-video-real-product[data-mode="overview"] .cycle-stat-cards .stat-card:nth-child(n + 6) {
   display: none !important;
 }
 
 .demo-video-page[data-capture="true"] .demo-video-real-product[data-mode="overview"] .cycle-stat-cards {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.demo-video-page[data-capture="true"] .demo-video-real-product[data-mode="budget"] .merit-scenario {
+  padding: 18px 20px;
+  margin-bottom: 14px;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-real-product[data-mode="budget"] .merit-scenario__value {
+  font-size: 1.55rem;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-real-product[data-mode="budget"] .merit-scenario__metric--highlight {
+  border-width: 2px;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-real-product[data-mode="budget"] .insights-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-real-product[data-mode="budget"] .metric-card__value {
+  font-size: 1.4rem;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-real-product[data-mode="budget"] .merit-scenario__chips {
+  display: none;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-real-product[data-mode="budget"] .metric-card--input .metric-card__controls {
+  display: none;
 }
 
 .demo-video-page[data-capture="true"] .demo-video-real-product[data-tab="pay_equity"] .pay-equity-panel > .alert-warning,
