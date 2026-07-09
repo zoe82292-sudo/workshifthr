@@ -325,7 +325,12 @@ async function captureSceneScreenshots(sceneDurationsMs) {
         undefined,
         { timeout: 10_000 },
       );
-      await sleep(600);
+      if (scene.id === "pdf") {
+        await page.waitForSelector('[data-pdf-ready="true"]', { timeout: 30_000 });
+        await sleep(500);
+      } else {
+        await sleep(600);
+      }
 
       const screenshotPath = path.join(videoTempDir, `scene-${scene.id}.png`);
       await page.locator(".demo-video-stage").screenshot({ path: screenshotPath, type: "png" });
