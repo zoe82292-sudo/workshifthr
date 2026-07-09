@@ -676,6 +676,8 @@ export function ResultsDashboard({
         detectedColumns={result.detected_columns}
       />
 
+      {activeTab === "review_queue" ? (
+        <>
       <CycleReadinessPanel
         result={result}
         onNavigateTab={onTabChange}
@@ -754,6 +756,8 @@ export function ResultsDashboard({
             </button>
           ))}
       </div>
+        </>
+      ) : null}
 
       <div className="results-tab-content">
       {activeTab === "review_queue" ? (

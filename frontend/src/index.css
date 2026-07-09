@@ -557,10 +557,40 @@ p {
 
 .mapping-summary {
   margin-bottom: 20px;
-  padding: 16px 18px;
+  padding: 12px 18px;
   border-radius: 16px;
   border: 1px solid var(--border);
   background: var(--surface-muted);
+}
+
+.mapping-summary__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.mapping-summary__summary::-webkit-details-marker {
+  display: none;
+}
+
+.mapping-summary__summary::before {
+  content: "▸";
+  flex-shrink: 0;
+  margin-right: 4px;
+  color: var(--text-muted);
+  transition: transform 0.15s ease;
+}
+
+.mapping-summary[open] .mapping-summary__summary::before {
+  transform: rotate(90deg);
+}
+
+.mapping-summary__title {
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .mapping-summary h3 {
@@ -569,9 +599,18 @@ p {
 }
 
 .mapping-summary__meta {
-  margin: 0 0 12px;
+  margin: 0;
   color: var(--text-muted);
   font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.mapping-summary[open] .mapping-summary__meta {
+  margin-bottom: 12px;
+}
+
+.mapping-summary[open] .mapping-summary__list {
+  margin-top: 4px;
 }
 
 .mapping-summary__list {
