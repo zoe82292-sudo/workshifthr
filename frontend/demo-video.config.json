@@ -3,22 +3,22 @@
     {
       "id": "intro",
       "durationMs": 5000,
-      "narration": "Merit week's when it all hits at once. Who's below range, which managers earn less than their team, what it's going to cost to fix. Upload your roster to ShiftWorks HR and you'll have a review queue and a leadership PDF in under thirty seconds."
+      "narration": "Merit week is when everything lands at once. Who's below range, which managers earn less than their reports, what it's going to cost to fix. Upload your roster to ShiftWorks HR and you'll have a review queue and a leadership PDF in under thirty seconds."
     },
     {
       "id": "upload",
       "durationMs": 4500,
-      "narration": "You probably already have the file — Workday, ADP, or just a spreadsheet. Drag it in. No new HRIS, no API, nothing to configure."
+      "narration": "You already have the file, whether that's Workday, ADP, or a spreadsheet. Drop it in. No new HRIS needed, nothing to configure. Your columns map automatically."
     },
     {
       "id": "dashboard",
       "durationMs": 5000,
-      "narration": "First thing you see is your review queue, ranked by severity. Critical items up top, so you know what to tackle before merit letters go out."
+      "narration": "Right away you see a review queue ranked by severity. Critical items up top, so you know what to tackle before merit letters go out."
     },
     {
       "id": "budget",
       "durationMs": 5000,
-      "narration": "You get the dollars too. What it costs to bring people up to minimum, your merit pool, total exposure. So when finance asks, you're ready."
+      "narration": "You also get the dollars. What it costs to bring people up to minimum, your merit pool, total exposure. So when finance asks, you're ready."
     },
     {
       "id": "issues",
@@ -28,22 +28,22 @@
     {
       "id": "managers",
       "durationMs": 4500,
-      "narration": "It catches the awkward stuff too. Like when a manager earns less than someone on their team. You see both names, side by side."
+      "narration": "It catches the awkward stuff too. When a manager earns less than someone on their team, you see both names side by side."
     },
     {
       "id": "equity",
       "durationMs": 5000,
-      "narration": "When leadership asks about pay fairness, you've got median pay by gender and race, and the dollar gap between groups. Pulled straight from your roster."
+      "narration": "When leadership asks about pay fairness, you see median pay by gender and race, and the dollar gap between groups, pulled straight from your roster."
     },
     {
       "id": "location",
       "durationMs": 4500,
-      "narration": "If your file has location, you'll see median pay by city and how your team's spread across geographies. No extra spreadsheet."
+      "narration": "If your file includes location, you'll see median pay by city and how your team is spread across geographies. No extra spreadsheet required."
     },
     {
       "id": "pdf",
       "durationMs": 5500,
-      "narration": "Need something for the exec briefing? One click. Risk level, total exposure, and the talking points they'll actually ask about."
+      "narration": "Need something for the exec briefing? One click gives you risk level, total exposure, and the talking points they'll actually ask about."
     },
     {
       "id": "cta",

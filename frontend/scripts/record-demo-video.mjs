@@ -151,8 +151,8 @@ function synthesizeWithElevenLabs(scene, ffmpeg) {
       "-d",
       JSON.stringify({
         text: scene.narration,
-        model_id: process.env.ELEVENLABS_MODEL_ID ?? "eleven_multilingual_v2",
-        voice_settings: { stability: 0.42, similarity_boost: 0.82, style: 0.18, use_speaker_boost: true },
+        model_id: process.env.ELEVENLABS_MODEL_ID ?? "eleven_turbo_v2_5",
+        voice_settings: { stability: 0.38, similarity_boost: 0.78, style: 0.35, use_speaker_boost: true },
       }),
       "--output",
       mp3,
@@ -175,11 +175,11 @@ function synthesizeWithElevenLabs(scene, ffmpeg) {
 
 function synthesizeWithEdgeTts(scene, ffmpeg, python) {
   const mp3 = path.join(narrationTempDir, `scene-${scene.id}.mp3`);
-  const voice = process.env.RECORD_EDGE_VOICE ?? "en-US-BrianNeural";
-  const rate = process.env.RECORD_EDGE_RATE ?? "+2%";
-  const pitch = process.env.RECORD_EDGE_PITCH ?? "-2Hz";
-  const pauseMs = process.env.RECORD_EDGE_PAUSE_MS ?? "140";
-  const singlePass = process.env.RECORD_EDGE_SINGLE_PASS === "1" ? " --single-pass" : " --no-single-pass";
+  const voice = process.env.RECORD_EDGE_VOICE ?? "en-US-AndrewMultilingualNeural";
+  const rate = process.env.RECORD_EDGE_RATE ?? "+4%";
+  const pitch = process.env.RECORD_EDGE_PITCH ?? "-1Hz";
+  const pauseMs = process.env.RECORD_EDGE_PAUSE_MS ?? "80";
+  const singlePass = process.env.RECORD_EDGE_SINGLE_PASS !== "0" ? " --single-pass" : " --no-single-pass";
   const script = path.join(repoRoot, "scripts/synthesize_narration.py");
   execSync(
     `${shellQuote(python)} ${shellQuote(script)} ${shellQuote(scene.narration)} ${shellQuote(mp3)} --voice ${voice} --rate ${rate} --pitch ${pitch} --chunk-pause-ms ${pauseMs}${singlePass} --ffmpeg ${shellQuote(ffmpeg)}`,
@@ -253,7 +253,7 @@ function buildNarrationTrack(ffmpeg) {
 
   if (useEdgeTts) {
     console.log(
-      `Narration: Edge neural (${process.env.RECORD_EDGE_VOICE ?? "en-US-BrianNeural"}, ${process.env.RECORD_EDGE_RATE ?? "+2%"}, chunked)`,
+      `Narration: Edge neural (${process.env.RECORD_EDGE_VOICE ?? "en-US-AndrewMultilingualNeural"}, ${process.env.RECORD_EDGE_RATE ?? "+4%"}, single-pass)`,
     );
   } else {
     console.log(`Narration: macOS say (${resolveSayVoice()}, natural)`);

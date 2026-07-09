@@ -14,7 +14,7 @@ function IntroScene() {
         <p className="demo-video-kicker">For comp teams · under 30 seconds</p>
         <h1>See who's underpaid, what it'll cost to fix, and what leadership needs to know — before merit week.</h1>
         <p className="demo-video-sub">
-          One roster upload — review queue, dollar gaps, pay equity, and a leadership PDF. No API required.
+          One roster upload — review queue, dollar gaps, pay equity, and a leadership PDF.
         </p>
       </div>
       <div className="demo-video-hero__visual demo-video-hero__visual--product" aria-hidden>
@@ -37,7 +37,7 @@ function UploadScene() {
         <p className="demo-video-kicker">Step 1 · Upload</p>
         <h2>Drop your roster file</h2>
         <p className="demo-video-sub">
-          Pull from Workday, ADP, UKG — or any spreadsheet. No new HRIS, no API — columns map automatically.
+          Pull from Workday, ADP, UKG — or any spreadsheet. No new HRIS needed — your columns map automatically.
         </p>
         <div className="demo-video-hero__vendors">
           <span>Workday</span>
