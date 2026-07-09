@@ -35,7 +35,7 @@ const HERO_PAIN_POINTS = [
 ];
 
 const TRUST_POINTS = [
-  { stat: "< 30 sec", label: "To first insights" },
+  { stat: "Under 1 min", label: "To first insights" },
   { stat: "$249", label: "Per merit cycle" },
   { stat: "No API", label: "HRIS export upload" },
   { stat: "PDF + Excel", label: "Leadership exports" },

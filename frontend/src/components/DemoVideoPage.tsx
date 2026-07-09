@@ -11,10 +11,10 @@ function IntroScene() {
     <div className="demo-video-hero demo-video-hero--intro">
       <div className="demo-video-hero__copy">
         <BrandLogo size="hero" layout="lockup" />
-        <p className="demo-video-kicker">Compensation review in under a minute</p>
+        <p className="demo-video-kicker">For comp teams · under a minute</p>
         <h1>See who's underpaid, what it'll cost to fix, and what leadership needs to know — before merit week.</h1>
         <p className="demo-video-sub">
-          One roster upload — prioritized flags, dollar gaps, pay equity, and a leadership-ready PDF in under a minute.
+          One roster upload — review queue, dollar gaps, pay equity, and a leadership PDF. No API required.
         </p>
       </div>
       <div className="demo-video-hero__visual demo-video-hero__visual--product" aria-hidden>
@@ -37,8 +37,7 @@ function UploadScene() {
         <p className="demo-video-kicker">Step 1 · Upload</p>
         <h2>Drop your roster file</h2>
         <p className="demo-video-sub">
-          Pull from Workday, ADP, UKG — or use your own spreadsheet. ShiftWorks reads salary,
-          ranges, merit, manager, and demographic columns automatically.
+          Pull from Workday, ADP, UKG — or any spreadsheet. No new HRIS, no API — columns map automatically.
         </p>
         <div className="demo-video-hero__vendors">
           <span>Workday</span>

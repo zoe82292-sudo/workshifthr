@@ -3,17 +3,17 @@
     {
       "id": "intro",
       "durationMs": 5000,
-      "narration": "Merit week is when pay problems show up — people below their range, managers earning less than their team, and budget surprises you did not plan for. ShiftWorks HR surfaces all of it from one roster upload in under a minute."
+      "narration": "Merit week is when comp teams find out who's below range, which managers earn less than their team, and what it'll cost to fix. ShiftWorks HR gives you a prioritized review queue and leadership PDF from one roster upload — in under a minute."
     },
     {
       "id": "upload",
       "durationMs": 4500,
-      "narration": "Pull your roster from Workday, ADP, or any spreadsheet. Drop it into ShiftWorks HR and you're ready to go — no configuration or implementation."
+      "narration": "Pull your roster from Workday, ADP, or any spreadsheet — no new HRIS, no API. Drop it into ShiftWorks HR and you're ready to go. No configuration or implementation."
     },
     {
       "id": "dashboard",
       "durationMs": 5000,
-      "narration": "Right away you see what needs attention before merit letters go out — who's flagged, how urgent it is, and where to start."
+      "narration": "Right away you get a review queue ranked by severity — what's critical, what's high priority, and what to tackle before merit letters go out."
     },
     {
       "id": "budget",

@@ -4840,7 +4840,8 @@ a:focus-visible {
 .demo-video-real-product[data-mode="budget"] .cycle-readiness,
 .demo-video-real-product[data-mode="budget"] .cycle-stat-cards,
 .demo-video-real-product[data-mode="budget"] .results-tab-content,
-.demo-video-real-product[data-mode="budget"] .merit-budget-variance {
+.demo-video-real-product[data-mode="budget"] .merit-budget-variance,
+.demo-video-real-product[data-mode="budget"] .mapping-summary {
   display: none !important;
 }
 
@@ -4883,9 +4884,30 @@ a:focus-visible {
 
 .demo-video-intro-product {
   width: 1280px;
-  transform: scale(0.56);
+  transform: scale(0.56) translateY(-120px);
   transform-origin: top left;
   pointer-events: none;
+}
+
+.demo-video-intro-product .mapping-summary,
+.demo-video-page[data-capture="true"] .demo-video-real-product[data-mode="overview"] .mapping-summary {
+  display: none !important;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-real-product[data-mode="overview"] .penetration-chart {
+  display: none !important;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-layer--app-table .demo-video-real-product[data-tab="below_minimum"],
+.demo-video-page[data-capture="true"] .demo-video-layer--app-table .demo-video-real-product[data-tab="managers_below_reports"] {
+  transform: scale(1.1);
+  transform-origin: top center;
+  width: 90.9%;
+  margin: 0 auto;
+}
+
+.demo-video-page[data-capture="true"] .demo-video-layer--app-table {
+  overflow: hidden;
 }
 
 .demo-video-intro-product .demo-video-real-product {

@@ -243,7 +243,7 @@ function synthesizeSceneSpeech(scene, ffmpeg, { python, useEdgeTts, sayVoice }) 
 function buildNarrationTrack(ffmpeg) {
   if (process.env.RECORD_VOICEOVER === "0") {
     console.log("Skipping voiceover (RECORD_VOICEOVER=0).");
-    return { audioPath: null, sceneDurationsMs: scenes.map((scene) => scene.durationMs) };
+    return { audioPath: null, sceneDurationsMs: scenes.map((scene) => scene.durationMs), sceneSpeechSeconds: [] };
   }
 
   fs.mkdirSync(narrationTempDir, { recursive: true });
@@ -262,6 +262,7 @@ function buildNarrationTrack(ffmpeg) {
   const sayVoice = resolveSayVoice();
   const sceneFiles = [];
   const sceneDurationsMs = [];
+  const sceneSpeechSeconds = [];
 
   for (const scene of scenes) {
     const polishedWav = synthesizeSceneSpeech(scene, ffmpeg, { python, useEdgeTts, sayVoice });
@@ -272,6 +273,7 @@ function buildNarrationTrack(ffmpeg) {
 
     const visualPadSeconds = 0.35;
     const sceneSeconds = speechSeconds + visualPadSeconds;
+    sceneSpeechSeconds.push(speechSeconds);
     sceneDurationsMs.push(Math.ceil(sceneSeconds * 1000));
 
     const padded = path.join(narrationTempDir, `scene-${scene.id}-padded.wav`);
@@ -295,7 +297,7 @@ function buildNarrationTrack(ffmpeg) {
   );
 
   console.log(`Saved ${audioOut}`);
-  return { audioPath: audioOut, sceneDurationsMs };
+  return { audioPath: audioOut, sceneDurationsMs, sceneSpeechSeconds };
 }
 
 function renderSceneClip(ffmpeg, imagePath, durationSec, outputPath) {
@@ -342,6 +344,90 @@ async function captureSceneScreenshots(sceneDurationsMs) {
   }
 }
 
+function formatSrtTimestamp(ms) {
+  const hours = Math.floor(ms / 3_600_000);
+  const minutes = Math.floor((ms % 3_600_000) / 60_000);
+  const seconds = Math.floor((ms % 60_000) / 1000);
+  const millis = ms % 1000;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")},${String(millis).padStart(3, "0")}`;
+}
+
+function wrapCaptionCues(text, maxLineLen = 42) {
+  const words = text.replace(/\s+/g, " ").trim().split(" ");
+  const lines = [];
+  let current = "";
+  for (const word of words) {
+    const candidate = current ? `${current} ${word}` : word;
+    if (candidate.length <= maxLineLen) {
+      current = candidate;
+    } else {
+      if (current) lines.push(current);
+      current = word;
+    }
+  }
+  if (current) lines.push(current);
+
+  const cues = [];
+  for (let i = 0; i < lines.length; i += 2) {
+    cues.push(lines.slice(i, i + 2).join("\n"));
+  }
+  return cues;
+}
+
+function writeCaptionsSrt(sceneDurationsMs, outPath) {
+  let cursorMs = 0;
+  const entries = [];
+
+  scenes.forEach((scene, index) => {
+    const durationMs = sceneDurationsMs[index] ?? scene.durationMs;
+    const cues = wrapCaptionCues(scene.narration);
+    const sliceMs = Math.floor(durationMs / cues.length);
+    cues.forEach((cue, cueIndex) => {
+      const startMs = cursorMs + cueIndex * sliceMs;
+      const endMs =
+        cueIndex === cues.length - 1 ? cursorMs + durationMs - 40 : cursorMs + (cueIndex + 1) * sliceMs - 40;
+      entries.push({
+        startMs,
+        endMs: Math.max(startMs + 400, endMs),
+        text: cue,
+      });
+    });
+    cursorMs += durationMs;
+  });
+
+  const body = entries
+    .map((entry, index) =>
+      [
+        String(index + 1),
+        `${formatSrtTimestamp(entry.startMs)} --> ${formatSrtTimestamp(entry.endMs)}`,
+        entry.text,
+        "",
+      ].join("\n"),
+    )
+    .join("\n");
+
+  fs.writeFileSync(outPath, body, "utf8");
+}
+
+function burnCaptions(ffmpeg, inputPath, srtPath, outputPath) {
+  const style = [
+    "Fontname=Arial",
+    "Fontsize=24",
+    "Bold=1",
+    "PrimaryColour=&H00FFFFFF",
+    "OutlineColour=&H00000000",
+    "Outline=2",
+    "Shadow=0",
+    "Alignment=2",
+    "MarginV=52",
+  ].join(",");
+  const subtitlePath = srtPath.replace(/\\/g, "/").replace(/:/g, "\\:").replace(/'/g, "\\'");
+  execSync(
+    `${shellQuote(ffmpeg)} -y -i ${shellQuote(inputPath)} -vf ${shellQuote(`subtitles='${subtitlePath}':force_style='${style}'`)} -c:a copy -movflags +faststart ${shellQuote(outputPath)}`,
+    { stdio: "inherit" },
+  );
+}
+
 function assembleVideo(ffmpeg, sceneDurationsMs, audioPath) {
   const sceneClips = scenes.map((scene, index) => {
     const imagePath = path.join(videoTempDir, `scene-${scene.id}.png`);
@@ -368,11 +454,26 @@ function assembleVideo(ffmpeg, sceneDurationsMs, audioPath) {
   );
 
   if (audioPath && fs.existsSync(audioPath)) {
+    const muxedMp4 = path.join(marketingDir, "demo-walkthrough-muxed.mp4");
     execSync(
-      `${shellQuote(ffmpeg)} -y -i ${shellQuote(videoOnlyMp4)} -i ${shellQuote(audioPath)} -c:v copy -c:a aac -b:a 192k -ar 44100 -ac 1 -map 0:v:0 -map 1:a:0 -movflags +faststart ${shellQuote(mp4Out)}`,
+      `${shellQuote(ffmpeg)} -y -i ${shellQuote(videoOnlyMp4)} -i ${shellQuote(audioPath)} -c:v copy -c:a aac -b:a 192k -ar 44100 -ac 1 -map 0:v:0 -map 1:a:0 -movflags +faststart ${shellQuote(muxedMp4)}`,
       { stdio: "inherit" },
     );
     fs.unlinkSync(videoOnlyMp4);
+
+    if (process.env.RECORD_CAPTIONS !== "0") {
+      const srtPath = path.join(videoTempDir, "captions.srt");
+      const captionedMp4 = path.join(marketingDir, "demo-walkthrough-captioned.mp4");
+      const marketingSrt = path.join(marketingDir, "demo-walkthrough-captions.srt");
+      writeCaptionsSrt(sceneDurationsMs, srtPath);
+      fs.copyFileSync(srtPath, marketingSrt);
+      console.log("Burning captions for LinkedIn…");
+      burnCaptions(ffmpeg, muxedMp4, srtPath, captionedMp4);
+      fs.renameSync(captionedMp4, mp4Out);
+      fs.unlinkSync(muxedMp4);
+    } else {
+      fs.renameSync(muxedMp4, mp4Out);
+    }
   } else {
     fs.renameSync(videoOnlyMp4, mp4Out);
   }
