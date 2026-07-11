@@ -48,3 +48,12 @@ Scenes: intro → upload → **full dashboard** (exec summary, budget, merit poo
 | Homepage sample | https://shiftworkshr.com → **Sample** tab |
 | Full interactive analyzer | https://shiftworkshr.com/sample-preview |
 | Try with your file | https://shiftworkshr.com/try |
+
+## Live sales / partner demo prep
+
+| Doc | Use |
+|-----|-----|
+| `demo-prep-feedback-call.md` | Full prep: product + ICP, agenda, tough Q&A, feedback framing |
+| `demo-cheat-sheet.md` | One-pager during the call |
+| `demo-follow-up-templates.md` | Thank-you / blurb / links emails |
+| `outreach-pack.md` | General 15-min script, LinkedIn, cold email |
