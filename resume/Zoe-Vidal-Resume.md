@@ -21,7 +21,7 @@ Compensation Benchmarking · Aon Market Surveys · Job Evaluation · Pay Band Mo
 Open Enrollment · Employee Stock Purchase Plan (ESPP) · Deferred Compensation · Long-Term Incentives (LTI) · 401(k) Administration & Audit · Health & Welfare Benefits · Leave Administration · Vendor Management · Employee Presentations · Change Management
 
 **Technology & Business**
-Workday HCM · Workday Advanced Compensation · ADP Workforce Now · Microsoft Excel · Microsoft Copilot · Cursor AI · Executive Reporting · Cross-Functional Collaboration · Process Improvement · Compensation Analysis
+Workday HCM · Workday Advanced Compensation · ADP Workforce Now · SAP · ServiceNow · Microsoft Excel · Microsoft Copilot · Cursor AI · Executive Reporting · Cross-Functional Collaboration · Process Improvement · Compensation Analysis
 
 ---
 
@@ -113,4 +113,4 @@ Built a compensation analysis web app that lets HR and compensation teams upload
 
 ## TECHNICAL SKILLS
 
-Workday HCM · Workday Advanced Compensation · ADP Workforce Now · Microsoft Excel · Microsoft Copilot · Cursor AI · Microsoft Office
+Workday HCM · Workday Advanced Compensation · ADP Workforce Now · SAP · ServiceNow · Microsoft Excel · Microsoft Copilot · Cursor AI · Microsoft Office

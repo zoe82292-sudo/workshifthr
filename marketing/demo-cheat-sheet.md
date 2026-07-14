@@ -68,5 +68,6 @@ Anchors: 35 queue · $11k floor · 2 inversions · ~$87k · risk high
 | Only merit? | No — anytime you QA a census |
 | Just use Workday? | Configure if you can; this is the gap while you wait / for first-pass QA |
 | vs Excel? | Agree first. Doing it *well* = days (→ week if messy). Ask: “Not a quick afternoon, right?” Same checklist in under a minute |
+| Sensitive data? | In memory by default · HTTPS · no ML on uploads · save history optional · start with sample / no-names file · security + DPA on site · no SOC 2 yet (be honest) |
 | Security? | Early; summary + DPA; start sanitized |
 | Price? | $249/90 days · $899/yr · $99/mo |

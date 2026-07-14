@@ -323,6 +323,7 @@ export function LandingPage({
   }, [activeTab]);
 
   function selectTab(tab: LandingTab) {
+    const alreadyActive = activeTab === tab;
     setActiveTab(tab);
     pendingTabScroll.current = true;
     trackEvent("landing_tab", { tab });
@@ -330,6 +331,12 @@ export function LandingPage({
     window.setTimeout(() => setTabFlash(false), 1400);
     if (window.location.hash !== `#${tab}`) {
       window.history.replaceState(null, "", `#${tab}`);
+    }
+    // useEffect only runs when activeTab changes — still scroll if already on this tab
+    if (alreadyActive) {
+      window.setTimeout(() => {
+        requestAnimationFrame(() => scrollToActiveTabPanel(tab));
+      }, 80);
     }
   }
 
@@ -406,9 +413,13 @@ export function LandingPage({
                 See pricing — from $249/cycle
               </button>
             )}
-            <button className="button button-secondary" type="button" onClick={() => selectTab("sample")}>
+            <Link
+              className="button button-secondary"
+              to="/sample-preview"
+              onClick={() => trackEvent("landing_cta", { action: "see_sample", location: "hero" })}
+            >
               See sample analysis
-            </button>
+            </Link>
           </div>
           {trialAvailable ? (
             <p className="landing-hero-trial-note">

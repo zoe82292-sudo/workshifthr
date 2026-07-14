@@ -3,52 +3,47 @@
     {
       "id": "intro",
       "durationMs": 5000,
-      "narration": "Merit week is when everything lands at once. Who's below range, which managers earn less than their reports, what it's going to cost to fix. Upload your roster to ShiftWorks HR and you'll have a review queue and a leadership PDF in under thirty seconds."
+      "narration": "If you've ever spent days in Excel before merit week — or anytime leadership asks who's underpaid — you know the fear: you might still miss something. I built ShiftWorks HR for that moment. Upload your compensation census and in under thirty seconds you get who needs attention, what it'll cost to fix, and a summary leadership can actually use."
     },
     {
       "id": "upload",
       "durationMs": 4500,
-      "narration": "You already have the file, whether that's Workday, ADP, or a spreadsheet. Drop it in. No new HRIS needed, nothing to configure. Your columns map automatically."
+      "narration": "You already have the file — Workday, ADP, UKG, or a spreadsheet. Drop it in. No new HRIS. Nothing for IT to configure."
     },
     {
       "id": "dashboard",
       "durationMs": 5000,
-      "narration": "Right away you see a review queue ranked by severity. Critical items up top, so you know what to tackle before merit letters go out."
+      "narration": "First: a prioritized list of what to fix before letters go out — not fifty tabs. Critical items rise to the top so you know where to start."
     },
     {
       "id": "budget",
       "durationMs": 5000,
-      "narration": "You also get the dollars. What it costs to bring people up to minimum, your merit pool, total exposure. So when finance asks, you're ready."
+      "narration": "Then the number finance will ask for: cost to bring people up to range, what's in the merit pool, and your total exposure. So you're not guessing in the meeting."
     },
     {
       "id": "issues",
       "durationMs": 5000,
-      "narration": "Every flag comes with a name, a department, and the exact dollar gap. Not just a row count buried in Excel."
+      "narration": "Every flag is a real person — name, department, and the exact dollar gap. Act on it the same day instead of rebuilding another spreadsheet."
     },
     {
       "id": "managers",
       "durationMs": 4500,
-      "narration": "It catches the awkward stuff too. When a manager earns less than someone on their team, you see both names side by side."
+      "narration": "It also catches the awkward ones — a manager earning less than someone they lead — so you can handle it before it becomes a surprise."
     },
     {
       "id": "equity",
       "durationMs": 5000,
-      "narration": "When leadership asks about pay fairness, you see median pay by gender and race, and the dollar gap between groups, pulled straight from your roster."
-    },
-    {
-      "id": "location",
-      "durationMs": 4500,
-      "narration": "If your file includes location, you'll see median pay by city and how your team is spread across geographies. No extra spreadsheet required."
+      "narration": "When leadership asks about pay fairness, you can show median pay by gender and race from your own data — ready for the conversation."
     },
     {
       "id": "pdf",
       "durationMs": 5500,
-      "narration": "Need something for the exec briefing? One click gives you risk level, total exposure, and the talking points they'll actually ask about."
+      "narration": "Need to brief executives? One click — risk, exposure, and the talking points they'll ask about."
     },
     {
       "id": "cta",
       "durationMs": 3500,
-      "narration": "Try ShiftWorks HR free with your own roster. No credit card required."
+      "narration": "Try ShiftWorks HR free with your own census. No credit card required."
     }
   ]
 }

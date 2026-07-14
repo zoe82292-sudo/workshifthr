@@ -11,10 +11,10 @@ function IntroScene() {
     <div className="demo-video-hero demo-video-hero--intro">
       <div className="demo-video-hero__copy">
         <BrandLogo size="hero" layout="lockup" />
-        <p className="demo-video-kicker">For comp teams · under 30 seconds</p>
+        <p className="demo-video-kicker">For mid-size comp teams · under 30 seconds</p>
         <h1>See who's underpaid, what it'll cost to fix, and what leadership needs to know — before merit week.</h1>
         <p className="demo-video-sub">
-          One roster upload — review queue, dollar gaps, pay equity, and a leadership PDF.
+          One census upload — who needs attention, dollar gaps, and a leadership PDF. No IT project.
         </p>
       </div>
       <div className="demo-video-hero__visual demo-video-hero__visual--product" aria-hidden>
@@ -35,9 +35,9 @@ function UploadScene() {
     <div className="demo-video-hero demo-video-hero--upload">
       <div className="demo-video-hero__copy">
         <p className="demo-video-kicker">Step 1 · Upload</p>
-        <h2>Drop your roster file</h2>
+        <h2>Drop your compensation census</h2>
         <p className="demo-video-sub">
-          Pull from Workday, ADP, UKG — or any spreadsheet. No new HRIS needed — your columns map automatically.
+          Pull from Workday, ADP, UKG — or any spreadsheet. No new HRIS needed — nothing to configure.
         </p>
         <div className="demo-video-hero__vendors">
           <span>Workday</span>

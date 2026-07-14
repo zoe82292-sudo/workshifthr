@@ -211,11 +211,41 @@ Open: https://shiftworkshr.com/sample-preview
 
 ### Trust & early stage
 
-**“Why upload salaries to a small tool?”**  
-> “Fair. Start with sample or a sanitized file (IDs, no names). Security summary and DPA on the site. I’m honest that we’re early — trust is earned with transparency, not buzzwords.”
+**“Why would anyone upload salaries / sensitive comp data?”**  
+> “Fair question — it’s sensitive. A few things that help:  
+>  
+> Files are processed **in memory** for the analysis. We don’t keep the spreadsheet by default. Saving to history is opt-in. Exports (PDF/Excel) generate in the browser onto their device. Traffic is **HTTPS**. We don’t train ML models on uploads.  
+>  
+> For a first look, people use the **public sample** (fictional data) or upload a **sanitized file** — Employee ID, salary, ranges, no names if they prefer. There’s a security summary and DPA on the site for IT/procurement.  
+>  
+> I’m honest we’re early. Trust is earned with clear handling, not buzzwords.”
 
-**“SOC 2?”**  
-> Don’t invent it. Point to security summary + DPA. Offer anonymized data.
+**“Where does the data go? Do you store it?”**  
+> “Default: no. Upload → analyze in memory → results back to the browser → in-memory copy discarded. We don’t run a warehouse of employee salary rows.  
+>  
+> If someone clicks **Save to history**, a JSON snapshot of results can be stored for their signed-in org account (limited runs), and they can delete it. That’s optional.”
+
+**“Who can see our file?”**  
+> “Only their authorized signed-in users for that organization. Sharing login outside the authorized team isn’t allowed. I recommend they limit access to comp/HR staff and sign out when done.”
+
+**“Are you SOC 2 / ISO / HIPAA certified?”**  
+> “Not today — don’t invent that. Here’s what we *do* publish: security summary, privacy policy, DPA for procurement. Happy to walk IT through the page. Many mid-size teams start with the sample or a sanitized census while they evaluate.”
+
+**“What about GDPR / employee privacy?”**  
+> “The customer remains responsible for being authorized to upload and for how they use demographic fields. If gender/race are in the file, we only use them for descriptive comparisons, hide small groups (&lt;5), and don’t keep those fields long-term unless they save history. Point them to privacy + security pages.”
+
+**“Can we try without real data?”**  
+> “Yes — that’s what sample-preview is for. Fictional sample only. Or sanitize: strip names, keep IDs and ranges.”
+
+**Links to leave them:**  
+- https://shiftworkshr.com/security-summary  
+- https://shiftworkshr.com/security  
+- https://shiftworkshr.com/privacy  
+- https://shiftworkshr.com/dpa  
+- https://shiftworkshr.com/sample-preview  
+
+**Short version if she interrupts:**  
+> “In memory by default, HTTPS, no ML training on uploads, save history is optional. Start with sample or a no-names file. Full write-up is on the security page.”
 
 **“Who else uses this?”**  
 > “Early. Proof is the live sample. Happy to run a sanitized file.”

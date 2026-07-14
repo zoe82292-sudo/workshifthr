@@ -82,9 +82,8 @@ function polishVoiceWav(ffmpeg, inputPath, outputPath, light = true) {
     fs.copyFileSync(inputPath, outputPath);
     return;
   }
-  const filter = light
-    ? "highpass=f=70"
-    : "highpass=f=90,acompressor=threshold=-22dB:ratio=2.5:attack=12:release=120,alimiter=limit=0.92";
+  const filter =
+    "highpass=f=90,acompressor=threshold=-22dB:ratio=2.5:attack=12:release=120,alimiter=limit=0.92";
   execSync(
     `${shellQuote(ffmpeg)} -y -i ${shellQuote(inputPath)} -af ${shellQuote(filter)} ${shellQuote(outputPath)}`,
     { stdio: "ignore" },
@@ -115,129 +114,57 @@ function resolveCustomNarration(sceneId) {
   return null;
 }
 
-function resolveSayVoice() {
-  const preferred = process.env.RECORD_VOICE;
-  const candidates = [preferred, "Ava", "Allison", "Daniel", "Samantha"].filter(Boolean);
-  if (process.platform !== "darwin") {
-    return candidates[candidates.length - 1];
-  }
-  const listing = spawnSync("say", ["-v", "?"], { encoding: "utf8" });
-  const available = `${listing.stdout ?? ""}${listing.stderr ?? ""}`;
-  for (const voice of candidates) {
-    if (available.includes(voice)) {
-      return voice;
+function resolveFullTakeNarration() {
+  const preferred = [
+    process.env.RECORD_FULL_TAKE,
+    "full-take-idid.m4a",
+    "full-take-1000.m4a",
+    "full-take-yay.m4a",
+    "full-take-perfect-zoe.m4a",
+    "full-take-final-zoe.m4a",
+    "full-take-zoe.m4a",
+    "full-take.m4a",
+    "full-take.wav",
+    "full-take.mp3",
+  ].filter(Boolean);
+
+  for (const name of preferred) {
+    const candidate = path.isAbsolute(name) ? name : path.join(narrationDir, name);
+    if (fs.existsSync(candidate)) {
+      return candidate;
     }
   }
-  return "Samantha";
+  return null;
 }
 
-function synthesizeWithElevenLabs(scene, ffmpeg) {
-  const apiKey = process.env.ELEVENLABS_API_KEY;
-  if (!apiKey) return null;
-
-  const voiceId = process.env.ELEVENLABS_VOICE_ID ?? "pNInz6obpgDQGcFmaJgB";
-  const mp3 = path.join(narrationTempDir, `scene-${scene.id}.mp3`);
-  const response = spawnSync(
-    "curl",
-    [
-      "-sS",
-      "-X",
-      "POST",
-      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
-      "-H",
-      `xi-api-key: ${apiKey}`,
-      "-H",
-      "Content-Type: application/json",
-      "-d",
-      JSON.stringify({
-        text: scene.narration,
-        model_id: process.env.ELEVENLABS_MODEL_ID ?? "eleven_turbo_v2_5",
-        voice_settings: { stability: 0.38, similarity_boost: 0.78, style: 0.35, use_speaker_boost: true },
-      }),
-      "--output",
-      mp3,
-    ],
-    { encoding: "utf8" },
-  );
-
-  if (response.status !== 0 || !fs.existsSync(mp3) || fs.statSync(mp3).size < 1000) {
-    throw new Error(`ElevenLabs failed for scene "${scene.id}"`);
+function loadFullTakeSceneDurationsMs(fullTakePath, ffmpeg) {
+  const timingsPath = path.join(narrationDir, "scene-timings.json");
+  const totalSec = probeDurationSeconds(ffmpeg, fullTakePath);
+  if (!fs.existsSync(timingsPath)) {
+    const each = totalSec / scenes.length;
+    return scenes.map(() => Math.ceil(each * 1000));
   }
 
-  const rawWav = path.join(narrationTempDir, `scene-${scene.id}-raw.wav`);
-  execSync(
-    `${shellQuote(ffmpeg)} -y -i ${shellQuote(mp3)} -ar 44100 -ac 1 ${shellQuote(rawWav)}`,
-    { stdio: "ignore" },
-  );
-  console.log(`  voice: ElevenLabs (${voiceId})`);
-  return rawWav;
-}
-
-function synthesizeWithEdgeTts(scene, ffmpeg, python) {
-  const mp3 = path.join(narrationTempDir, `scene-${scene.id}.mp3`);
-  const voice = process.env.RECORD_EDGE_VOICE ?? "en-US-AndrewMultilingualNeural";
-  const rate = process.env.RECORD_EDGE_RATE ?? "+4%";
-  const pitch = process.env.RECORD_EDGE_PITCH ?? "-1Hz";
-  const pauseMs = process.env.RECORD_EDGE_PAUSE_MS ?? "80";
-  const singlePass = process.env.RECORD_EDGE_SINGLE_PASS !== "0" ? " --single-pass" : " --no-single-pass";
-  const script = path.join(repoRoot, "scripts/synthesize_narration.py");
-  execSync(
-    `${shellQuote(python)} ${shellQuote(script)} ${shellQuote(scene.narration)} ${shellQuote(mp3)} --voice ${voice} --rate ${rate} --pitch ${pitch} --chunk-pause-ms ${pauseMs}${singlePass} --ffmpeg ${shellQuote(ffmpeg)}`,
-    { stdio: "inherit" },
-  );
-  const rawWav = path.join(narrationTempDir, `scene-${scene.id}-raw.wav`);
-  execSync(
-    `${shellQuote(ffmpeg)} -y -i ${shellQuote(mp3)} -ar 44100 -ac 1 ${shellQuote(rawWav)}`,
-    { stdio: "ignore" },
-  );
-  console.log(`  voice: Edge neural (${voice})`);
-  return rawWav;
-}
-
-function synthesizeSceneSpeech(scene, ffmpeg, { python, useEdgeTts, sayVoice }) {
-  const custom = resolveCustomNarration(scene.id);
-  const rawWav = path.join(narrationTempDir, `scene-${scene.id}-raw.wav`);
-  const polishedWav = path.join(narrationTempDir, `scene-${scene.id}-polished.wav`);
-
-  if (custom) {
-    execSync(
-      `${shellQuote(ffmpeg)} -y -i ${shellQuote(custom)} -ar 44100 -ac 1 ${shellQuote(rawWav)}`,
-      { stdio: "ignore" },
+  const timings = JSON.parse(fs.readFileSync(timingsPath, "utf8"));
+  const cuts = Array.isArray(timings.cutsSec) ? [...timings.cutsSec] : null;
+  if (!cuts || cuts.length < 2) {
+    throw new Error("narration/scene-timings.json must include cutsSec array");
+  }
+  if (cuts[cuts.length - 1] == null) {
+    cuts[cuts.length - 1] = totalSec;
+  }
+  if (cuts.length !== scenes.length + 1) {
+    throw new Error(
+      `scene-timings.json cutsSec length must be ${scenes.length + 1} (got ${cuts.length})`,
     );
-    console.log(`  voice: custom file (${path.basename(custom)})`);
-    polishVoiceWav(ffmpeg, rawWav, polishedWav, false);
-    return polishedWav;
   }
 
-  if (process.env.ELEVENLABS_API_KEY) {
-    try {
-      const elevenWav = synthesizeWithElevenLabs(scene, ffmpeg);
-      if (elevenWav) {
-        polishVoiceWav(ffmpeg, elevenWav, polishedWav, true);
-        return polishedWav;
-      }
-    } catch (error) {
-      console.warn(`  ElevenLabs failed for ${scene.id}, falling back to Edge TTS.`);
-    }
-  }
-
-  if (useEdgeTts && python) {
-    try {
-      const edgeWav = synthesizeWithEdgeTts(scene, ffmpeg, python);
-      polishVoiceWav(ffmpeg, edgeWav, polishedWav, true);
-      return polishedWav;
-    } catch (error) {
-      console.warn(`  Edge TTS failed for ${scene.id}, falling back to macOS say.`);
-    }
-  }
-
-  const aiff = path.join(narrationTempDir, `scene-${scene.id}.aiff`);
-  const rate = process.env.RECORD_SPEECH_RATE ?? "182";
-  execSync(`say -v ${sayVoice} -r ${rate} -o ${shellQuote(aiff)} ${shellQuote(scene.narration)}`);
-  convertSpeechToWav(aiff, rawWav, ffmpeg);
-  console.log(`  voice: macOS ${sayVoice}`);
-  polishVoiceWav(ffmpeg, rawWav, polishedWav, true);
-  return polishedWav;
+  return scenes.map((_, index) => {
+    const startSec = Number(cuts[index]);
+    const endSec = Number(cuts[index + 1]);
+    const seconds = Math.max(0.4, endSec - startSec);
+    return Math.ceil(seconds * 1000);
+  });
 }
 
 function buildNarrationTrack(ffmpeg) {
@@ -247,6 +174,29 @@ function buildNarrationTrack(ffmpeg) {
   }
 
   fs.mkdirSync(narrationTempDir, { recursive: true });
+
+  // Prefer one continuous take — avoids choppy voice edits between scenes.
+  const fullTake = resolveFullTakeNarration();
+  if (fullTake && process.env.RECORD_SPLIT_VOICE !== "1") {
+    const sceneDurationsMs = loadFullTakeSceneDurationsMs(fullTake, ffmpeg);
+    execSync(
+      `${shellQuote(ffmpeg)} -y -i ${shellQuote(fullTake)} -ar 44100 -ac 1 -c:a aac -b:a 192k ${shellQuote(audioOut)}`,
+      { stdio: "inherit" },
+    );
+    const totalSpeech = probeDurationSeconds(ffmpeg, audioOut);
+    console.log(
+      `Narration: continuous take (${path.basename(fullTake)}, ${totalSpeech.toFixed(1)}s) — no voice cuts`,
+    );
+    scenes.forEach((scene, index) => {
+      console.log(`  ${scene.id}: ${(sceneDurationsMs[index] / 1000).toFixed(1)}s visual`);
+    });
+    return {
+      audioPath: audioOut,
+      sceneDurationsMs,
+      sceneSpeechSeconds: sceneDurationsMs.map((ms) => ms / 1000),
+    };
+  }
+
   const python = resolvePython();
   const hasCustom = scenes.some((scene) => resolveCustomNarration(scene.id));
   const useEdgeTts = !hasCustom && process.env.RECORD_USE_EDGE_TTS !== "0" && Boolean(python);
@@ -271,7 +221,7 @@ function buildNarrationTrack(ffmpeg) {
       throw new Error(`Voiceover for scene "${scene.id}" is empty or too short.`);
     }
 
-    const visualPadSeconds = 0.35;
+    const visualPadSeconds = Number(process.env.RECORD_SCENE_PAD_SEC ?? "0.55");
     const sceneSeconds = speechSeconds + visualPadSeconds;
     sceneSpeechSeconds.push(speechSeconds);
     sceneDurationsMs.push(Math.ceil(sceneSeconds * 1000));
@@ -301,11 +251,29 @@ function buildNarrationTrack(ffmpeg) {
 }
 
 function renderSceneClip(ffmpeg, imagePath, durationSec, outputPath) {
-  const vf = "scale=1920:1080:flags=lanczos,format=yuv420p";
+  // Stable still — crossfades are applied when assembling scenes together.
+  const vf = `scale=1920:1080:flags=lanczos,fps=${OUTPUT_FPS},format=yuv420p`;
   execSync(
-    `${shellQuote(ffmpeg)} -y -loop 1 -i ${shellQuote(imagePath)} -vf ${shellQuote(vf)} -t ${durationSec.toFixed(3)} -r ${OUTPUT_FPS} -c:v libx264 -preset slow -crf 15 -pix_fmt yuv420p -movflags +faststart ${shellQuote(outputPath)}`,
+    `${shellQuote(ffmpeg)} -y -loop 1 -i ${shellQuote(imagePath)} -vf ${shellQuote(vf)} -t ${durationSec.toFixed(3)} -r ${OUTPUT_FPS} -c:v libx264 -preset medium -crf 16 -pix_fmt yuv420p -movflags +faststart ${shellQuote(outputPath)}`,
     { stdio: "inherit" },
   );
+}
+
+function buildCrossfadeFilter(sceneCount, durationsSec, crossfadeSec) {
+  if (sceneCount < 2) {
+    return { filter: "[0:v]null[vout]" };
+  }
+  const filters = [];
+  let current = "0:v";
+  for (let i = 1; i < sceneCount; i += 1) {
+    const offset = durationsSec.slice(0, i).reduce((sum, value) => sum + value, 0);
+    const next = i === sceneCount - 1 ? "vout" : `v${i}`;
+    filters.push(
+      `[${current}][${i}:v]xfade=transition=fade:duration=${crossfadeSec.toFixed(3)}:offset=${offset.toFixed(3)}[${next}]`,
+    );
+    current = next;
+  }
+  return { filter: filters.join(";") };
 }
 
 async function captureSceneScreenshots(sceneDurationsMs) {
@@ -428,35 +396,45 @@ function burnCaptions(ffmpeg, inputPath, srtPath, outputPath) {
   );
 }
 
+
 function assembleVideo(ffmpeg, sceneDurationsMs, audioPath) {
+  const crossfadeSec = Number(process.env.RECORD_CROSSFADE_SEC ?? "0.65");
+  const durationsSec = sceneDurationsMs.map((ms) => ms / 1000);
+
   const sceneClips = scenes.map((scene, index) => {
     const imagePath = path.join(videoTempDir, `scene-${scene.id}.png`);
     const clipPath = path.join(videoTempDir, `scene-${scene.id}.mp4`);
-    const durationSec = sceneDurationsMs[index] / 1000;
     if (!fs.existsSync(imagePath)) {
       throw new Error(`Missing screenshot for scene "${scene.id}"`);
     }
-    console.log(`  rendering ${scene.id} (${durationSec.toFixed(1)}s)`);
-    renderSceneClip(ffmpeg, imagePath, durationSec, clipPath);
+    // Extend all but the last clip by the crossfade window so final length still matches audio.
+    const isLast = index === scenes.length - 1;
+    const renderDur = isLast ? durationsSec[index] : durationsSec[index] + crossfadeSec;
+    console.log(
+      `  rendering ${scene.id} (${durationsSec[index].toFixed(1)}s` +
+        `${isLast ? "" : ` + ${crossfadeSec.toFixed(2)}s crossfade pad`})`,
+    );
+    renderSceneClip(ffmpeg, imagePath, renderDur, clipPath);
     return clipPath;
   });
 
-  const concatList = path.join(videoTempDir, "video-concat.txt");
-  fs.writeFileSync(
-    concatList,
-    sceneClips.map((file) => `file '${file.replace(/'/g, "'\\''")}'`).join("\n"),
-  );
-
   const videoOnlyMp4 = path.join(marketingDir, "demo-walkthrough-video-only.mp4");
-  execSync(
-    `${shellQuote(ffmpeg)} -y -f concat -safe 0 -i ${shellQuote(concatList)} -c:v libx264 -preset fast -crf 17 -pix_fmt yuv420p -movflags +faststart -an ${shellQuote(videoOnlyMp4)}`,
-    { stdio: "inherit" },
-  );
+  if (sceneClips.length === 1) {
+    fs.copyFileSync(sceneClips[0], videoOnlyMp4);
+  } else {
+    const { filter } = buildCrossfadeFilter(sceneClips.length, durationsSec, crossfadeSec);
+    const inputArgs = sceneClips.map((clip) => `-i ${shellQuote(clip)}`).join(" ");
+    console.log(`  crossfading ${sceneClips.length} scenes (${crossfadeSec}s dissolves)…`);
+    execSync(
+      `${shellQuote(ffmpeg)} -y ${inputArgs} -filter_complex ${shellQuote(filter)} -map "[vout]" -c:v libx264 -preset medium -crf 16 -pix_fmt yuv420p -movflags +faststart -an ${shellQuote(videoOnlyMp4)}`,
+      { stdio: "inherit" },
+    );
+  }
 
   if (audioPath && fs.existsSync(audioPath)) {
     const muxedMp4 = path.join(marketingDir, "demo-walkthrough-muxed.mp4");
     execSync(
-      `${shellQuote(ffmpeg)} -y -i ${shellQuote(videoOnlyMp4)} -i ${shellQuote(audioPath)} -c:v copy -c:a aac -b:a 192k -ar 44100 -ac 1 -map 0:v:0 -map 1:a:0 -movflags +faststart ${shellQuote(muxedMp4)}`,
+      `${shellQuote(ffmpeg)} -y -i ${shellQuote(videoOnlyMp4)} -i ${shellQuote(audioPath)} -c:v copy -c:a aac -b:a 192k -ar 44100 -ac 1 -map 0:v:0 -map 1:a:0 -shortest -movflags +faststart ${shellQuote(muxedMp4)}`,
       { stdio: "inherit" },
     );
     fs.unlinkSync(videoOnlyMp4);
@@ -520,7 +498,15 @@ async function main() {
   const { audioPath, sceneDurationsMs } = buildNarrationTrack(ffmpeg);
 
   console.log("Capturing scene screenshots (1920×1080)…");
-  await captureSceneScreenshots(sceneDurationsMs);
+  if (process.env.RECORD_SKIP_CAPTURE === "1") {
+    const missing = scenes.filter((scene) => !fs.existsSync(path.join(videoTempDir, `scene-${scene.id}.png`)));
+    if (missing.length) {
+      throw new Error(`RECORD_SKIP_CAPTURE=1 but missing screenshots: ${missing.map((s) => s.id).join(", ")}`);
+    }
+    console.log("  skipped capture (reusing existing scene PNGs)");
+  } else {
+    await captureSceneScreenshots(sceneDurationsMs);
+  }
 
   console.log("Assembling video…");
   assembleVideo(ffmpeg, sceneDurationsMs, audioPath);

@@ -239,7 +239,7 @@
     {
       "row_number": 6,
       "employee_id": "E001",
-      "employee_name": "Duplicate Row",
+      "employee_name": "Alex Rivera",
       "salary": 96000.0,
       "range_min": 90000.0,
       "range_max": 110000.0,
@@ -544,7 +544,7 @@
     {
       "row_number": 15,
       "manager_id": "E001",
-      "manager_name": "Duplicate Row",
+      "manager_name": "Alex Rivera",
       "manager_salary": 96000.0,
       "report_id": "E014",
       "report_name": "Lia Singh",
@@ -717,7 +717,7 @@
     {
       "row_number": 6,
       "employee_id": "E001",
-      "employee_name": "Duplicate Row",
+      "employee_name": "Alex Rivera",
       "department": "Engineering",
       "equity_grant": 10.0,
       "is_outlier": false,
@@ -923,7 +923,7 @@
     {
       "row_number": 6,
       "employee_id": "E001",
-      "employee_name": "Duplicate Row",
+      "employee_name": "Alex Rivera",
       "salary": 96000.0,
       "range_midpoint": 100000.0,
       "compa_ratio": 96.0
@@ -1315,7 +1315,7 @@
       {
         "row_number": 6,
         "employee_id": "E001",
-        "employee_name": "Duplicate Row",
+        "employee_name": "Alex Rivera",
         "hire_date": "2022-03-15",
         "tenure_days": 1574,
         "tenure_years": 4.3,
@@ -1841,7 +1841,7 @@
       {
         "row_number": 6,
         "employee_id": "E001",
-        "employee_name": "Duplicate Row",
+        "employee_name": "Alex Rivera",
         "department": "Engineering",
         "job_level": "3",
         "salary": 96000.0,
@@ -1916,7 +1916,7 @@
       {
         "row_number": 6,
         "employee_id": "E001",
-        "employee_name": "Duplicate Row",
+        "employee_name": "Alex Rivera",
         "job_level": "3",
         "department": "Engineering",
         "salary": 96000.0,
@@ -2616,7 +2616,7 @@
       {
         "row_number": 6,
         "employee_id": "E001",
-        "employee_name": "Duplicate Row",
+        "employee_name": "Alex Rivera",
         "department": "Engineering",
         "job_level": "3",
         "base_salary": 96000.0,
@@ -2917,7 +2917,7 @@
         "tab_id": "managers_below_reports",
         "reason": "Manager paid $96,000 vs direct report $98,000 (Lia Singh).",
         "employee_id": "E001",
-        "employee_name": "Duplicate Row",
+        "employee_name": "Alex Rivera",
         "department": null,
         "job_level": null,
         "row_number": 15
@@ -3145,7 +3145,7 @@
         "tab_id": "peer_spread",
         "reason": "Level 3 in Engineering has a 23.1% pay spread ($91,000\u2013$112,000) across 6 employees.",
         "employee_id": "E001",
-        "employee_name": "Duplicate Row",
+        "employee_name": "Alex Rivera",
         "department": "Engineering",
         "job_level": "3",
         "row_number": 6
