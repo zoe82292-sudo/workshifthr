@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Zoe T. Vidal — Compensation Analyst | Total Rewards</title>
+  <style>
+    /* PDF-ready executive resume — ATS-safe: semantic HTML, no tables/text boxes/icons */
+    @page {
+      size: Letter;
+      margin: 0.55in 0.6in 0.5in 0.6in;
+    }
+
+    :root {
+      --navy: #16324F;
+      --ink: #1a1a1a;
+      --muted: #4a5560;
+      --rule: #d0d7de;
+      --bg: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Calibri, Aptos, "Segoe UI", "Source Sans 3", "Source Sans Pro", Arial, sans-serif;
+      font-size: 10pt;
+      line-height: 1.32;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      max-width: 8.5in;
+      margin: 0 auto;
+      padding: 0.5in 0.6in 0.45in;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 11pt;
+    }
+
+    h1 {
+      color: var(--navy);
+      font-size: 20pt;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      line-height: 1.1;
+      margin-bottom: 3pt;
+    }
+
+    .headline {
+      color: var(--navy);
+      font-size: 10.5pt;
+      font-weight: 600;
+      letter-spacing: 0.045em;
+      margin-bottom: 5pt;
+    }
+
+    .contact {
+      color: var(--muted);
+      font-size: 9.25pt;
+      letter-spacing: 0.01em;
+    }
+
+    .contact a {
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    /* Sections */
+    section {
+      margin-bottom: 9pt;
+    }
+
+    h2 {
+      color: var(--navy);
+      font-size: 10pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.11em;
+      border-bottom: 1.15pt solid var(--navy);
+      padding-bottom: 2.5pt;
+      margin-bottom: 6pt;
+    }
+
+    .summary {
+      color: var(--ink);
+      font-size: 9.75pt;
+      line-height: 1.4;
+      text-align: left;
+    }
+
+    /* Core competencies — 3-column CSS grid (not a table) */
+    .competencies {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8pt 18pt;
+    }
+
+    .comp-col h3 {
+      color: var(--navy);
+      font-size: 9pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 3pt;
+      border-bottom: 0.6pt solid var(--rule);
+      padding-bottom: 2pt;
+    }
+
+    .comp-col ul {
+      list-style: none;
+    }
+
+    .comp-col li {
+      font-size: 9pt;
+      line-height: 1.42;
+      color: var(--ink);
+      padding-left: 0;
+    }
+
+    .comp-col li::before {
+      content: none;
+    }
+
+    /* Experience */
+    .role {
+      margin-bottom: 8pt;
+    }
+
+    .role-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12pt;
+      margin-bottom: 1pt;
+    }
+
+    .role-title {
+      color: var(--navy);
+      font-size: 10.5pt;
+      font-weight: 700;
+    }
+
+    .role-dates {
+      color: var(--muted);
+      font-size: 9.25pt;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+
+    .role-meta {
+      color: var(--ink);
+      font-size: 9.75pt;
+      font-style: italic;
+      margin-bottom: 3pt;
+    }
+
+    .subhead {
+      color: var(--navy);
+      font-size: 9.25pt;
+      font-weight: 700;
+      margin: 4pt 0 1.5pt;
+      letter-spacing: 0.02em;
+    }
+
+    ul.bullets {
+      margin: 0 0 0 13pt;
+      padding: 0;
+    }
+
+    ul.bullets li {
+      margin-bottom: 2pt;
+      font-size: 9.75pt;
+      line-height: 1.35;
+    }
+
+    /* Education / certs / project / skills */
+    .edu-block {
+      margin-bottom: 4pt;
+    }
+
+    .edu-school {
+      color: var(--navy);
+      font-weight: 700;
+      font-size: 10.5pt;
+    }
+
+    .edu-detail {
+      font-size: 10pt;
+      line-height: 1.4;
+    }
+
+    .cert-lead {
+      font-size: 10pt;
+      margin-bottom: 3pt;
+    }
+
+    .cert-lead strong {
+      color: var(--navy);
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8pt 24pt;
+    }
+
+    .project-title {
+      color: var(--navy);
+      font-weight: 700;
+      font-size: 10.5pt;
+      margin-bottom: 2pt;
+    }
+
+    .skills {
+      font-size: 10pt;
+      line-height: 1.45;
+    }
+
+    .rule {
+      border: none;
+      border-top: 0.75pt solid #d0d7de;
+      margin: 8pt 0;
+    }
+
+    /* Print */
+    @media print {
+      body {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+
+      .page {
+        padding: 0;
+        max-width: none;
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .role {
+        page-break-inside: avoid;
+      }
+    }
+
+    @media screen {
+      body {
+        background: #e8ecef;
+        padding: 24px 12px 48px;
+      }
+
+      .page {
+        background: #fff;
+        box-shadow: 0 2px 16px rgba(22, 50, 79, 0.12);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>Zoe T. Vidal</h1>
+      <p class="headline">Compensation Analyst | Total Rewards | HR Technology</p>
+      <p class="contact">
+        Richmond, VA &nbsp;·&nbsp;
+        (540) 577-6372 &nbsp;·&nbsp;
+        <a href="mailto:zoe.t.vidal@gmail.com">zoe.t.vidal@gmail.com</a> &nbsp;·&nbsp;
+        <a href="https://linkedin.com/in/zoe-vidal-57444a1a4">linkedin.com/in/zoe-vidal-57444a1a4</a>
+      </p>
+    </header>
+
+    <section>
+      <h2>Professional Summary</h2>
+      <p class="summary">
+        Compensation and Total Rewards professional with progressive experience designing, administering, and optimizing compensation and benefits programs in a complex corporate environment. Skilled in compensation benchmarking, job evaluation, pay band modeling, incentive compensation, workforce planning, executive reporting, and enterprise benefits administration. Proven success leading cross-functional initiatives, implementing compensation technology, and partnering with HR, Finance, Talent Acquisition, and business leaders to deliver data-driven Total Rewards programs supporting approximately 700 U.S. employees. Proficient in Workday, Aon market data, Microsoft Excel, Microsoft Copilot, and AI-enabled workflow optimization.
+      </p>
+    </section>
+
+    <section>
+      <h2>Core Competencies</h2>
+      <div class="competencies">
+        <div class="comp-col">
+          <h3>Compensation</h3>
+          <ul>
+            <li>Compensation Benchmarking</li>
+            <li>Aon Market Surveys</li>
+            <li>Job Evaluation</li>
+            <li>Pay Band Modeling</li>
+            <li>Annual Incentive Plan (AIP)</li>
+            <li>Commercial Incentive Plan (CIP)</li>
+            <li>Merit Planning</li>
+            <li>Salary Administration</li>
+            <li>Severance Modeling</li>
+            <li>Workforce Planning</li>
+          </ul>
+        </div>
+        <div class="comp-col">
+          <h3>Total Rewards</h3>
+          <ul>
+            <li>Open Enrollment</li>
+            <li>Employee Stock Purchase Plan</li>
+            <li>Deferred Compensation</li>
+            <li>Long-Term Incentives (LTI)</li>
+            <li>401(k) Administration &amp; Audit</li>
+            <li>Health &amp; Welfare Benefits</li>
+            <li>Leave Administration</li>
+            <li>Vendor Management</li>
+            <li>Employee Presentations</li>
+            <li>Change Management</li>
+          </ul>
+        </div>
+        <div class="comp-col">
+          <h3>Technology &amp; Business</h3>
+          <ul>
+            <li>Workday HCM</li>
+            <li>Workday Advanced Compensation</li>
+            <li>ADP Workforce Now</li>
+            <li>Microsoft Excel</li>
+            <li>Microsoft Copilot</li>
+            <li>Cursor AI</li>
+            <li>Executive Reporting</li>
+            <li>Cross-Functional Collaboration</li>
+            <li>Process Improvement</li>
+            <li>Compensation Analysis</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Professional Experience</h2>
+
+      <article class="role">
+        <div class="role-header">
+          <p class="role-title">Compensation Analyst</p>
+          <p class="role-dates">March 2026 – Present</p>
+        </div>
+        <p class="role-meta">Indivior · Richmond, VA</p>
+
+        <p class="subhead">Compensation Strategy</p>
+        <ul class="bullets">
+          <li>Partner with Total Rewards leadership to design and implement the organization’s pay-for-performance program.</li>
+          <li>Own end-to-end administration of the Annual Incentive Plan (AIP), including calculations, testing, communications, payout support, Merit Increase Letters, and Total Compensation Statements.</li>
+          <li>Deliver compensation benchmarking using Aon market survey data to inform market pricing and salary recommendations.</li>
+          <li>Conduct job evaluations and build pay band models that support equitable compensation structures.</li>
+          <li>Support annual merit planning and compensation review cycles.</li>
+        </ul>
+
+        <p class="subhead">Strategic Projects</p>
+        <ul class="bullets">
+          <li>Supported three workforce reductions by building severance models and workforce cost analyses for leadership planning.</li>
+          <li>Led the Commercial Incentive Plan (CIP) transition from Workday to a third-party vendor, improving operational efficiency.</li>
+          <li>Contributed to Workday Advanced Compensation implementation through testing, validation, and rollout support.</li>
+          <li>Support Long-Term Incentive (LTI) administration, reporting, and related compensation processes.</li>
+          <li>Assisted the Employee Stock Purchase Plan (ESPP) transition from Computershare to Fidelity, covering testing, implementation, employee communications, and vendor coordination.</li>
+        </ul>
+
+        <p class="subhead">Business Partnership &amp; Process Improvement</p>
+        <ul class="bullets">
+          <li>Advise HR Business Partners, Finance, Talent Acquisition, and business leaders on salary recommendations, organizational changes, and compensation administration.</li>
+          <li>Produce executive compensation analyses and ad hoc reports that inform leadership decision-making.</li>
+          <li>Drive process improvements that reduce manual effort and strengthen operational efficiency across compensation programs.</li>
+          <li>Apply Microsoft Copilot and AI productivity tools to streamline workflows and improve day-to-day efficiency.</li>
+        </ul>
+      </article>
+
+      <article class="role">
+        <div class="role-header">
+          <p class="role-title">Compensation &amp; Benefits Specialist</p>
+          <p class="role-dates">July 2024 – March 2026</p>
+        </div>
+        <p class="role-meta">Indivior · Richmond, VA</p>
+        <ul class="bullets">
+          <li>Directed end-to-end Open Enrollment, spanning planning, testing, payroll coordination, employee communications, presentations, and implementation.</li>
+          <li>Owned ESPP and Deferred Compensation enrollment processes.</li>
+          <li>Administered health &amp; welfare, 401(k), HSA, COBRA, STD, LTD, ADA, and FMLA programs with a focus on compliance and operational accuracy.</li>
+          <li>Owned the annual 401(k) audit and supported Form 5500 preparation.</li>
+          <li>Delivered new hire benefits orientation and Open Enrollment presentations.</li>
+          <li>Redesigned Leave of Absence workflows to increase operational efficiency.</li>
+          <li>Managed vendor relationships and supported implementation of new Total Rewards vendors.</li>
+          <li>Supported Total Rewards programs for approximately 700 U.S. employees (previously ~1,200 prior to organizational restructuring).</li>
+        </ul>
+      </article>
+
+      <article class="role">
+        <div class="role-header">
+          <p class="role-title">HR Coordinator</p>
+          <p class="role-dates">November 2023 – July 2024</p>
+        </div>
+        <p class="role-meta">Indivior · Richmond, VA</p>
+        <ul class="bullets">
+          <li>Coordinated vendor contract workflows, including routing, approvals, documentation, and compliance.</li>
+          <li>Created purchase orders, processed invoices, and partnered with Finance to ensure timely vendor payments.</li>
+          <li>Managed vendor contracts across the procurement lifecycle.</li>
+          <li>Supported HR operations spanning onboarding, benefits administration, Workday transactions, and employee lifecycle activities.</li>
+          <li>Partnered with Payroll, HR Business Partners, Finance, and external vendors to sustain HR program delivery.</li>
+        </ul>
+      </article>
+
+      <article class="role">
+        <div class="role-header">
+          <p class="role-title">Portfolio Management Analyst</p>
+          <p class="role-dates">June 2023 – August 2023</p>
+        </div>
+        <p class="role-meta">Hall Capital Partners · San Francisco, CA</p>
+        <ul class="bullets">
+          <li>Built analytical models and reporting tools that supported investment and business decision-making.</li>
+          <li>Performed financial analysis while maintaining data accuracy across reporting processes.</li>
+        </ul>
+      </article>
+    </section>
+
+    <section>
+      <h2>Education</h2>
+      <div class="edu-block">
+        <p class="edu-school">Virginia Tech</p>
+        <p class="edu-detail">Bachelor of Science, Psychology</p>
+        <p class="edu-detail">Bachelor of Science, Sociology &amp; Criminology</p>
+        <p class="edu-detail">Full Academic Scholarship</p>
+        <p class="edu-detail"><em>Minors:</em> Leadership &amp; Social Change; Peace &amp; Violence Studies</p>
+      </div>
+    </section>
+
+    <div class="two-col">
+      <section>
+        <h2>Certifications</h2>
+        <p class="cert-lead"><strong>Certified Employee Benefits Specialist (CEBS)</strong> — In Progress</p>
+        <p class="edu-detail" style="margin-bottom: 2pt;">Completed:</p>
+        <ul class="bullets">
+          <li>Group Benefits Associate (GBA I)</li>
+          <li>Retirement Plans Associate (RPA I)</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Selected Project</h2>
+        <p class="project-title">ShiftWorksHR | Founder</p>
+        <p class="edu-detail">
+          Built a compensation analysis web app that lets HR and compensation teams upload workforce files and surface pay-range issues, salary compression, manager inversions, and budget exposure. Led product planning, design, and development end to end.
+        </p>
+      </section>
+    </div>
+
+    <section>
+      <h2>Technical Skills</h2>
+      <p class="skills">
+        Workday HCM · Workday Advanced Compensation · ADP Workforce Now · Microsoft Excel · Microsoft Copilot · Cursor AI · Microsoft Office
+      </p>
+    </section>
+  </div>
+</body>
+</html>
