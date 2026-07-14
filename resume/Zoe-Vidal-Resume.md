@@ -8,7 +8,7 @@ Richmond, VA · (540) 577-6372 · zoe.t.vidal@gmail.com · linkedin.com/in/zoe-v
 
 ## PROFESSIONAL SUMMARY
 
-Compensation and Total Rewards professional with progressive experience designing, administering, and optimizing compensation and benefits programs in a complex corporate environment. Skilled in compensation benchmarking, job evaluation, pay band modeling, incentive compensation, workforce planning, executive reporting, and enterprise benefits administration. Proven success leading cross-functional initiatives, implementing compensation technology, and partnering with HR, Finance, Talent Acquisition, and business leaders to deliver data-driven Total Rewards programs supporting approximately 700 U.S. employees. Proficient in Workday, Aon market data, Microsoft Excel, Microsoft Copilot, and AI-enabled workflow optimization.
+Compensation Analyst with progressive experience designing, administering, and optimizing compensation and Total Rewards programs within a complex corporate environment. Experienced in compensation benchmarking, job evaluation, pay structures, incentive compensation, workforce planning, executive reporting, and enterprise benefits administration. Proven success leading cross-functional initiatives, implementing compensation technology, and partnering with HR, Finance, Talent Acquisition, and business leaders to deliver data-driven Total Rewards programs across a multi-state U.S. workforce. Proficient in Workday, Aon market data, Microsoft Excel, Microsoft Copilot, and generative AI tools.
 
 ---
 
@@ -39,7 +39,7 @@ Workday HCM · Workday Advanced Compensation · ADP Workforce Now · SAP · Serv
 - Support annual merit planning and compensation review cycles.
 
 **Strategic Projects**
-- Supported three workforce reductions by building severance models and workforce cost analyses for leadership planning.
+- Built severance cost models and workforce planning analyses supporting leadership decision-making during three organizational restructurings.
 - Led the Commercial Incentive Plan (CIP) transition from Workday to a third-party vendor, improving operational efficiency.
 - Contributed to Workday Advanced Compensation implementation through testing, validation, and rollout support.
 - Support Long-Term Incentive (LTI) administration, reporting, and related compensation processes.
@@ -48,8 +48,8 @@ Workday HCM · Workday Advanced Compensation · ADP Workforce Now · SAP · Serv
 **Business Partnership & Process Improvement**
 - Advise HR Business Partners, Finance, Talent Acquisition, and business leaders on salary recommendations, organizational changes, and compensation administration.
 - Produce executive compensation analyses and ad hoc reports that inform leadership decision-making.
-- Drive process improvements that reduce manual effort and strengthen operational efficiency across compensation programs.
-- Apply Microsoft Copilot and AI productivity tools to streamline workflows and improve day-to-day efficiency.
+- Identify and implement process improvements that reduce manual effort, improve data accuracy, and strengthen operational efficiency across compensation programs.
+- Apply Microsoft Copilot and generative AI tools to streamline workflows and improve day-to-day efficiency.
 
 ### Compensation & Benefits Specialist
 **Indivior** · Richmond, VA  
